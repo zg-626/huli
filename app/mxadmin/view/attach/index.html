@@ -1,0 +1,151 @@
+{extend name="base" /}
+
+{block name="title"}附件管理{/block}
+
+{block name="body"}
+<style>
+    .tb-img-circle{
+        width: 60px;
+        cursor: zoom-in;
+        border-radius: 5%;
+    }
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表格工具栏 -->
+            <form class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">存储引擎</label>
+                        <div class="layui-input-inline">
+                            <select name="storage">
+                                <option value="">--- 全部 ---</option>
+                                <option value="local">本地</option>
+                                <option value="qiniu">七牛云</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">&emsp;
+                        <button class="layui-btn icon-btn" lay-filter="muxueTbSearch" lay-submit>
+                            <i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <!-- 数据表格 -->
+            <table id="muxueTable" lay-filter="muxueTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="muxueTbBar">
+    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del"><i class="layui-icon">&#xe640;</i>删除</a>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+    layui.use(['layer', 'form', 'table'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+
+        /* 渲染表格 */
+        var insTb = table.render({
+            elem: '#muxueTable',
+            url: "{:url('mxadmin/attach/datalist')}",
+            page: {limit: 15},
+            limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
+            toolbar: ['<p>',
+                '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>批量删除</button>&nbsp;',
+                '</p>'].join(''),
+            cellMinWidth: 100,
+            cols: [[
+                {type: 'checkbox'},
+                {
+                    title: '预览', templet: function (d) {
+                        var url = d.url || '/static/assets/images/head.jpg';
+                        return '<img data-index="' + (d.LAY_INDEX - 1) + '" src="' + url + '" class="tb-img-circle" tb-img alt=""/>';
+                    }, align: 'center', unresize: true
+                },
+                {field: 'filesize', title: '文件大小', align: 'center', sort: true},
+                {field: 'filetype', title: '文件类型', align: 'center', sort: true},
+                {field: 'storage', title: '存储引擎', align: 'center', sort: true},
+                {field: 'username', title: '上传者', align: 'center', sort: true},
+                {field: 'create_time', title: '上传时间', align: 'center', sort: true},
+                {title: '操作', toolbar: '#muxueTbBar', align: 'center', minWidth: 180}
+            ]],
+            parseData: function(res){ //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+        });
+
+        /* 点击图片放大 */
+        $(document).off('click.tbImg').on('click.tbImg', '[tb-img]', function () {
+            layer.photos({photos: {data: [{src: $(this).attr('src')}]}, shade: .5, closeBtn: true});
+        });
+
+        /* 表格搜索 */
+        form.on('submit(muxueTbSearch)', function (data) {
+            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('mxadmin/attach/serach')}"});
+            return false;
+        });
+
+        /* 表格操作列点击事件 */
+        table.on('tool(muxueTable)', function (obj) {
+            if (obj.event === 'del') { // 删除
+                doDel(obj);
+            }
+        });
+
+        /* 表格头工具栏点击事件 */
+        table.on('toolbar(muxueTable)', function (obj) {
+            if (obj.event === 'del') { // 删除
+                var checkRows = table.checkStatus('muxueTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要删除的数据', {icon: 5, anim: 6});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.id;
+                });
+                doDel({ids: ids});
+            }
+        });
+
+        /* 删除 */
+        function doDel(obj) {
+            layer.confirm('确定要删除选中数据吗？', {
+                title: '删除数据',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                //shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('mxadmin/attach/del')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : ''
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+    });
+</script>
+{/block}

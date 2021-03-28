@@ -1,0 +1,378 @@
+{extend name="../../mxadmin/view/base" /}
+
+{block name="title"}栏目管理{/block}
+{block name="body"}
+<style>
+    .layui-form-item .layui-form-label{
+        padding-left: 0;
+        width: 105px;
+    }
+    .layui-form-item .layui-input-block {
+        margin-left: 120px;
+    }
+    .form-group-bottom {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 10px 20px;
+        background-color: #fff;
+        box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, .05);
+        z-index: 9;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 数据表格 -->
+            <table id="classifyTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="classifyTbBar">
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="addson">添加子栏目</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger{{#if(d.children){}} layui-btn-disabled{{#}}}"{{#if(!d.children){}} lay-event="del"{{#}}}>删除</a>
+</script>
+<!-- 表格状态列 -->
+<script type="text/html" id="mxTbState">
+    <input type="checkbox" lay-filter="mxTbStateCk" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" {{d.status==1?'checked':''}} style="display: none;"/>
+    <p style="display: none;">{{d.status==1?'启用':'禁用'}}</p>
+</script>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="classifyDialog">
+    <form id="classifyForm" lay-filter="classifyForm" class="layui-form model-form">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label">上级栏目</label>
+            <div class="layui-input-block">
+                <div id="classifyParentSel" class="mx-xmselect-tree"></div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">栏目名称</label>
+            <div class="layui-input-block">
+                <input name="name" placeholder="请输入栏目名称" autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">栏目图片</label>
+            <div class="layui-input-block">
+                <input name="image" class="layui-input" placeholder="请选择图片" autocomplete="off"/>
+                <button type="button" class="layui-btn layui-btn-normal imageMore"><i class="layui-icon">&#xe681;</i>上传图片</button>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">栏目类型</label>
+            <div class="layui-input-block">
+                <input type="radio" name="urltype" lay-filter="raUrltype" value="0" title="列表页" checked/>
+                <input type="radio" name="urltype" lay-filter="raUrltype" value="1" title="频道页"/>
+                <input type="radio" name="urltype" lay-filter="raUrltype" value="2" title="内容页"/>
+                <input type="radio" name="urltype" lay-filter="raUrltype" value="3" title="外部连接"/>
+            </div>
+        </div>
+        <div id="urlTpl">
+            <div class="layui-form-item">
+                <label class="layui-form-label">跳转链接</label>
+                <div class="layui-input-block">
+                    <input name="url" placeholder="请输入跳转链接" autocomplete="off" class="layui-input"/>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">打开方式</label>
+            <div class="layui-input-block">
+                <input type="radio" name="target" value="_self" title="本窗口" checked/>
+                <input type="radio" name="target" value="_blank" title="新窗口"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">SEO标题</label>
+            <div class="layui-input-block">
+                <input name="seotitle" class="layui-input" placeholder="请输入SEO标题" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">META关键词</label>
+            <div class="layui-input-block">
+                <input name="keywords" class="layui-input" placeholder="多个关键词用英文状态 , 号分割" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">META描述</label>
+            <div class="layui-input-block">
+                <textarea name="description" placeholder="请输入META描述" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">排序权重</label>
+            <div class="layui-input-block">
+                <input name="weight" placeholder="请输入排序权重" autocomplete="off" type="number" class="layui-input" lay-verType="tips" lay-verify="number" value="50"/>
+            </div>
+        </div>
+
+        <div class="form-group-bottom text-center">
+            <button class="layui-btn" lay-filter="classifySubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+    layui.use(['layer', 'form', 'admin', 'treeTable', 'xmSelect', 'upload'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var admin = layui.admin;
+        var treeTable = layui.treeTable;
+        var xmSelect = layui.xmSelect;
+        var upload = layui.upload;
+
+        // 渲染表格
+        var insTb = treeTable.render({
+            elem: '#classifyTable',
+            url: "{:url('cms/category/datalist')}",
+            toolbar: ['<p>',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加栏目</button>&nbsp;',
+                '<button lay-event="FoldAll" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe602;</i>折叠全部</button>&nbsp;',
+                '<button lay-event="ExpandAll" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe61a;</i>展开全部</button>&nbsp;',
+                '</p>'].join(''),
+            tree: {
+                arrowType: 'arrow2',
+                getIcon: 'mx-tree-icon-style2',
+                iconIndex: 1,
+                idName: 'id',
+                pidName: 'pid',
+                isPidData: true
+            },
+            cols: [[
+                {field: 'id', title: '栏目ID', align: 'center', width: 90},
+                {field: 'name', title: '栏目名称', minWidth: 150},
+                {field: 'weight', title: '排序权重', align: 'center', width: 20, edit: 'text'},
+                {field: 'status', title: '状态', templet: '#mxTbState', align: 'center', sort: true, width: 100},
+                {field: 'create_time', title: '创建时间', align: 'center'},
+                {field: 'update_time', title: '更新时间', align: 'center'},
+                {title: '操作', toolbar: '#classifyTbBar', align: 'center'}
+            ]],
+        });
+
+        /* 表格操作列点击事件 */
+        treeTable.on('tool(classifyTable)', function (obj) {
+            if (obj.event === 'addson') { // 添加子栏目
+                showModel(obj.data, 'son');
+            } else if (obj.event === 'edit') { // 修改
+                showModel(obj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel(obj);
+            }
+        });
+
+        /* 修改状态 */
+        form.on('switch(mxTbStateCk)', function (obj) {
+            var loadIndex = layer.load(2);
+            $.post("{:url('cms/category/edit_state_same')}", {
+                id: obj.elem.value,
+                status: obj.elem.checked ? 1 : 0
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.refresh();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                    $(obj.elem).prop('checked', !obj.elem.checked);
+                    form.render('checkbox');
+                }
+            }, 'json');
+        });
+
+        /* 表格头工具栏点击事件 */
+        treeTable.on('toolbar(classifyTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showModel();
+            } else if (obj.event === 'FoldAll') { // 折叠全部
+                //insTb.foldAll();
+                doFold(0);
+            } else if (obj.event === 'ExpandAll') { // 展开全部
+                //insTb.expandAll();
+                doFold(1);
+            }
+        });
+
+        /* 监听单元格编辑 */
+        treeTable.on('edit(classifyTable)', function(obj){
+            if(isNaN(obj.value)){
+                layer.msg('只能输入数字！', {icon: 5, anim: 6});
+                return false;
+            }
+            var loadIndex = layer.load(2);
+            $.post("{:url('cms/category/edit_weight_same')}", {
+                id: obj.data.id,
+                weight: obj.value
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                }
+            }, 'json');
+        });
+
+        /* 显示表单弹窗 */
+        function showModel(mData, btnType) {
+            var layIndex = admin.open({
+                type: 1,
+                area: ['820px', '630px'],
+                area: '750px',
+                title: (btnType ? '添加子' : mData ? '修改' : '添加') + '栏目',
+                shade: 0.5,
+                //shadeClose: true,
+                content: $('#classifyDialog').html(),
+                success: function (layero, dIndex) {
+                    //图片上传
+                    upload.render({
+                        elem: '.imageMore',
+                        url: "{:url('mxadmin/upload/upload')}", //改成您自己的上传接口
+                        acceptMime: 'image/*',
+                        size: 2048, //限制文件大小，单位 KB
+                        done: function(res){
+                            if (res.code === 1) {
+                                layer.msg(res.msg, {icon: 1});
+                                this.item.prev('input').val(res.data.filePath);
+                                this.item.after(' <a href="'+res.data.filePath+'" target="_blank"><img src="'+res.data.filePath+'" height="38"></a>');
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }
+                    });
+
+                    // 回显表单数据
+                    form.val('classifyForm', btnType ? '' : mData);
+
+                    // 栏目类型切换事件
+                    form.on('radio(raUrltype)', function (data) {
+                        changeUrlType(data.value);
+                    });
+                    // 栏目类型切换初始化加载
+                    mData ? changeUrlType(mData.urltype) : changeUrlType(0);
+
+                    if (mData) {
+                        insTb.refresh();
+                        // 这个是treeTable提供的遍历数据的方法
+                        insTb.eachData(function(i,item){
+                            if (item.id == mData.id || item.pid == mData.id || item.topid == mData.id) item.disabled = true;  // 自身和子栏目不可选
+                        });
+
+                        // 上传图片小图显示
+                        var imageValue = $('.imageMore').prev('input').val();
+                        if (imageValue) {
+                            $('.imageMore').after(' <a href="'+imageValue+'" target="_blank"><img src="'+imageValue+'" height="38"></a>');
+                        }
+                    }
+
+                    // 渲染下拉树
+                    var insXmSel = xmSelect.render({
+                        el: '#classifyParentSel',
+                        tips: '顶级栏目',
+                        height: '400px',
+                        data: insTb.options.data,
+                        initValue: btnType ? [mData.id] : mData ? [mData.pid] : [],
+                        model: {label: {type: 'text'}},
+                        prop: {
+                            name: 'name',
+                            value: 'id'
+                        },
+                        radio: true,
+                        clickClose: true,
+                        filterable: true,
+                        filterMethod: function(val, item, index, prop){
+                            if(item.name.toLowerCase().indexOf(val.toLowerCase()) != -1){ //名称中包含的大小写都搜索出来
+                                return true;
+                            }
+                            return false; //其他的就不要了
+                        },
+                        searchTips: '请输入关键词进行搜索',
+                        tree: {
+                            show: true,
+                            indent: 15,
+                            strict: false,
+                            expandedKeys: true
+                        },
+                        disabled: btnType ? true : false,
+                    });
+
+                    // 表单提交事件
+                    form.on('submit(classifySubmit)', function (data) {
+                        data.field.pid = insXmSel.getValue('valueStr');
+                        var loadIndex = layer.load(2);
+                        $.post(btnType ? "{:url('cms/category/add')}" : mData ? "{:url('cms/category/edit')}" : "{:url('cms/category/add')}", data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (res.code === 1) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                insTb.refresh();
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }, 'json');
+                        return false;
+                    });
+                }
+            });
+            // 窗口打开即全屏
+            layer.full(layIndex);
+        }
+
+        /* 栏目类型切换 */
+        function changeUrlType(value) {
+            if (value == 3) {
+                $('#urlTpl').show();
+            } else {
+                $('#urlTpl').hide();
+            }
+        }
+
+        /* 删除 */
+        function doDel(obj) {
+            layer.confirm('确定要删除“' + obj.data.name + '”这个栏目及相对应的栏目内容吗？', {
+                title: '删除栏目',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                //shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('cms/category/del')}", {id: obj.data.id}, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.refresh();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+
+        /* 折叠/展开 */
+        function doFold(type) {
+            $.post("{:url('cms/category/datalist_open_same')}", {type: type}, function (res) {
+                if (type === 0) {
+                    layer.msg('已全部折叠');
+                    insTb.refresh();
+                } else {
+                    layer.msg('已全部展开');
+                    insTb.refresh();
+                }
+            }, 'json');
+        }
+    });
+</script>
+{/block}

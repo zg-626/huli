@@ -1,0 +1,36 @@
+<div class="layui-tab-item">
+    <!-- 表单开始 -->
+    <form class="layui-form" id="weixinForm" lay-filter="weixinForm">
+        <input type="hidden" name="typename" value="weixin">
+        <div class="layui-form-item">
+            <label class="layui-form-label">Appid</label>
+            <div class="layui-input-block">
+                <input name="appid" placeholder="请输入Appid" value="{$weixin.appid|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">AppSecret</label>
+            <div class="layui-input-block">
+                <input type="password" name="appsecret" placeholder="请输入AppSecret" value="{$weixin.appsecret|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Token</label>
+            <div class="layui-input-block">
+                <input name="token" placeholder="请输入Token" value="{$weixin.token|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">AesKey</label>
+            <div class="layui-input-block">
+                <input type="password" name="aeskey" placeholder="请输入AesKey" value="{$weixin.aeskey|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-filter="weixinSubmit" lay-submit>&emsp;保存配置&emsp;</button>
+            </div>
+        </div>
+    </form>
+    <!-- //表单结束 -->
+</div>

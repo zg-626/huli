@@ -1,0 +1,52 @@
+{extend name="base" /}
+
+{block name="title"}系统首页{/block}
+{block name="body"}
+
+<div class="layui-fluid mx-console-wrapper">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-xs12">
+            <div class="layui-card">
+                <div class="layui-card-header">系统信息</div>
+                <div class="layui-card-body">
+                    <table class="layui-table layui-text">
+                        <colgroup>
+                            <col width="190">
+                            <col>
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td align="center">系统版本</td>
+                                <td>v1.0</td>
+                            </tr>
+                            <script type="text/html" mx-tpl>
+                            <tr>
+                                <td align="center">前端框架</td>
+                                <td><a href="https://www.layui.com/" target="_blank">Layui-v{{layui.v}}</a></td>
+                            </tr>
+                            </script>
+                            <tr>
+                                <td align="center">后端框架</td>
+                                <td><a href="http://www.thinkphp.cn/" target="_blank">ThinkPHP V{$version}</a></td>
+                            </tr>
+                            <tr>
+                                <td align="center">主要特色</td>
+                                <td>响应式布局 / 简约 / 易上手 / 完善的多角色权限管理</td>
+                            </tr>
+                            <tr>
+                                <td align="center">获取渠道</td>
+                                <td>
+                                    <a href="https://gitee.com/muxue2020/mxAdmin/issues/new" class="layui-btn layui-btn-sm layui-btn-danger" target="_blank">意见反馈</a>
+                                    <a href="https://gitee.com/muxue2020/mxAdmin" target="_blank" class="layui-btn layui-btn-sm">立即下载</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+{/block}

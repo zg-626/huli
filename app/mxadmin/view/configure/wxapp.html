@@ -1,0 +1,24 @@
+<div class="layui-tab-item">
+    <!-- 表单开始 -->
+    <form class="layui-form" id="wxappForm" lay-filter="wxappForm">
+        <input type="hidden" name="typename" value="wxapp">
+        <div class="layui-form-item">
+            <label class="layui-form-label">Appid</label>
+            <div class="layui-input-block">
+                <input name="appid" placeholder="请输入Appid" value="{$wxapp.appid|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">AppSecret</label>
+            <div class="layui-input-block">
+                <input type="password" name="appsecret" placeholder="请输入AppSecret" value="{$wxapp.appsecret|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-filter="wxappSubmit" lay-submit>&emsp;保存配置&emsp;</button>
+            </div>
+        </div>
+    </form>
+    <!-- //表单结束 -->
+</div>

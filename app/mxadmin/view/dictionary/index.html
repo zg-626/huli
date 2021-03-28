@@ -1,0 +1,430 @@
+{extend name="base" /}
+
+{block name="title"}字典管理{/block}
+
+{block name="body"}
+<style>
+    #dictTable + .layui-table-view .layui-table-tool-temp {
+        padding-right: 0;
+    }
+
+    #dictTable + .layui-table-view .layui-table-body tbody > tr td {
+        cursor: pointer;
+    }
+
+    #dictTable + .layui-table-view .layui-table-body tbody > tr.layui-table-click {
+        background-color: #fff3e0;
+    }
+
+    #dictTable + .layui-table-view .layui-table-body tbody > tr.layui-table-click td:last-child > div:before {
+        position: absolute;
+        right: 6px;
+        content: "\e602";
+        font-size: 12px;
+        font-style: normal;
+        font-family: layui-icon !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+</style>
+<div class="layui-fluid" style="padding-bottom: 0;">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md3">
+            <div class="layui-card">
+                <div class="layui-card-body" style="padding: 10px;">
+                    <!-- 表格工具栏1 -->
+                    <form class="layui-form toolbar">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <input name="name" class="layui-input" placeholder="请输入字典关键词"/>
+                            </div>
+                            <div class="layui-inline">
+                                <button class="layui-btn icon-btn" lay-filter="dictTbSearch" lay-submit>
+                                    <i class="layui-icon">&#xe615;</i>搜索
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- 数据表格1 -->
+                    <table id="dictTable" lay-filter="dictTable"></table>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md9">
+            <div class="layui-card">
+                <div class="layui-card-body" style="padding: 10px;">
+                    <!-- 表格工具栏2 -->
+                    <form class="layui-form toolbar">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">字典项名称</label>
+                                <div class="layui-input-inline">
+                                    <input name="name" class="layui-input" placeholder="请输入字典项关键词"/>
+                                </div>
+                            </div>
+                            <div class="layui-inline">&emsp;
+                                <button class="layui-btn icon-btn" lay-filter="dictDataTbSearch" lay-submit>
+                                    <i class="layui-icon">&#xe615;</i>搜索
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- 数据表格2 -->
+                    <table id="dictDataTable" lay-filter="dictDataTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 表单弹窗1 -->
+<script type="text/html" id="dictEditDialog">
+    <form id="dictEditForm" lay-filter="dictEditForm" class="layui-form model-form">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">字典名称</label>
+            <div class="layui-input-block">
+                <input name="name" placeholder="请输入字典名称" class="layui-input" lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">排序权重</label>
+            <div class="layui-input-block">
+                <input name="weight" placeholder="请输入排序权重" class="layui-input" type="number" lay-verType="tips" lay-verify="number" value="50"/>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="dictEditSubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="dictDataTbBar">
+    <a class="layui-btn layui-btn layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<!-- 表格状态列 -->
+<script type="text/html" id="dictDataTbState">
+    <input type="checkbox" lay-filter="dictDataTbStateCk" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" {{d.status==1?'checked':''}} style="display: none;"/>
+    <p style="display: none;">{{d.status==1?'启用':'禁用'}}</p>
+</script>
+
+<!-- 表单弹窗2 -->
+<script type="text/html" id="dictDataEditDialog">
+    <form id="dictDataEditForm" lay-filter="dictDataEditForm" class="layui-form model-form" style="padding-left: 10px;">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required" style="padding-left: 0;width: 95px;">字典项名称</label>
+            <div class="layui-input-block">
+                <input name="name" placeholder="请输入字典项名称" class="layui-input" lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">排序权重</label>
+            <div class="layui-input-block">
+                <input name="weight" placeholder="请输入排序权重" class="layui-input" type="number" lay-verType="tips" lay-verify="number" value="50"/>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="dictDataEditSubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var selObj;  // 左表选中数据
+
+        /* 渲染表格 */
+        var insTb = table.render({
+            elem: '#dictTable',
+            url: "{:url('mxadmin/dictionary/datalist')}",
+            height: 'full-100',
+            toolbar: ['<p>',
+                '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>',
+                '<button lay-event="edit" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe642;</i>修改</button>&nbsp;',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加字典</button>&nbsp;',
+                '</p>'].join(''),
+            defaultToolbar: [],
+            cols: [[
+                {field: 'id', title: 'ID', align: 'center', width: 50},
+                {field: 'name', title: '字典名称'},
+                {field: 'weight', title: '排序权重', align: 'center', width: 110, sort: true, edit: 'text'},
+            ]],
+            done: function (res, curr, count) {
+                $('#dictTable+.layui-table-view .layui-table-body tbody>tr:last').trigger('click');
+            }
+        });
+
+        /* 表格搜索 */
+        form.on('submit(dictTbSearch)', function (data) {
+            insTb.reload({where: data.field, url:"{:url('mxadmin/dictionary/serach')}"});
+            return false;
+        });
+
+        /* 表格头工具栏点击事件 */
+        table.on('toolbar(dictTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel();
+            } else if (obj.event === 'edit') { // 修改
+                showEditModel(selObj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel(selObj);
+            }
+        });
+
+        /* 监听行单击事件 */
+        table.on('row(dictTable)', function (obj) {
+            selObj = obj;
+            obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+            insTb2.reload({where: {dict_id: obj.data.id}, page: {curr: 1}, url: "{:url('mxadmin/dictionary/datalist_same')}"});
+        });
+
+        /* 监听单元格编辑 */
+        table.on('edit(dictTable)', function(obj){
+            if(isNaN(obj.value)){
+                layer.msg('只能输入数字！', {icon: 5, anim: 6});
+                return false;
+            }
+            var loadIndex = layer.load(2);
+            $.post("{:url('mxadmin/dictionary/edit_dictweight_same')}", {
+                id: obj.data.id,
+                weight: obj.value
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                }
+            }, 'json');
+        });
+
+        /* 显示表单弹窗 */
+        function showEditModel(mData) {
+            admin.open({
+                type: 1,
+                title: (mData ? '修改' : '添加') + '字典',
+                shade: 0.5,
+                //shadeClose: true,
+                content: $('#dictEditDialog').html(),
+                success: function (layero, dIndex) {
+                    // 回显表单数据
+                    form.val('dictEditForm', mData);
+                    // 表单提交事件
+                    form.on('submit(dictEditSubmit)', function (data) {
+                        var loadIndex = layer.load(2);
+                        $.post(mData ? "{:url('mxadmin/dictionary/edit')}" : "{:url('mxadmin/dictionary/add')}", data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (res.code === 1) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                insTb.reload();  // 保存成功刷新表格
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }, 'json');
+                        return false;
+                    });
+                }
+            });
+        }
+
+        /* 删除 */
+        function doDel(obj) {
+            layer.confirm('确定要删除此字典及对应的字典项吗？', {
+                title: '删除字典',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                //shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('mxadmin/dictionary/del')}", {
+                    id: obj.data.id,
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                        $('#dictTable+.layui-table-view .layui-table-body tbody>tr:last').trigger('click');
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+
+        /* 渲染表格2 */
+        var insTb2 = table.render({
+            elem: '#dictDataTable',
+            data: [],
+            height: 'full-100',
+            page: {limit: 15},
+            limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
+            toolbar: ['<p>',
+                '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>批量删除</button>&nbsp;',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加字典项</button>&nbsp;',
+                '</p>'].join(''),
+            cellMinWidth: 100,
+            cols: [[
+                {type: 'checkbox'},
+                {field: 'id', title: 'ID', align: 'center', width: 60},
+                {field: 'name', title: '字典项名称', sort: true},
+                {field: 'weight', title: '排序权重', align: 'center', width: 110, sort: true, edit: 'text'},
+                {field: 'create_time', title: '创建时间', align: 'center', sort: true},
+                {field: 'update_time', title: '更新时间', align: 'center', sort: true},
+                {field: 'status', title: '状态', templet: '#dictDataTbState', align: 'center', sort: true, width: 100},
+                {title: '操作', toolbar: '#dictDataTbBar', align: 'center', width:180, minWidth: 180}
+            ]],
+            parseData: function(res){ //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+        });
+
+        /* 表格2搜索 */
+        form.on('submit(dictDataTbSearch)', function (data) {
+            insTb2.reload({where: data.field, page: {curr: 1}, url:"{:url('mxadmin/dictionary/serach_same')}"});
+            return false;
+        });
+
+        /* 表格2工具条点击事件 */
+        table.on('tool(dictDataTable)', function (obj) {
+            if (obj.event === 'edit') { // 修改
+                showEditModel2(obj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel2(obj);
+            }
+        });
+
+        /* 表格2头工具栏点击事件 */
+        table.on('toolbar(dictDataTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel2();
+            } else if (obj.event === 'del') { // 删除
+                var checkRows = table.checkStatus('dictDataTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要删除的字典项', {icon: 2});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.id;
+                });
+                doDel2({ids: ids});
+            }
+        });
+
+        /* 监听单元格编辑 */
+        table.on('edit(dictDataTable)', function(obj){
+            if(isNaN(obj.value)){
+                layer.msg('只能输入数字！', {icon: 5, anim: 6});
+                return false;
+            }
+            var loadIndex = layer.load(2);
+            $.post("{:url('mxadmin/dictionary/edit_dictdataweight_same')}", {
+                id: obj.data.id,
+                weight: obj.value
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                }
+            }, 'json');
+        });
+
+        /* 显示表单弹窗2 */
+        function showEditModel2(mData) {
+            admin.open({
+                type: 1,
+                title: (mData ? '修改' : '添加') + '字典项',
+                shade: 0.5,
+                //shadeClose: true,
+                content: $('#dictDataEditDialog').html(),
+                success: function (layero, dIndex) {
+                    // 回显表单数据
+                    form.val('dictDataEditForm', mData);
+                    // 表单提交事件
+                    form.on('submit(dictDataEditSubmit)', function (data) {
+                        data.field.dict_id = selObj.data.id;
+                        var loadIndex = layer.load(2);
+                        $.post(mData ? "{:url('mxadmin/dictionary/edit_same')}" : "{:url('mxadmin/dictionary/add_same')}", data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (res.code === 1) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                insTb2.reload();
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }, 'json');
+                        return false;
+                    });
+                }
+            });
+        }
+
+        /* 删除2 */
+        function doDel2(obj) {
+            layer.confirm('确定要删除选中的字典项吗？', {
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                //shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('mxadmin/dictionary/del_same')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : ''
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb2.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+
+        /* 修改状态 */
+        form.on('switch(dictDataTbStateCk)', function (obj) {
+            var loadIndex = layer.load(2);
+            $.post("{:url('mxadmin/dictionary/edit_state_same')}", {
+                id: obj.elem.value,
+                status: obj.elem.checked ? 1 : 0
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                    $(obj.elem).prop('checked', !obj.elem.checked);
+                    form.render('checkbox');
+                }
+            }, 'json');
+        });
+    });
+</script>
+{/block}
