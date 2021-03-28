@@ -1,0 +1,42 @@
+<div class="layui-tab-item">
+    <!-- 表单开始 -->
+    <form class="layui-form" id="wxpayForm" lay-filter="wxpayForm">
+        <input type="hidden" name="typename" value="wxpay">
+        <div class="layui-form-item">
+            <label class="layui-form-label">Appid</label>
+            <div class="layui-input-block">
+                <input name="appid" placeholder="请输入Appid" value="{$wxpay.appid|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">商户号</label>
+            <div class="layui-input-block">
+                <input name="mch_id" placeholder="请输入商户号" value="{$wxpay.mch_id|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">商户密钥</label>
+            <div class="layui-input-block">
+                <input type="password" name="mch_key" placeholder="请输入商户密钥" value="{$wxpay.mch_key|default=''}" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">CERT证书</label>
+            <div class="layui-input-block">
+                <textarea name="certpem" placeholder="请粘贴CERT证书" class="layui-textarea">{$wxpay.certpem|default=''}</textarea>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">KEY证书</label>
+            <div class="layui-input-block">
+                <textarea name="keypem" placeholder="请粘贴KEY证书" class="layui-textarea">{$wxpay.keypem|default=''}</textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-filter="wxpaySubmit" lay-submit>&emsp;保存配置&emsp;</button>
+            </div>
+        </div>
+    </form>
+    <!-- //表单结束 -->
+</div>
