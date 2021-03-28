@@ -40,7 +40,7 @@ return [
             // 用户名
             'username'          => env('database.username', 'demo_muxue'),
             // 密码
-            'password'          => env('database.password', 'zlm880624'),
+            'password'          => env('database.password', 'demo_muxue'),
             // 端口
             'hostport'          => env('database.hostport', '3306'),
             // 数据库连接参数
