@@ -28,20 +28,20 @@
                         </div>
                     </div>
                     <div class="layui-inline">&emsp;
-                        <button class="layui-btn icon-btn" lay-filter="muxueTbSearch" lay-submit>
+                        <button class="layui-btn icon-btn" lay-filter="mxTbSearch" lay-submit>
                             <i class="layui-icon">&#xe615;</i>搜索
                         </button>
                     </div>
                 </div>
             </form>
             <!-- 数据表格 -->
-            <table id="muxueTable" lay-filter="muxueTable"></table>
+            <table id="mxTable" lay-filter="mxTable"></table>
         </div>
     </div>
 </div>
 
 <!-- 表格操作列 -->
-<script type="text/html" id="muxueTbBar">
+<script type="text/html" id="mxTbBar">
     <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del"><i class="layui-icon">&#xe640;</i>删除</a>
 </script>
 {/block}
@@ -56,7 +56,7 @@
 
         /* 渲染表格 */
         var insTb = table.render({
-            elem: '#muxueTable',
+            elem: '#mxTable',
             url: "{:url('mxadmin/attach/datalist')}",
             page: {limit: 15},
             limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
@@ -77,7 +77,7 @@
                 {field: 'storage', title: '存储引擎', align: 'center', sort: true},
                 {field: 'username', title: '上传者', align: 'center', sort: true},
                 {field: 'create_time', title: '上传时间', align: 'center', sort: true},
-                {title: '操作', toolbar: '#muxueTbBar', align: 'center', minWidth: 180}
+                {title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 180}
             ]],
             parseData: function(res){ //res 即为原始返回的数据
                 return {
@@ -95,22 +95,22 @@
         });
 
         /* 表格搜索 */
-        form.on('submit(muxueTbSearch)', function (data) {
+        form.on('submit(mxTbSearch)', function (data) {
             insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('mxadmin/attach/serach')}"});
             return false;
         });
 
         /* 表格操作列点击事件 */
-        table.on('tool(muxueTable)', function (obj) {
+        table.on('tool(mxTable)', function (obj) {
             if (obj.event === 'del') { // 删除
                 doDel(obj);
             }
         });
 
         /* 表格头工具栏点击事件 */
-        table.on('toolbar(muxueTable)', function (obj) {
+        table.on('toolbar(mxTable)', function (obj) {
             if (obj.event === 'del') { // 删除
-                var checkRows = table.checkStatus('muxueTable');
+                var checkRows = table.checkStatus('mxTable');
                 if (checkRows.data.length === 0) {
                     layer.msg('请选择要删除的数据', {icon: 5, anim: 6});
                     return;
