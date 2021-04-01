@@ -62,6 +62,12 @@ class Oplog extends AdminBase
                 $serach = $serach->whereLike('username', '%' . $data['username'] . '%');
             }
             $list = $serach->order('id', 'desc')->paginate($limit);
+            $ip2region = new \Ip2Region();
+            foreach ($list as $item) {
+                $result = $ip2region->btreeSearch($item['geoip']);
+                $item['isp'] = isset($result['region']) ? $result['region'] : '';
+                $item['isp'] = str_replace(['中国|', '0|', '内网IP|', '|'], '', $item['isp']);
+            }
             return $this->result($list);
         }
     }
