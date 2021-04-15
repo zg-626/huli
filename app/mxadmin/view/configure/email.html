@@ -5,42 +5,42 @@
         <div class="layui-form-item">
             <label class="layui-form-label">发送方邮箱</label>
             <div class="layui-input-block">
-                <input name="username" placeholder="请输入发送方邮箱" value="{$email.username|default=''}" class="layui-input"/>
+                <input name="username" placeholder="请输入发送方邮箱" value="{$email.username|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
 
         <div class="layui-form-item">
             <label class="layui-form-label">发送方姓名</label>
             <div class="layui-input-block">
-                <input name="fullname" placeholder="请输入发送方姓名" value="{$email.fullname|default=''}" class="layui-input"/>
+                <input name="fullname" placeholder="请输入发送方姓名" value="{$email.fullname|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
 
         <div class="layui-form-item">
             <label class="layui-form-label">邮箱授权码</label>
             <div class="layui-input-block">
-                <input type="password" name="password" placeholder="请输入邮箱授权码" value="{$email.password|default=''}" class="layui-input"/>
+                <input type="password" name="password" placeholder="请输入邮箱授权码" value="{$email.password|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
 
         <div class="layui-form-item">
             <label class="layui-form-label">SMTP服务器</label>
             <div class="layui-input-block">
-                <input name="host" placeholder="请输入SMTP服务器地址" value="{$email.host|default=''}" class="layui-input"/>
+                <input name="host" placeholder="请输入SMTP服务器地址" value="{$email.host|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
 
         <div class="layui-form-item">
             <label class="layui-form-label">ssl端口号</label>
             <div class="layui-input-block">
-                <input name="port" placeholder="请输入ssl协议方式端口号" value="{$email.port|default=''}" class="layui-input"/>
+                <input name="port" placeholder="请输入ssl协议方式端口号" value="{$email.port|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
 
         <div class="layui-form-item">
             <label class="layui-form-label">验证邮件标题</label>
             <div class="layui-input-block">
-                <input name="subject" placeholder="请输入邮件标题" value="{$email.subject|default=''}" class="layui-input"/>
+                <input name="subject" placeholder="请输入邮件标题" value="{$email.subject|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
 
@@ -54,7 +54,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">收取邮箱地址</label>
             <div class="layui-input-block">
-                <div class="layui-col-md3"><input name="notice_email" placeholder="请输入收取邮箱地址" value="{$email.notice_email|default=''}" class="layui-input"/></div>
+                <div class="layui-col-md3"><input name="notice_email" placeholder="请输入收取邮箱地址" value="{$email.notice_email|default=''}" class="layui-input" autocomplete="off"/></div>
                 <div class="layui-col-md3"><button class="layui-btn layui-btn-normal" lay-filter="emailTest" lay-submit><i class="layui-icon">&#xe618;</i>测试邮箱配置</button></div>
             </div>
         </div>

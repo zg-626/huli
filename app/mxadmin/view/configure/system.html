@@ -5,7 +5,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">网站LOGO</label>
             <div class="layui-input-block">
-                <input name="logo" value="{$sysconf.logo|default=''}" class="layui-input" placeholder="请选择图片"/>
+                <input name="logo" value="{$sysconf.logo|default=''}" class="layui-input" autocomplete="off" placeholder="请选择图片"/>
                 <button type="button" class="layui-btn layui-btn-normal imageMore"><i class="layui-icon">&#xe681;</i>上传图片</button>
                 {notempty name="sysconf.logo"}<a href="{$sysconf.logo}" target="_blank"><img src="{$sysconf.logo}" height="38"></a>{/notempty}
             </div>
@@ -13,19 +13,19 @@
         <div class="layui-form-item">
             <label class="layui-form-label">网站名称</label>
             <div class="layui-input-block">
-                <input name="webname" placeholder="请输入网站名称" value="{$sysconf.webname|default=''}" class="layui-input"/>
+                <input name="webname" placeholder="请输入网站名称" value="{$sysconf.webname|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">网站域名</label>
             <div class="layui-input-block">
-                <input name="domain" placeholder="请输入网站域名" value="{$sysconf.domain|default=''}" class="layui-input"/>
+                <input name="domain" placeholder="请输入网站域名" value="{$sysconf.domain|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">网站首页标题</label>
             <div class="layui-input-block">
-                <input name="title" placeholder="请输入网站首页标题" value="{$sysconf.title|default=''}" class="layui-input"/>
+                <input name="title" placeholder="请输入网站首页标题" value="{$sysconf.title|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
         <div class="layui-form-item layui-form-text">
@@ -43,13 +43,13 @@
         <div class="layui-form-item">
             <label class="layui-form-label">公网安备号</label>
             <div class="layui-input-block">
-                <input name="beian" placeholder="请输入公网安备号" value="{$sysconf.beian|default=''}" class="layui-input"/>
+                <input name="beian" placeholder="请输入公网安备号" value="{$sysconf.beian|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">网站备案号</label>
             <div class="layui-input-block">
-                <input name="miitbeian" placeholder="请输入网站备案号" value="{$sysconf.miitbeian|default=''}" class="layui-input"/>
+                <input name="miitbeian" placeholder="请输入网站备案号" value="{$sysconf.miitbeian|default=''}" class="layui-input" autocomplete="off"/>
             </div>
         </div>
         <div class="layui-form-item layui-form-text">
