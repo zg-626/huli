@@ -68,7 +68,7 @@ class Login extends AdminBase
                 $result = AdminModel::update([
                     'login_ip'     => request()->ip(),
                     'login_time'   => time(),
-                    'login_times'    => $user['login_num'] + 1,
+                    'login_num'    => $user['login_num'] + 1,
                 ], ['id' => $user['id']]);
 
                 if ($result == true) {
