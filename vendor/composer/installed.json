@@ -316,17 +316,17 @@
     },
     {
         "name": "phpmailer/phpmailer",
-        "version": "v6.3.0",
-        "version_normalized": "6.3.0.0",
+        "version": "v6.4.1",
+        "version_normalized": "6.4.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/PHPMailer/PHPMailer.git",
-            "reference": "4a08cf4cdd2c38d12ee2b9fa69e5d235f37a6dcb"
+            "reference": "9256f12d8fb0cd0500f93b19e18c356906cbed3d"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/4a08cf4cdd2c38d12ee2b9fa69e5d235f37a6dcb",
-            "reference": "4a08cf4cdd2c38d12ee2b9fa69e5d235f37a6dcb",
+            "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/9256f12d8fb0cd0500f93b19e18c356906cbed3d",
+            "reference": "9256f12d8fb0cd0500f93b19e18c356906cbed3d",
             "shasum": "",
             "mirrors": [
                 {
@@ -350,14 +350,14 @@
             "yoast/phpunit-polyfills": "^0.2.0"
         },
         "suggest": {
-            "ext-mbstring": "Needed to send email in multibyte encoding charset",
+            "ext-mbstring": "Needed to send email in multibyte encoding charset or decode encoded addresses",
             "hayageek/oauth2-yahoo": "Needed for Yahoo XOAUTH2 authentication",
             "league/oauth2-google": "Needed for Google XOAUTH2 authentication",
             "psr/log": "For optional PSR-3 debug logging",
             "stevenmaguire/oauth2-microsoft": "Needed for Microsoft XOAUTH2 authentication",
             "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)"
         },
-        "time": "2021-02-19T15:28:08+00:00",
+        "time": "2021-04-29T12:25:04+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -444,17 +444,17 @@
     },
     {
         "name": "psr/container",
-        "version": "1.0.0",
-        "version_normalized": "1.0.0.0",
+        "version": "1.1.1",
+        "version_normalized": "1.1.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/php-fig/container.git",
-            "reference": "b7ce3b176482dbbc1245ebf52b181af44c2cf55f"
+            "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/php-fig/container/zipball/b7ce3b176482dbbc1245ebf52b181af44c2cf55f",
-            "reference": "b7ce3b176482dbbc1245ebf52b181af44c2cf55f",
+            "url": "https://api.github.com/repos/php-fig/container/zipball/8622567409010282b7aeebe4bb841fe98b58dcaf",
+            "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf",
             "shasum": "",
             "mirrors": [
                 {
@@ -464,15 +464,10 @@
             ]
         },
         "require": {
-            "php": ">=5.3.0"
+            "php": ">=7.2.0"
         },
-        "time": "2017-02-14T16:28:37+00:00",
+        "time": "2021-03-05T17:36:06+00:00",
         "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.0.x-dev"
-            }
-        },
         "installation-source": "dist",
         "autoload": {
             "psr-4": {
@@ -486,7 +481,7 @@
         "authors": [
             {
                 "name": "PHP-FIG",
-                "homepage": "http://www.php-fig.org/"
+                "homepage": "https://www.php-fig.org/"
             }
         ],
         "description": "Common Container Interface (PHP FIG PSR-11)",
@@ -501,17 +496,17 @@
     },
     {
         "name": "psr/log",
-        "version": "1.1.3",
-        "version_normalized": "1.1.3.0",
+        "version": "1.1.4",
+        "version_normalized": "1.1.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/php-fig/log.git",
-            "reference": "0f73288fd15629204f9d42b7055f72dacbe811fc"
+            "reference": "d49695b909c3b7628b6289db5479a1c204601f11"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/php-fig/log/zipball/0f73288fd15629204f9d42b7055f72dacbe811fc",
-            "reference": "0f73288fd15629204f9d42b7055f72dacbe811fc",
+            "url": "https://api.github.com/repos/php-fig/log/zipball/d49695b909c3b7628b6289db5479a1c204601f11",
+            "reference": "d49695b909c3b7628b6289db5479a1c204601f11",
             "shasum": "",
             "mirrors": [
                 {
@@ -523,7 +518,7 @@
         "require": {
             "php": ">=5.3.0"
         },
-        "time": "2020-03-23T09:12:05+00:00",
+        "time": "2021-05-03T11:20:27+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -543,7 +538,7 @@
         "authors": [
             {
                 "name": "PHP-FIG",
-                "homepage": "http://www.php-fig.org/"
+                "homepage": "https://www.php-fig.org/"
             }
         ],
         "description": "Common interface for logging libraries",
@@ -883,17 +878,17 @@
     },
     {
         "name": "symfony/var-dumper",
-        "version": "v4.4.19",
-        "version_normalized": "4.4.19.0",
+        "version": "v4.4.22",
+        "version_normalized": "4.4.22.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/var-dumper.git",
-            "reference": "a1eab2f69906dc83c5ddba4632180260d0ab4f7f"
+            "reference": "c194bcedde6295f3ec3e9eba1f5d484ea97c41a7"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/var-dumper/zipball/a1eab2f69906dc83c5ddba4632180260d0ab4f7f",
-            "reference": "a1eab2f69906dc83c5ddba4632180260d0ab4f7f",
+            "url": "https://api.github.com/repos/symfony/var-dumper/zipball/c194bcedde6295f3ec3e9eba1f5d484ea97c41a7",
+            "reference": "c194bcedde6295f3ec3e9eba1f5d484ea97c41a7",
             "shasum": "",
             "mirrors": [
                 {
@@ -923,7 +918,7 @@
             "ext-intl": "To show region name in time zone dump",
             "symfony/console": "To use the ServerDumpCommand and/or the bin/var-dump-server script"
         },
-        "time": "2021-01-27T09:09:26+00:00",
+        "time": "2021-04-19T13:36:17+00:00",
         "bin": [
             "Resources/bin/var-dump-server"
         ],
@@ -963,17 +958,17 @@
     },
     {
         "name": "topthink/framework",
-        "version": "v6.0.7",
-        "version_normalized": "6.0.7.0",
+        "version": "v6.0.8",
+        "version_normalized": "6.0.8.0",
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/framework.git",
-            "reference": "db8fe22520a9660dd5e4c87e304034ac49e39270"
+            "reference": "4789343672aef06d571d556da369c0e156609bce"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/framework/zipball/db8fe22520a9660dd5e4c87e304034ac49e39270",
-            "reference": "db8fe22520a9660dd5e4c87e304034ac49e39270",
+            "url": "https://api.github.com/repos/top-think/framework/zipball/4789343672aef06d571d556da369c0e156609bce",
+            "reference": "4789343672aef06d571d556da369c0e156609bce",
             "shasum": "",
             "mirrors": [
                 {
@@ -999,7 +994,7 @@
             "mockery/mockery": "^1.2",
             "phpunit/phpunit": "^7.0"
         },
-        "time": "2021-01-23T09:04:45+00:00",
+        "time": "2021-04-27T00:41:08+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -1188,17 +1183,17 @@
     },
     {
         "name": "topthink/think-orm",
-        "version": "v2.0.37",
-        "version_normalized": "2.0.37.0",
+        "version": "v2.0.40",
+        "version_normalized": "2.0.40.0",
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/think-orm.git",
-            "reference": "8a2225c3533f5ccae4a77d4988ed4c5523284871"
+            "reference": "1119d979b850849f3725856460cf108eec1c3eb8"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/think-orm/zipball/8a2225c3533f5ccae4a77d4988ed4c5523284871",
-            "reference": "8a2225c3533f5ccae4a77d4988ed4c5523284871",
+            "url": "https://api.github.com/repos/top-think/think-orm/zipball/1119d979b850849f3725856460cf108eec1c3eb8",
+            "reference": "1119d979b850849f3725856460cf108eec1c3eb8",
             "shasum": "",
             "mirrors": [
                 {
@@ -1209,6 +1204,7 @@
         },
         "require": {
             "ext-json": "*",
+            "ext-pdo": "*",
             "php": ">=7.1.0",
             "psr/log": "~1.0",
             "psr/simple-cache": "^1.0",
@@ -1217,14 +1213,16 @@
         "require-dev": {
             "phpunit/phpunit": "^7|^8|^9.5"
         },
-        "time": "2021-02-18T02:01:00+00:00",
+        "time": "2021-04-19T13:29:37+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
             "psr-4": {
                 "think\\": "src"
             },
-            "files": []
+            "files": [
+                "stubs/load_stubs.php"
+            ]
         },
         "notification-url": "https://packagist.org/downloads/",
         "license": [
@@ -1389,17 +1387,17 @@
     },
     {
         "name": "zoujingli/ip2region",
-        "version": "v1.0.9",
-        "version_normalized": "1.0.9.0",
+        "version": "v1.0.10",
+        "version_normalized": "1.0.10.0",
         "source": {
             "type": "git",
             "url": "https://github.com/zoujingli/ip2region.git",
-            "reference": "e48f9122f50dd3b79295e35b4acdd0dcd2608ca8"
+            "reference": "453480d0ab5b6fdbdf4aa400b7598a10ff2dc5c0"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zoujingli/ip2region/zipball/e48f9122f50dd3b79295e35b4acdd0dcd2608ca8",
-            "reference": "e48f9122f50dd3b79295e35b4acdd0dcd2608ca8",
+            "url": "https://api.github.com/repos/zoujingli/ip2region/zipball/453480d0ab5b6fdbdf4aa400b7598a10ff2dc5c0",
+            "reference": "453480d0ab5b6fdbdf4aa400b7598a10ff2dc5c0",
             "shasum": "",
             "mirrors": [
                 {
@@ -1411,7 +1409,7 @@
         "require": {
             "php": ">=5.3"
         },
-        "time": "2020-11-06T07:21:55+00:00",
+        "time": "2021-03-23T10:29:05+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
