@@ -30,7 +30,8 @@
         "liliuwei/thinkphp-auth": "2.0.*",
         "qiniu/php-sdk": "^7.3",
         "zoujingli/ip2region": "^1.0",
-        "phpmailer/phpmailer": "^6.2"
+        "phpmailer/phpmailer": "^6.2",
+        "overtrue/wechat": "~5.0"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",
