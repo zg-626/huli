@@ -71,7 +71,7 @@ class Tpl extends AdminBase
             if ($pwd !== md5($data['oldPsw'])) {
                 return $this->error('原始密码输入错误');
             } else {
-                $result = AdminModel::update(['password' => $data['newpassword'], 'id' => getAdminId()]);;
+                $result = AdminModel::update(['password' => $data['newpassword'], 'id' => getAdminId()]);
                 if ($result == true) {
                     return $this->success('修改密码成功');
                 } else {
