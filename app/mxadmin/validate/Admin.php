@@ -30,6 +30,7 @@ class Admin extends Validate
         'nickname' => 'require|length:2,20|chsAlphaNum',
         'newpassword' => 'require|length:6,20|alphaNum',
         'repassword' => 'require|confirm:newpassword',
+        'userEditRoleSel' => 'require',
     ];
     
     /**
@@ -51,6 +52,7 @@ class Admin extends Validate
         'newpassword.alphaNum' => '新密码只能是字母和数字！',
         'repassword.require' => '确认密码不能为空！',
         'repassword.confirm' => '新密码和确认密码不一致！',
+        'userEditRoleSel.require' => '请选择所属角色！',
     ];
 
     /**
@@ -59,7 +61,7 @@ class Admin extends Validate
      */
     public function sceneEdit()
     {
-        return $this->only(['nickname','newpassword','repassword'])
+        return $this->only(['nickname','newpassword','repassword','userEditRoleSel'])
             ->remove('newpassword', 'require')
             ->remove('repassword', 'require');
     }
