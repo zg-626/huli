@@ -38,7 +38,6 @@ class Config extends Model
         $result = self::where('type', $type)->find();
         if ($result == true) {
             self::where('type', $type)->update(['value' => $data]);
-            cache($type,null);  // 清空缓存
         } else {
             self::create(['type' => $type, 'value' => $data]);
         }
@@ -55,7 +54,7 @@ class Config extends Model
     public static function getConfigData($type) {
         $result = self::where('type', $type)->find();
         if ($result == true) {
-            $data = self::where('type', $type)->cache($type,0,'admin')->find()['value'];
+            $data = self::where('type', $type)->find()['value'];
             return $data;
         } else {
             self::create(['type' => $type]);
