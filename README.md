@@ -1,4 +1,4 @@
-**mxAdmin是一款基于ThinkPHP V6.0.8和Layui v2.5.6的快速后台开发框架。纯ThinkPHP6.0写法，无任何封装。**
+**mxAdmin是一款基于ThinkPHP V6.0.*和Layui v2.5.6的快速后台开发框架。纯ThinkPHP6.0写法，无任何封装。**
 
 
 ## 主要特性
@@ -15,7 +15,7 @@
 ## 安装使用
 > 运行环境要求PHP7.1+
 >
-* 当前版本使用 ThinkPHP 6.0.7，对PHP运行环境要求PHP7.1+，具体请阅读 ThinkPHP 官方文档
+* 当前版本使用 ThinkPHP 6.0.*最新框架，对PHP运行环境要求PHP7.1+，具体请阅读 ThinkPHP 官方文档
 * 项目安装及二次开发可以先阅读`[ThinkPHP6.0完全开发手册]`官方文档，数据库(demo_muxue_com_cn.sql)文件放在项目根目录下
 * 项目测试需要自行搭建环境导入数据库(demo_muxue_com_cn.sql)，并修改数据库配置(config/database.php)
 
