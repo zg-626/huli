@@ -1,4 +1,4 @@
-**mxAdmin是一款基于ThinkPHP V6.0.*和Layui v2.5.6的快速后台开发框架。纯ThinkPHP6.0写法，无任何封装。**
+**mxAdmin是一款基于ThinkPHP V6.0.X和Layui v2.5.6的快速后台开发框架。纯ThinkPHP6.0写法，无任何封装。**
 
 
 ## 主要特性
