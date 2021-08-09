@@ -39,8 +39,8 @@ return [
     'deny_app_list'    => [],
 
     // 异常页面的模板文件
-    'exception_tmpl'   => app()->getRootPath().'public/tpl/404.html',
-    //'exception_tmpl'   => app()->getThinkPath() . 'tpl/think_exception.tpl',
+    //'exception_tmpl'   => app()->getRootPath().'public/tpl/404.html',
+    'exception_tmpl'   => app()->getThinkPath() . 'tpl/think_exception.tpl',
 
     // 错误显示信息,非调试模式有效
     'error_message'    => '页面错误！请稍后再试～',
