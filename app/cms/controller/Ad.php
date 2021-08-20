@@ -39,7 +39,7 @@ class Ad extends AdminBase
      */
     public function datalist($limit=15)
     {
-        $list = CmsAd::with(['type'])->order('weight asc,id desc')->paginate($limit);
+        $list = CmsAd::with(['type'])->order('weight asc,id desc ')->paginate($limit);
         return $this->result($list);
     }
 
