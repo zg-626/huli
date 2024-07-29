@@ -1,17 +1,5 @@
 <?php
-// +----------------------------------------------------------------------
-// | mxAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2020~2050 福州目雪科技有限公司 [ http://www.muxue.com.cn ]
-// +----------------------------------------------------------------------
-// | 演示地址: http://demo.muxue.com.cn
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// +----------------------------------------------------------------------
-// | gitee 代码仓库：https://gitee.com/muxue2020/mxAdmin
-// +----------------------------------------------------------------------
-// | Author: 明仔 <350656405@qq.com>    微信号：zlmlovem
-// +----------------------------------------------------------------------
+
 
 // 应用公共文件
 if (!function_exists('list_to_tree')) {
@@ -114,5 +102,46 @@ if (!function_exists('sysoplog')) {
                 'username' => session('admin_info.username')
             ]);
         }
+    }
+}
+
+//部分分类
+if (!function_exists('list_to_trees')) {
+    /**
+     * 把返回的数据集转换成Tree
+     * @param $list 要转换的数据集
+     * @param bool $disabled 渲染下拉树xmSelect时，有子类不可选择，默认可选
+     * @param string $pk
+     * @param string $pid
+     * @param string $children 有子类时添加children数组
+     * @param int $root
+     * @return array
+     */
+    function list_to_trees($list, $disabled = false, $pk='id', $pid = 'pid', $children = 'children', $root = 0)
+    {
+        // 创建Tree
+        $tree = array();
+        if(is_array($list)) {
+            // 创建基于主键的数组引用
+            $refer = array();
+            foreach ($list as $key => $data) {
+                $refer[$data[$pk]] =& $list[$key];
+            }
+
+            foreach ($list as $key => $data) {
+                // 判断是否存在parent
+                $parentId =  $data[$pid];
+                if ($root == $parentId) {
+                    $tree[] =& $list[$key];
+                }else{
+                    if (isset($refer[$parentId])) {
+                        $parent =& $refer[$parentId];
+                        $parent[$children][] =& $list[$key];
+                        $disabled ? $parent['disabled'] = false : '';
+                    }
+                }
+            }
+        }
+        return $tree;
     }
 }

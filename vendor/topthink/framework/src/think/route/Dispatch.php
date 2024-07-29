@@ -12,6 +12,7 @@ declare (strict_types = 1);
 
 namespace think\route;
 
+use Psr\Http\Message\ResponseInterface;
 use think\App;
 use think\Container;
 use think\Request;
@@ -76,16 +77,6 @@ abstract class Dispatch
      */
     public function run(): Response
     {
-        if ($this->rule instanceof RuleItem && $this->request->method() == 'OPTIONS' && $this->rule->isAutoOptions()) {
-            $rules = $this->rule->getRouter()->getRule($this->rule->getRule());
-            $allow = [];
-            foreach ($rules as $item) {
-                $allow[] = strtoupper($item->getMethod());
-            }
-
-            return Response::create('', 'html', 204)->header(['Allow' => implode(', ', $allow)]);
-        }
-
         $data = $this->exec();
         return $this->autoResponse($data);
     }
@@ -94,6 +85,12 @@ abstract class Dispatch
     {
         if ($data instanceof Response) {
             $response = $data;
+        } elseif ($data instanceof ResponseInterface) {
+            $response = Response::create((string) $data->getBody(), 'html', $data->getStatusCode());
+
+            foreach ($data->getHeaders() as $header => $values) {
+                $response->header([$header => implode(", ", $values)]);
+            }
         } elseif (!is_null($data)) {
             // 默认自动识别响应输出类型
             $type     = $this->request->isJson() ? 'json' : 'html';

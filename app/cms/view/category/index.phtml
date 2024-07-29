@@ -1,6 +1,6 @@
 {extend name="../../mxadmin/view/base" /}
 
-{block name="title"}栏目管理{/block}
+{block name="title"}医院管理{/block}
 {block name="body"}
 <style>
     .layui-form-item .layui-form-label{
@@ -32,7 +32,7 @@
 
 <!-- 表格操作列 -->
 <script type="text/html" id="classifyTbBar">
-    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="addson">添加子栏目</a>
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="addson">添加子医院</a>
     <a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
     <a class="layui-btn layui-btn-xs layui-btn-danger{{#if(d.children){}} layui-btn-disabled{{#}}}"{{#if(!d.children){}} lay-event="del"{{#}}}>删除</a>
 </script>
@@ -47,64 +47,15 @@
     <form id="classifyForm" lay-filter="classifyForm" class="layui-form model-form">
         <input name="id" type="hidden"/>
         <div class="layui-form-item">
-            <label class="layui-form-label">上级栏目</label>
+            <label class="layui-form-label">上级医院</label>
             <div class="layui-input-block">
                 <div id="classifyParentSel" class="mx-xmselect-tree"></div>
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label layui-form-required">栏目名称</label>
+            <label class="layui-form-label layui-form-required">医院名称</label>
             <div class="layui-input-block">
-                <input name="name" placeholder="请输入栏目名称" class="layui-input" autocomplete="off" lay-verType="tips" lay-verify="required" required/>
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">栏目图片</label>
-            <div class="layui-input-block">
-                <input name="image" class="layui-input" autocomplete="off" placeholder="请选择图片"/>
-                <button type="button" class="layui-btn layui-btn-normal imageMore"><i class="layui-icon">&#xe681;</i>上传图片</button>
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">栏目类型</label>
-            <div class="layui-input-block">
-                <input type="radio" name="urltype" lay-filter="raUrltype" value="0" title="列表页" checked/>
-                <input type="radio" name="urltype" lay-filter="raUrltype" value="1" title="频道页"/>
-                <input type="radio" name="urltype" lay-filter="raUrltype" value="2" title="内容页"/>
-                <input type="radio" name="urltype" lay-filter="raUrltype" value="3" title="外部连接"/>
-            </div>
-        </div>
-        <div id="urlTpl">
-            <div class="layui-form-item">
-                <label class="layui-form-label">跳转链接</label>
-                <div class="layui-input-block">
-                    <input name="url" placeholder="请输入跳转链接" class="layui-input" autocomplete="off"/>
-                </div>
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">打开方式</label>
-            <div class="layui-input-block">
-                <input type="radio" name="target" value="_self" title="本窗口" checked/>
-                <input type="radio" name="target" value="_blank" title="新窗口"/>
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">SEO标题</label>
-            <div class="layui-input-block">
-                <input name="seotitle" class="layui-input" autocomplete="off" placeholder="请输入SEO标题"/>
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">META关键词</label>
-            <div class="layui-input-block">
-                <input name="keywords" class="layui-input" autocomplete="off" placeholder="多个关键词用英文状态 , 号分割"/>
-            </div>
-        </div>
-        <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label">META描述</label>
-            <div class="layui-input-block">
-                <textarea name="description" placeholder="请输入META描述" class="layui-textarea"></textarea>
+                <input name="name" placeholder="请输入医院名称" class="layui-input" autocomplete="off" lay-verType="tips" lay-verify="required" required/>
             </div>
         </div>
         <div class="layui-form-item">
@@ -138,7 +89,7 @@
             elem: '#classifyTable',
             url: "{:url('cms/category/datalist')}",
             toolbar: ['<p>',
-                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加栏目</button>&nbsp;',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加医院</button>&nbsp;',
                 '<button lay-event="FoldAll" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe602;</i>折叠全部</button>&nbsp;',
                 '<button lay-event="ExpandAll" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe61a;</i>展开全部</button>&nbsp;',
                 '</p>'].join(''),
@@ -151,8 +102,8 @@
                 isPidData: true
             },
             cols: [[
-                {field: 'id', title: '栏目ID', align: 'center', width: 90},
-                {field: 'name', title: '栏目名称', minWidth: 150},
+                {field: 'id', title: '医院ID', align: 'center', width: 90},
+                {field: 'name', title: '医院名称', minWidth: 150},
                 {field: 'weight', title: '排序权重', align: 'center', width: 20, edit: 'text'},
                 {field: 'status', title: '状态', templet: '#mxTbState', align: 'center', sort: true, width: 100},
                 {field: 'create_time', title: '创建时间', align: 'center'},
@@ -163,7 +114,7 @@
 
         /* 表格操作列点击事件 */
         treeTable.on('tool(classifyTable)', function (obj) {
-            if (obj.event === 'addson') { // 添加子栏目
+            if (obj.event === 'addson') { // 添加子医院
                 showModel(obj.data, 'son');
             } else if (obj.event === 'edit') { // 修改
                 showModel(obj.data);
@@ -230,7 +181,7 @@
             var layIndex = admin.open({
                 type: 1,
                 area: ['820px', '630px'],
-                title: (btnType ? '添加子' : mData ? '修改' : '添加') + '栏目',
+                title: (btnType ? '添加子' : mData ? '修改' : '添加') + '医院',
                 shade: 0.5,
                 //shadeClose: true,
                 content: $('#classifyDialog').html(),
@@ -255,18 +206,18 @@
                     // 回显表单数据
                     form.val('classifyForm', btnType ? '' : mData);
 
-                    // 栏目类型切换事件
+                    // 医院类型切换事件
                     form.on('radio(raUrltype)', function (data) {
                         changeUrlType(data.value);
                     });
-                    // 栏目类型切换初始化加载
+                    // 医院类型切换初始化加载
                     mData ? changeUrlType(mData.urltype) : changeUrlType(0);
 
                     if (mData) {
                         insTb.refresh();
                         // 这个是treeTable提供的遍历数据的方法
                         insTb.eachData(function(i,item){
-                            if (item.id == mData.id || item.pid == mData.id || item.topid == mData.id) item.disabled = true;  // 自身和子栏目不可选
+                            if (item.id == mData.id || item.pid == mData.id || item.topid == mData.id) item.disabled = true;  // 自身和子医院不可选
                         });
 
                         // 上传图片小图显示
@@ -279,7 +230,7 @@
                     // 渲染下拉树
                     var insXmSel = xmSelect.render({
                         el: '#classifyParentSel',
-                        tips: '顶级栏目',
+                        tips: '顶级医院',
                         height: '400px',
                         data: insTb.options.data,
                         initValue: btnType ? [mData.id] : mData ? [mData.pid] : [],
@@ -329,7 +280,7 @@
             layer.full(layIndex);
         }
 
-        /* 栏目类型切换 */
+        /* 医院类型切换 */
         function changeUrlType(value) {
             if (value == 3) {
                 $('#urlTpl').show();
@@ -340,8 +291,8 @@
 
         /* 删除 */
         function doDel(obj) {
-            layer.confirm('确定要删除“' + obj.data.name + '”这个栏目及相对应的栏目内容吗？', {
-                title: '删除栏目',
+            layer.confirm('确定要删除“' + obj.data.name + '”这个医院及相对应的医院内容吗？', {
+                title: '删除医院',
                 skin: 'layui-layer-admin',
                 shade: 0.5,
                 shadeClose: true,

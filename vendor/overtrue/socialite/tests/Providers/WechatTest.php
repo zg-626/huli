@@ -1,7 +1,10 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 use Overtrue\Socialite\Providers\WeChat;
+use PHPUnit\Framework\TestCase;
+
+// here we need loaded the symbols first.
+\class_exists(\Overtrue\Socialite\Contracts\FactoryInterface::class);
 
 class WechatTest extends TestCase
 {
@@ -14,7 +17,7 @@ class WechatTest extends TestCase
         ]))->redirect();
 
         $this->assertStringStartsWith('https://open.weixin.qq.com/connect/qrconnect', $response);
-        $this->assertRegExp('/redirect_uri=http%3A%2F%2Flocalhost%2Fsocialite%2Fcallback.php/', $response);
+        $this->assertMatchesRegularExpression('/redirect_uri=http%3A%2F%2Flocalhost%2Fsocialite%2Fcallback.php/', $response);
     }
 
     public function testWeChatProviderTokenUrlAndRequestFields()
@@ -71,7 +74,6 @@ class WechatTest extends TestCase
 
         $getCodeFields = new ReflectionMethod(WeChat::class, 'getCodeFields');
         $getCodeFields->setAccessible(true);
-
 
         $this->assertSame([
             'appid' => 'client_id',

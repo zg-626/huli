@@ -2,40 +2,63 @@
 
 namespace Overtrue\Socialite\Providers;
 
-use Overtrue\Socialite\Exceptions\AuthorizeFailedException;
-use Overtrue\Socialite\Exceptions\InvalidArgumentException;
-use Overtrue\Socialite\Exceptions\MethodDoesNotSupportException;
+use JetBrains\PhpStorm\Pure;
+use Overtrue\Socialite\Contracts;
+use Overtrue\Socialite\Exceptions;
 use Overtrue\Socialite\User;
 
+/**
+ * @link https://developer.work.weixin.qq.com/document/path/91022
+ */
 class WeWork extends Base
 {
     public const NAME = 'wework';
+
     protected bool $detailed = false;
-    protected ?int $agentId;
+
+    protected ?int $agentId = null;
+
     protected ?string $apiAccessToken;
 
-    /**
-     * @param int $agentId
-     *
-     * @return $this
-     */
-    public function setAgentId(int $agentId)
-    {
-        $this->agentId = $agentId;
+    protected bool $asQrcode = false;
 
-        return $this;
+    protected string $baseUrl = 'https://qyapi.weixin.qq.com';
+
+    public function __construct(array $config)
+    {
+        parent::__construct($config);
+
+        if ($this->getConfig()->has('base_url')) {
+            $this->baseUrl = $this->getConfig()->get('base_url');
+        }
+
+        if ($this->getConfig()->has('agent_id')) {
+            $this->agentId = $this->getConfig()->get('agent_id');
+        }
     }
 
-    public function userFromCode(string $code): User
+    public function getBaseUrl(): ?string
+    {
+        return $this->baseUrl;
+    }
+
+    public function userFromCode(string $code): Contracts\UserInterface
     {
         $token = $this->getApiAccessToken();
-        $user = $this->getUserId($token, $code);
+        $user = $this->getUser($token, $code);
 
         if ($this->detailed) {
             $user = $this->getUserById($user['UserId']);
         }
 
         return $this->mapUserToObject($user)->setProvider($this)->setRaw($user);
+    }
+
+    public function withAgentId(int $agentId): self
+    {
+        $this->agentId = $agentId;
+
+        return $this;
     }
 
     public function detailed(): self
@@ -45,105 +68,77 @@ class WeWork extends Base
         return $this;
     }
 
-    /**
-     * @param string $apiAccessToken
-     *
-     * @return $this
-     */
-    public function withApiAccessToken(string $apiAccessToken)
+    public function asQrcode(): self
+    {
+        $this->asQrcode = true;
+
+        return $this;
+    }
+
+    public function withApiAccessToken(string $apiAccessToken): self
     {
         $this->apiAccessToken = $apiAccessToken;
 
         return $this;
     }
 
-    /**
-     * @return string
-     * @throws \Overtrue\Socialite\Exceptions\InvalidArgumentException
-     */
     public function getAuthUrl(): string
     {
-        // 网页授权登录
-        if (!empty($this->scopes)) {
-            return $this->getOAuthUrl();
+        $scopes = $this->formatScopes($this->scopes, $this->scopeSeparator);
+        $queries = array_filter([
+            'appid' => $this->getClientId(),
+            'agentid' => $this->agentId,
+            Contracts\RFC6749_ABNF_REDIRECT_URI => $this->redirectUrl,
+            Contracts\RFC6749_ABNF_RESPONSE_TYPE => Contracts\RFC6749_ABNF_CODE,
+            Contracts\RFC6749_ABNF_SCOPE => $scopes,
+            Contracts\RFC6749_ABNF_STATE => $this->state,
+        ]);
+
+        if (! $this->agentId && (str_contains($scopes, 'snsapi_privateinfo') || $this->asQrcode)) {
+            throw new Exceptions\InvalidArgumentException("agent_id is require when qrcode mode or scopes is 'snsapi_privateinfo'");
         }
 
-        // 第三方网页应用登录（扫码登录）
-        return $this->getQrConnectUrl();
-    }
+        if ($this->asQrcode) {
+            unset($queries[Contracts\RFC6749_ABNF_SCOPE]);
 
-    protected function getOAuthUrl(): string
-    {
-        $queries = [
-            'appid' => $this->getClientId(),
-            'redirect_uri' => $this->redirectUrl,
-            'response_type' => 'code',
-            'scope' => $this->formatScopes($this->scopes, $this->scopeSeparator),
-            'state' => $this->state,
-        ];
-
-        return sprintf('https://open.weixin.qq.com/connect/oauth2/authorize?%s#wechat_redirect', http_build_query($queries));
-    }
-
-    public function getQrConnectUrl()
-    {
-        $queries = [
-            'appid' => $this->getClientId(),
-            'agentid' => $this->agentId ?? $this->config->get('agentid'),
-            'redirect_uri' => $this->redirectUrl,
-            'state' => $this->state,
-        ];
-
-        if (empty($queries['agentid'])) {
-            throw new InvalidArgumentException('You must config the `agentid` in configuration or using `setAgentid($agentId)`.');
+            return \sprintf('https://open.work.weixin.qq.com/wwopen/sso/qrConnect?%s', http_build_query($queries));
         }
 
-        return sprintf('https://open.work.weixin.qq.com/wwopen/sso/qrConnect?%s#wechat_redirect', http_build_query($queries));
+        return \sprintf('https://open.weixin.qq.com/connect/oauth2/authorize?%s#wechat_redirect', \http_build_query($queries));
     }
 
     /**
-     * @param string $token
-     *
-     * @return array
-     * @throws \Overtrue\Socialite\Exceptions\MethodDoesNotSupportException
+     * @throws Exceptions\MethodDoesNotSupportException
      */
     protected function getUserByToken(string $token): array
     {
-        throw new MethodDoesNotSupportException('WeWork doesn\'t support access_token mode');
+        throw new Exceptions\MethodDoesNotSupportException('WeWork doesn\'t support access_token mode');
     }
 
-    protected function getApiAccessToken()
+    protected function getApiAccessToken(): string
     {
-        return $this->apiAccessToken ?? $this->apiAccessToken = $this->createApiAccessToken();
+        return $this->apiAccessToken ?? $this->apiAccessToken = $this->requestApiAccessToken();
     }
 
-    /**
-     * @param  string  $token
-     * @param  string  $code
-     *
-     * @return array
-     * @throws \Overtrue\Socialite\Exceptions\AuthorizeFailedException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    protected function getUserId(string $token, string $code): array
+    protected function getUser(string $token, string $code): array
     {
-        $response = $this->getHttpClient()->get(
-            'https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo',
+        $responseInstance = $this->getHttpClient()->get(
+            $this->baseUrl.'/cgi-bin/user/getuserinfo',
             [
-                'query' => array_filter(
+                'query' => \array_filter(
                     [
-                        'access_token' => $token,
-                        'code' => $code,
+                        Contracts\RFC6749_ABNF_ACCESS_TOKEN => $token,
+                        Contracts\RFC6749_ABNF_CODE => $code,
                     ]
                 ),
             ]
         );
 
-        $response = \json_decode($response->getBody(), true) ?? [];
+        $response = $this->fromJsonBody($responseInstance);
 
         if (($response['errcode'] ?? 1) > 0 || (empty($response['UserId']) && empty($response['OpenId']))) {
-            throw new AuthorizeFailedException('Failed to get user openid:' . $response['errmsg'] ?? 'Unknown.', $response);
-        } else if (empty($response['UserId'])) {
+            throw new Exceptions\AuthorizeFailedException((string) $responseInstance->getBody(), $response);
+        } elseif (empty($response['UserId'])) {
             $this->detailed = false;
         }
 
@@ -151,84 +146,64 @@ class WeWork extends Base
     }
 
     /**
-     * @param  string  $userId
-     *
-     * @return array
-     * @throws \Overtrue\Socialite\Exceptions\AuthorizeFailedException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws Exceptions\AuthorizeFailedException
      */
     protected function getUserById(string $userId): array
     {
-        $response = $this->getHttpClient()->post(
-            'https://qyapi.weixin.qq.com/cgi-bin/user/get',
-            [
-                'query' => [
-                    'access_token' => $this->getApiAccessToken(),
-                    'userid' => $userId,
-                ],
-            ]
-        );
+        $responseInstance = $this->getHttpClient()->post($this->baseUrl.'/cgi-bin/user/get', [
+            'query' => [
+                Contracts\RFC6749_ABNF_ACCESS_TOKEN => $this->getApiAccessToken(),
+                'userid' => $userId,
+            ],
+        ]);
 
-        $response = \json_decode($response->getBody(), true) ?? [];
+        $response = $this->fromJsonBody($responseInstance);
 
         if (($response['errcode'] ?? 1) > 0 || empty($response['userid'])) {
-            throw new AuthorizeFailedException('Failed to get user:' . $response['errmsg'] ?? 'Unknown.', $response);
+            throw new Exceptions\AuthorizeFailedException((string) $responseInstance->getBody(), $response);
         }
 
         return $response;
     }
 
-    /**
-     * @param array $user
-     *
-     * @return \Overtrue\Socialite\User
-     */
-    protected function mapUserToObject(array $user): User
+    #[Pure]
+    protected function mapUserToObject(array $user): Contracts\UserInterface
     {
-        if ($this->detailed) {
-            return new User(
-                [
-                    'id' => $user['userid'] ?? null,
-                    'name' => $user['name'] ?? null,
-                    'avatar' => $user['avatar'] ?? null,
-                    'email' => $user['email'] ?? null,
-                ]
-            );
-        }
-
-        return new User(
-            [
-                'id' => $user['UserId'] ?? null ?: $user['OpenId'] ?? null,
-            ]
-        );
+        return new User($this->detailed ? [
+            Contracts\ABNF_ID => $user['userid'] ?? null,
+            Contracts\ABNF_NAME => $user[Contracts\ABNF_NAME] ?? null,
+            Contracts\ABNF_AVATAR => $user[Contracts\ABNF_AVATAR] ?? null,
+            Contracts\ABNF_EMAIL => $user[Contracts\ABNF_EMAIL] ?? null,
+        ] : [
+            Contracts\ABNF_ID => $user['UserId'] ?? null ?: $user['OpenId'] ?? null,
+        ]);
     }
 
     /**
-     * @return string
-     * @throws \Overtrue\Socialite\Exceptions\AuthorizeFailedException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws Exceptions\AuthorizeFailedException
      */
-    protected function createApiAccessToken(): string
+    protected function requestApiAccessToken(): string
     {
-        $response = $this->getHttpClient()->get(
-            'https://qyapi.weixin.qq.com/cgi-bin/gettoken',
-            [
-                'query' => array_filter(
-                    [
-                        'corpid' => $this->config->get('corp_id') ?? $this->config->get('corpid'),
-                        'corpsecret' => $this->config->get('corp_secret') ?? $this->config->get('corpsecret'),
-                    ]
-                ),
-            ]
-        );
+        $responseInstance = $this->getHttpClient()->get($this->baseUrl.'/cgi-bin/gettoken', [
+            'query' => \array_filter(
+                [
+                    'corpid' => $this->config->get('corp_id')
+                        ?? $this->config->get('corpid')
+                        ?? $this->config->get(Contracts\RFC6749_ABNF_CLIENT_ID),
+                    'corpsecret' => $this->config->get('corp_secret')
+                        ?? $this->config->get('corpsecret')
+                        ?? $this->config->get(Contracts\RFC6749_ABNF_CLIENT_SECRET),
+                ]
+            ),
+        ]);
 
-        $response = \json_decode($response->getBody(), true) ?? [];
+        $response = $this->fromJsonBody($responseInstance);
 
         if (($response['errcode'] ?? 1) > 0) {
-            throw new AuthorizeFailedException('Failed to get api access_token:' . $response['errmsg'] ?? 'Unknown.', $response);
+            throw new Exceptions\AuthorizeFailedException((string) $responseInstance->getBody(), $response);
         }
 
-        return $response['access_token'];
+        return $response[Contracts\RFC6749_ABNF_ACCESS_TOKEN];
     }
 
     protected function getTokenUrl(): string
