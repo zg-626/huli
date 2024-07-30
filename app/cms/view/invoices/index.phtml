@@ -1,0 +1,396 @@
+{extend name="../../mxadmin/view/base" /}
+
+{block name="title"}图片发票管理{/block}
+
+{block name="body"}
+<style>
+    .tb-img-circle {
+        width: 60px;
+        height: 60px;
+        cursor: zoom-in;
+        border-radius: 5%;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表格工具栏 -->
+            <form class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">申请人</label>
+                        <div class="layui-input-inline">
+                            <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入申请人"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">开票状态</label>
+                        <div class="layui-input-inline">
+                            <select name="status">
+                                <option value="">--- 全部 ---</option>
+                                <option value="1">已开</option>
+                                <option value="0">未开</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">&emsp;
+                        <button class="layui-btn icon-btn" lay-filter="mxTbSearch" lay-submit>
+                            <i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <!-- 数据表格 -->
+            <table id="mxTable" lay-filter="mxTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="mxTbBar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>
+</script>
+<!-- 表格状态列 -->
+<script type="text/html" id="mxTbState">
+    <input type="checkbox" lay-filter="mxTbStateCk" value="{{d.id}}" lay-skin="switch" lay-text="已开|未开" {{d.status==1?'checked':''}} style="display: none;"/>
+    <p style="display: none;">{{d.status==1?'已开':'未开'}}</p>
+</script>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="mxEditDialog">
+    <form id="mxEditForm" lay-filter="mxEditForm" class="layui-form model-form">
+        <input name="id" type="hidden"/>
+        <!--<div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">发票分类</label>
+            <div class="layui-input-block">
+                <select name="type" lay-verType="tips" lay-verify="required" required>
+                    <option value="">请选择发票分类</option>
+                    {volist name="adtype" id="vo"}
+                    <option value="{$vo.id}">{$vo.name}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>-->
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">申请金额</label>
+            <div class="layui-input-block">
+                <input name="money" class="layui-input" autocomplete="off" placeholder="请输入申请金额" lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">开票单位</label>
+            <div class="layui-input-block">
+                <input name="company" class="layui-input" autocomplete="off" placeholder="请输入开票单位"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">开票项目</label>
+            <div class="layui-input-block">
+                <input name="project" class="layui-input" autocomplete="off" placeholder="请输入开票项目"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">手机号码</label>
+            <div class="layui-input-block">
+                <input name="mobile" class="layui-input" autocomplete="off" placeholder="请输入手机号码"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">邮箱</label>
+            <div class="layui-input-block">
+                <input name="email" class="layui-input" autocomplete="off" placeholder="请输入邮箱"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">开票状态</label>
+            <div class="layui-input-block">
+                <input type="radio" name="status" value="1" title="已开"/>
+                <input type="radio" name="status" value="0" title="未开"/>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="mxEditSubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+    layui.use(['layer', 'form', 'table', 'admin', 'upload'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+
+        /* 渲染表格 */
+        var insTb = table.render({
+            elem: '#mxTable',
+            url: "{:url('cms/invoices/datalist')}",
+            page: {limit: 15},
+            limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
+            toolbar: ['<p>',
+                '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>批量删除</button>',
+                '<button lay-event="open" class="layui-btn layui-btn-sm layui-btn-green icon-btn">批量开票</button>',
+                '<button lay-event="cancel" class="layui-btn layui-btn-sm layui-btn-danger icon-btn">批量作废票</button>',
+                //'<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加发票</button>&nbsp;',
+                '</p>'].join(''),
+            cellMinWidth: 100,
+            cols: [[
+                {type: 'checkbox'},
+                {field: 'id', title: '序号', align: 'center'},
+                {field: 'nickname', title: '申请人', align: 'center'},
+                {field: 'money', title: '申请金额', align: 'center'},
+                {field: 'create_time',minWidth: 180, title: '申请时间', align: 'center', sort: true},
+                {field: 'company', title: '开票单位', align: 'center'},
+                {field: 'project', title: '开票项目', align: 'center'},
+                {field: 'mobile', title: '手机号码', align: 'center'},
+                {field: 'email', title: '邮箱', align: 'center'},
+                {field: 'status', title: '开票状态', templet: '#mxTbState', align: 'center', width: 100},
+                //{field: 'update_time', title: '更新时间', align: 'center', sort: true},
+                {title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 180}
+            ]],
+            parseData: function(res){ //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+        });
+
+        /* 点击图片放大 */
+        $(document).off('click.tbImg').on('click.tbImg', '[tb-img]', function () {
+            layer.photos({photos: {data: [{src: $(this).attr('src'), alt: $(this).attr('alt')}]}, shade: .5, closeBtn: true});
+        });
+
+        /* 表格搜索 */
+        form.on('submit(mxTbSearch)', function (data) {
+            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/invoices/serach')}"});
+            return false;
+        });
+
+        /* 表格操作列点击事件 */
+        table.on('tool(mxTable)', function (obj) {
+            if (obj.event === 'edit') { // 修改
+                showEditModel(obj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel(obj);
+            }
+        });
+
+        /* 监听单元格编辑 */
+        table.on('edit(mxTable)', function(obj){
+            if(isNaN(obj.value)){
+                layer.msg('只能输入数字！', {icon: 5, anim: 6});
+                return false;
+            }
+            var loadIndex = layer.load(2);
+            $.post("{:url('cms/invoices/edit_weight_same')}", {
+                id: obj.data.id,
+                weight: obj.value
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                }
+            }, 'json');
+        });
+
+        /* 表格头工具栏点击事件 */
+        table.on('toolbar(mxTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel();
+            } else if (obj.event === 'del') { // 删除
+                var checkRows = table.checkStatus('mxTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要删除的数据', {icon: 5, anim: 6});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.id;
+                });
+                doDel({ids: ids});
+            }else if (obj.event === 'open') { // 开票
+                var checkRows = table.checkStatus('mxTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要开票的数据', {icon: 5, anim: 6});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.id;
+                });
+                doOpen({ids: ids});
+            }else if (obj.event === 'cancel') { // 作废
+                var checkRows = table.checkStatus('mxTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要开票的数据', {icon: 5, anim: 6});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.id;
+                });
+                doCancel({ids: ids});
+            }
+        });
+
+        /* 显示表单弹窗 */
+        function showEditModel(mData) {
+            admin.open({
+                type: 1,
+                area: '650px',
+                title: (mData ? '修改' : '添加') + '发票',
+                shade: 0.5,
+                //shadeClose: true,
+                content: $('#mxEditDialog').html(),
+                success: function (layero, dIndex) {
+                    //图片上传
+                    upload.render({
+                        elem: '.imageMore',
+                        url: "{:url('mxadmin/upload/upload')}", //改成您自己的上传接口
+                        acceptMime: 'image/*',
+                        size: 2048, //限制文件大小，单位 KB
+                        done: function(res){
+                            if (res.code === 1) {
+                                layer.msg(res.msg, {icon: 1});
+                                this.item.prev('input').val(res.data.filePath);
+                                this.item.after(' <a href="'+res.data.filePath+'" target="_blank"><img src="'+res.data.filePath+'" height="38"></a>');
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }
+                    });
+
+                    // 回显表单数据
+                    form.val('mxEditForm', mData);
+                    // 表单提交事件
+                    form.on('submit(mxEditSubmit)', function (data) {
+                        var loadIndex = layer.load(2);
+                        $.post(mData ? "{:url('cms/invoices/edit')}" : "{:url('cms/invoices/add')}", data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (res.code === 1) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                insTb.reload();  // 保存成功刷新表格
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }, 'json');
+                        return false;
+                    });
+
+                    if (mData) {
+                        // 上传图片小图显示
+                        var imageValue = $('.imageMore').prev('input').val();
+                        if (imageValue) {
+                            $('.imageMore').after(' <a href="'+imageValue+'" target="_blank"><img src="'+imageValue+'" height="38"></a>');
+                        }
+                    }
+                }
+            });
+        }
+
+        /* 删除 */
+        function doDel(obj) {
+            layer.confirm('确定要删除选中的数据吗？', {
+                title: '删除数据',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('cms/invoices/del')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : ''
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+
+        /* 开票 */
+        function doOpen(obj) {
+            layer.confirm('确定要开票选中的数据吗？', {
+                title: '开票',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('cms/invoices/open')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : '',
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+
+        /* 开票 */
+        function doCancel(obj) {
+            layer.confirm('确定要作废选中的数据吗？', {
+                title: '作废发票',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('cms/invoices/cancel')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : '',
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+
+        /* 修改状态 */
+        form.on('switch(mxTbStateCk)', function (obj) {
+            var loadIndex = layer.load(2);
+            $.post("{:url('cms/invoices/edit_state_same')}", {
+                id: obj.elem.value,
+                status: obj.elem.checked ? 1 : 0
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                    $(obj.elem).prop('checked', !obj.elem.checked);
+                    form.render('checkbox');
+                }
+            }, 'json');
+        });
+    });
+</script>
+{/block}

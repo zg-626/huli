@@ -4,6 +4,7 @@ declare (strict_types = 1);
 
 namespace app\mxadmin\model;
 
+use app\cms\model\MsgRead;
 use think\Model;
 use app\cms\model\CmsCategory;
 
@@ -105,6 +106,12 @@ class UserModel extends Model
     public function positionType()
     {
         return $this->hasOne(DictData::class, 'id', 'position_id')->bind(['position_name' => 'name']);
+    }
+
+    // 用户阅读记录关联
+    public function msgReads()
+    {
+        return $this->hasMany(MsgRead::class, 'user_id', 'id');
     }
 
 
