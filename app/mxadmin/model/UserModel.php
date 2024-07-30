@@ -5,6 +5,7 @@ declare (strict_types = 1);
 namespace app\mxadmin\model;
 
 use app\cms\model\MsgRead;
+use app\cms\model\TrainingSign;
 use think\Model;
 use app\cms\model\CmsCategory;
 
@@ -112,6 +113,12 @@ class UserModel extends Model
     public function msgReads()
     {
         return $this->hasMany(MsgRead::class, 'user_id', 'id');
+    }
+
+    // 用户报名记录关联
+    public function trainingSigns()
+    {
+        return $this->hasMany(TrainingSign::class, 'user_id', 'id');
     }
 
 

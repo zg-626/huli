@@ -1,6 +1,6 @@
 {extend name="../../mxadmin/view/base" /}
 
-{block name="title"}阅读列表{/block}
+{block name="title"}学习班管理{/block}
 
 {block name="body"}
 <div class="layui-fluid">
@@ -9,31 +9,30 @@
             <!-- 表格工具栏 -->
             <form class="layui-form toolbar">
                 <div class="layui-form-item">
-                    <!-- <div class="layui-inline">
-                        <label class="layui-form-label">所属栏目</label>
-                        <div class="layui-input-inline">
-                            <div id="classifyParentSelSearch" class="mx-xmselect-tree"></div>
-                        </div>
-                    </div> -->
                     <div class="layui-inline">
-                        <label class="layui-form-label">用户昵称</label>
+                        <label class="layui-form-label">学习班分类</label>
                         <div class="layui-input-inline">
-                            <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入标题关键词"/>
+                            <select name="type">
+                                <option value="">--- 全部 ---</option>
+                                {volist name="trainingtype" id="vo"}
+                                <option value="{$vo.id}">{$vo.name}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">学习班标题</label>
+                        <div class="layui-input-inline">
+                            <input name="title" class="layui-input" autocomplete="off" placeholder="输入标题关键词"/>
                         </div>
                     </div>
                     <!--<div class="layui-inline">
-                        <label class="layui-form-label">签到时间</label>
+                        <label class="layui-form-label">状&emsp;态</label>
                         <div class="layui-input-inline">
-                            <input name="createDateSel" class="layui-input icon-date" placeholder="选择日期范围" autocomplete="off"/>
-                        </div>
-                    </div>-->
-                    <!--<div class="layui-inline">
-                        <label class="layui-form-label">签到类型</label>
-                        <div class="layui-input-inline">
-                            <select name="signtype">
+                            <select name="status">
                                 <option value="">--- 全部 ---</option>
-                                <option value="1">本地签到</option>
-                                <option value="2">远程签到</option>
+                                <option value="1">启用</option>
+                                <option value="0">禁用</option>
                             </select>
                         </div>
                     </div>-->
@@ -41,9 +40,6 @@
                         <button class="layui-btn icon-btn" lay-filter="mxTbSearch" lay-submit>
                             <i class="layui-icon">&#xe615;</i>搜索
                         </button>
-<!--                        <button class="layui-btn" lay-filter="signinfo" type="button" id="signinfo">签到记录</button>-->
-<!--                        <a class="layui-btn layui-btn-xs" lay-event="signinfo">签到记录</a>-->
-<!--                        <button class="layui-btn" lay-filter="printer" type="button" id="printer">打印全部</button>-->
                     </div>
                 </div>
             </form>
@@ -52,91 +48,62 @@
         </div>
     </div>
 </div>
-<!--图片模板-->
-<script type="text/html" id="imgTpl">
-    <ul class="layui-cricle">
-        <li><img src="{{d.selfie}}" class="layui-table-img layui-circle" width="100px" height="100px" /></li>
-    </ul>
-</script>
+
 <!-- 表格操作列 -->
 <script type="text/html" id="mxTbBar">
+    <a class="layui-btn layui-btn-xs" lay-event="study">学习记录</a>
     <a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
     <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
-    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="send">推送</a>
 </script>
 <!-- 表格状态列 -->
 <script type="text/html" id="mxTbState">
     <input type="checkbox" lay-filter="mxTbStateCk" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" {{d.status==1?'checked':''}} style="display: none;"/>
     <p style="display: none;">{{d.status==1?'启用':'禁用'}}</p>
 </script>
-<!-- 表格状态列 -->
-<script type="text/html" id="readStatus">
-    {{# if(d.read_status === 1){ }}
-    <span class="text-success">已阅读</span>
-    {{# } else { }}
-    <span class="text-danger">未阅读</span>
-    {{# } }}
-</script>
-
-<!-- 表格打印 -->
-<script type="text/html" id="divTablePrint">
-
-
+<!-- 表格操作列 -->
+<script type="text/html" id="eCourseTbLook">
+    <span class="layui-text">
+        <a href="javascript:;" lay-event="look">{{d.signups_count}}</a>/
+        <a href="javascript:;" lay-event="look" style="color: #ff5722">{{d.number}}</a>
+    </span>
 </script>
 {/block}
 
 {block name="script"}
 <script>
-    layui.use(['layer', 'form', 'table', 'admin' , 'printer', 'xmSelect', 'laydate'], function () {
+    layui.use(['layer', 'form', 'table', 'admin', 'xmSelect'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
         var form = layui.form;
         var table = layui.table;
         var admin = layui.admin;
         var xmSelect = layui.xmSelect;
-        var laydate = layui.laydate;
-        var printer = layui.printer;
-        /*var pWindow = printer.printHtml({
-            html: '<span>xxxx</span>',  // 要打印的内容
-            horizontal: true,         // 是否横向打印
-            blank: true,              // 是否打开新页面打印
-            close: true,              // 如果是打开新页面，打印完是否关闭
-            iePreview: true,          // 是否兼容ie打印预览
-            print: true              // 如果是打开新窗口是否自动打印
-        });*/
-        // 自定义打印
-        $('#printer').on('click', function (e) {
-            printer.printHtml({
-                //html: '<div style="color: red;text-align: center;">Hello Word !</div>',
-                html: $('#divTablePrint').html(),
-                blank: true,              // 是否打开新页面打印
-                close: true,              // 如果是打开新页面，打印完是否关闭
-                iePreview: false,          // 是否兼容ie打印预览
-            });
-        })
-        
+
         /* 渲染表格 */
         var insTb = table.render({
             elem: '#mxTable',
-            url: "{:url('cms/msg_read/datalist')}",
+            url: "{:url('cms/training/datalist')}",
             page: {limit: 15},
             limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
             toolbar: ['<p>',
-                //'<button lay-event="signinfo"  class="layui-btn layui-btn-sm layui-btn-danger icon-btn" id="no" style="display: none"><i class="layui-icon">&#xe655;</i>部分打印</button>',
+                '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>批量删除</button>',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加学习班</button>&nbsp;',
                 '</p>'].join(''),
-                //defaultToolbar: ['filter'],
             cellMinWidth: 100,
             cols: [[
-                //{type: 'checkbox'},
-                {field: 'id', title: '序号', align: 'center'},
-                {field: 'departmentname', title: '学习班名称', align: 'center'},
-                {field: 'departmentname', title: '医院名称', align: 'center'},
-                {field: 'nickname', title: '阅读人姓名', align: 'center'},
-                {field: 'read_time', title: '阅读时间', align: 'center', sort: true},
+                {type: 'checkbox'},
+                {field: 'typename', title: '分类', align: 'center',templet: '<div>{{d.typename.name}}</div>'},
+                {field: 'title', title: '学习班名称'},
+                {field: 'study_time', title: '学习时间'},
+                {field: 'address', title: '学习地点'},
+                {field: 'deadline_time', title: '报名截至时间'},
+                {align: 'center', title: '报名人数', toolbar: '#eCourseTbLook', minWidth: 140, width: 140},
+                //{field: 'weight', title: '排序权重', align: 'center', sort: true, width: 110, edit: 'text'},
+                //{field: 'username', title: '发布人', align: 'center'},
+                {field: 'create_time', title: '发布时间', align: 'center', sort: true},
                 //{field: 'update_time', title: '更新时间', align: 'center', sort: true},
-                {field: 'read_status', title: '阅读状态', align: 'center',templet: '#readStatus'},
-                //{field: 'status', title: '状态', templet: '#mxTbState', align: 'center', sort: true, width: 80},
-                //{title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 80}
+                //{field: 'status', title: '状态', templet: '#mxTbState', align: 'center', sort: true, width: 100},
+                {title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 180}
             ]],
             parseData: function(res){ //res 即为原始返回的数据
                 return {
@@ -148,32 +115,9 @@
             },
         });
 
-        /* 渲染时间选择 */
-        laydate.render({
-            elem: 'input[name="createDateSel"]',
-            type: 'date',
-            range: true,
-            trigger: 'click'
-        });
         /* 表格搜索 */
         form.on('submit(mxTbSearch)', function (data) {
-            if (data.field.createDateSel) {
-                var searchDate = data.field.createDateSel.split(' - ');
-                data.field.startDate = searchDate[0];
-                data.field.endDate = searchDate[1];
-            } else {
-                data.field.startDate = null;
-                data.field.endDate = null;
-            }
-            data.field.createDateSel = undefined;
-            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/msg_read/serach')}"});
-
-            // 显示按钮
-            var button = document.getElementById('no');
-            if (button) {
-                button.style.display = 'block'; // 或者使用 'inline', 'inline-block' 根据需要
-            }
-
+            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/training/serach')}"});
             return false;
         });
 
@@ -183,8 +127,23 @@
                 showModel(obj.data);
             } else if (obj.event === 'del') { // 删除
                 doDel(obj);
-            }else if (obj.event === 'send') { // 推送
-                doSend(obj);
+            }else if (obj.event === 'study') { // 学习记录
+                showStudyModel(obj);
+            }else if (obj.event === 'look') {
+                admin.open({
+                    type: 2,
+                    area: ['1420px', '630px'],
+                    title: '报名列表',
+                    shade: 0.5,
+                    //shadeClose: true,
+                    //content: '<table id="mxSigninfo" lay-filter="mxSigninfo"></table>',
+                    content: "{:url('cms/training/sign')}?id="+obj.data.id,
+                    data: { training_id: obj.data.id },  // 使用data参数传值给弹窗页面
+                    success: function (layero, dIndex) {
+
+
+                    }
+                });
             }
         });
 
@@ -195,7 +154,7 @@
                 return false;
             }
             var loadIndex = layer.load(2);
-            $.post("{:url('cms/msg_read/edit_weight_same')}", {
+            $.post("{:url('cms/training/edit_weight_same')}", {
                 id: obj.data.id,
                 weight: obj.value
             }, function (res) {
@@ -223,24 +182,23 @@
                     return d.id;
                 });
                 doDel({ids: ids});
-            }else{
-                showSignModel(obj);
             }
         });
 
-
         /* 显示表单弹窗 */
-        function showSignModel(obj) {
+        function showStudyModel(obj) {
 
+            //var m_id=obj.data.id;
             //console.log(m_id);
             admin.open({
                 type: 2,
-                area: ['1620px', '1080px'],
-                title: '签到记录',
+                area: ['1620px', '630px'],
+                title: '学习记录',
                 shade: 0.5,
                 //shadeClose: true,
                 //content: '<table id="mxSigninfo" lay-filter="mxSigninfo"></table>',
-                content: "{:url('cms/msg_read/printer')}?id="+87,
+                content: "{:url('cms/training/study')}?id="+obj.data.id,
+                data: { training_id: obj.data.id },  // 使用data参数传值给弹窗页面
                 success: function (layero, dIndex) {
 
 
@@ -252,10 +210,10 @@
         /* 显示表单弹窗 */
         function showModel(mData) {
             var layIndex = admin.open({
-                title: (mData ? '修改' : '添加') + '文章',
+                title: (mData ? '修改' : '添加') + '学习班',
                 shade: 0.5,
                 //shadeClose: true,
-                url: "{:url('cms/msg_read/form')}",
+                url: "{:url('cms/training/form')}",
                 data: {formdata: mData},     // 传递数据到表单页面
                 end: function () {
                     if (admin.getLayerData(layIndex, 'formOk')) {  // 判断表单操作成功标识
@@ -281,31 +239,7 @@
             }, function (i) {
                 layer.close(i);
                 var loadIndex = layer.load(2);
-                $.post("{:url('cms/msg_read/del')}", {
-                    id: obj.data ? obj.data.id : '',
-                    ids: obj.ids ? obj.ids.join(',') : ''
-                }, function (res) {
-                    layer.close(loadIndex);
-                    if (res.code === 1) {
-                        layer.msg(res.msg, {icon: 1});
-                        insTb.reload();
-                    } else {
-                        layer.msg(res.msg, {icon: 5, anim: 6});
-                    }
-                }, 'json');
-            });
-        }
-        /* 推送 */
-        function doSend(obj) {
-            layer.confirm('确定要推送选中的数据吗？', {
-                title: '推送数据',
-                skin: 'layui-layer-admin',
-                shade: 0.5,
-                shadeClose: true,
-            }, function (i) {
-                layer.close(i);
-                var loadIndex = layer.load(2);
-                $.post("{:url('cms/msg_read/send')}", {
+                $.post("{:url('cms/training/del')}", {
                     id: obj.data ? obj.data.id : '',
                     ids: obj.ids ? obj.ids.join(',') : ''
                 }, function (res) {
@@ -323,7 +257,7 @@
         /* 修改状态 */
         form.on('switch(mxTbStateCk)', function (obj) {
             var loadIndex = layer.load(2);
-            $.post("{:url('cms/msg_read/edit_state_same')}", {
+            $.post("{:url('cms/training/edit_state_same')}", {
                 id: obj.elem.value,
                 status: obj.elem.checked ? 1 : 0
             }, function (res) {

@@ -1,6 +1,6 @@
 {extend name="../../mxadmin/view/base" /}
 
-{block name="title"}阅读列表{/block}
+{block name="title"}报名列表{/block}
 
 {block name="body"}
 <div class="layui-fluid">
@@ -16,7 +16,7 @@
                         </div>
                     </div> -->
                     <div class="layui-inline">
-                        <label class="layui-form-label">用户昵称</label>
+                        <label class="layui-form-label">姓名</label>
                         <div class="layui-input-inline">
                             <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入标题关键词"/>
                         </div>
@@ -70,11 +70,11 @@
     <p style="display: none;">{{d.status==1?'启用':'禁用'}}</p>
 </script>
 <!-- 表格状态列 -->
-<script type="text/html" id="readStatus">
-    {{# if(d.read_status === 1){ }}
-    <span class="text-success">已阅读</span>
+<script type="text/html" id="signStatus">
+    {{# if(d.study_Status === 1){ }}
+    <span class="text-success">已学习</span>
     {{# } else { }}
-    <span class="text-danger">未阅读</span>
+    <span class="text-danger">未学习</span>
     {{# } }}
 </script>
 
@@ -114,11 +114,11 @@
                 iePreview: false,          // 是否兼容ie打印预览
             });
         })
-        
+        var training_id = admin.getLayerData().training_id;  // 获取列表页面传递的数据
         /* 渲染表格 */
         var insTb = table.render({
             elem: '#mxTable',
-            url: "{:url('cms/msg_read/datalist')}",
+            url: "{:url('cms/training/datalist_same_study')}?id="+training_id,
             page: {limit: 15},
             limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
             toolbar: ['<p>',
@@ -129,12 +129,14 @@
             cols: [[
                 //{type: 'checkbox'},
                 {field: 'id', title: '序号', align: 'center'},
-                {field: 'departmentname', title: '学习班名称', align: 'center'},
+                {field: 'training_title', title: '学习班名称', align: 'center'},
+                {field: 'study_time', title: '学习时间', align: 'center'},
                 {field: 'departmentname', title: '医院名称', align: 'center'},
-                {field: 'nickname', title: '阅读人姓名', align: 'center'},
-                {field: 'read_time', title: '阅读时间', align: 'center', sort: true},
+                {field: 'nickname', title: '报名人姓名', align: 'center'},
+                {field: 'phone', title: '手机号码', align: 'center', sort: true},
+                {field: 'sign_time', title: '报名时间', align: 'center', sort: true},
                 //{field: 'update_time', title: '更新时间', align: 'center', sort: true},
-                {field: 'read_status', title: '阅读状态', align: 'center',templet: '#readStatus'},
+                {field: 'study_Status', title: '学习状态', align: 'center',templet: '#signStatus'},
                 //{field: 'status', title: '状态', templet: '#mxTbState', align: 'center', sort: true, width: 80},
                 //{title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 80}
             ]],
@@ -166,7 +168,8 @@
                 data.field.endDate = null;
             }
             data.field.createDateSel = undefined;
-            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/msg_read/serach')}"});
+            data.field.training_id = training_id;
+            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/training/datalist_same_study_search')}?id="+training_id});
 
             // 显示按钮
             var button = document.getElementById('no');
@@ -195,7 +198,7 @@
                 return false;
             }
             var loadIndex = layer.load(2);
-            $.post("{:url('cms/msg_read/edit_weight_same')}", {
+            $.post("{:url('cms/training/edit_weight_same')}", {
                 id: obj.data.id,
                 weight: obj.value
             }, function (res) {
@@ -240,7 +243,7 @@
                 shade: 0.5,
                 //shadeClose: true,
                 //content: '<table id="mxSigninfo" lay-filter="mxSigninfo"></table>',
-                content: "{:url('cms/msg_read/printer')}?id="+87,
+                content: "{:url('cms/training/printer')}?id="+87,
                 success: function (layero, dIndex) {
 
 
@@ -255,7 +258,7 @@
                 title: (mData ? '修改' : '添加') + '文章',
                 shade: 0.5,
                 //shadeClose: true,
-                url: "{:url('cms/msg_read/form')}",
+                url: "{:url('cms/training/form')}",
                 data: {formdata: mData},     // 传递数据到表单页面
                 end: function () {
                     if (admin.getLayerData(layIndex, 'formOk')) {  // 判断表单操作成功标识
@@ -281,7 +284,7 @@
             }, function (i) {
                 layer.close(i);
                 var loadIndex = layer.load(2);
-                $.post("{:url('cms/msg_read/del')}", {
+                $.post("{:url('cms/training/del')}", {
                     id: obj.data ? obj.data.id : '',
                     ids: obj.ids ? obj.ids.join(',') : ''
                 }, function (res) {
@@ -305,7 +308,7 @@
             }, function (i) {
                 layer.close(i);
                 var loadIndex = layer.load(2);
-                $.post("{:url('cms/msg_read/send')}", {
+                $.post("{:url('cms/training/send')}", {
                     id: obj.data ? obj.data.id : '',
                     ids: obj.ids ? obj.ids.join(',') : ''
                 }, function (res) {
@@ -323,7 +326,7 @@
         /* 修改状态 */
         form.on('switch(mxTbStateCk)', function (obj) {
             var loadIndex = layer.load(2);
-            $.post("{:url('cms/msg_read/edit_state_same')}", {
+            $.post("{:url('cms/training/edit_state_same')}", {
                 id: obj.elem.value,
                 status: obj.elem.checked ? 1 : 0
             }, function (res) {

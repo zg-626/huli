@@ -118,13 +118,13 @@
 <!-- 表格状态列 -->
 <script type="text/html" id="userTbState">
     {{#  if(d.status == null){ }}
-    <span class="layui-badge layui-bg-red">未审核</span>
+    <span class="text-danger">未审核</span>
     {{#  } else if(d.status == 1) { }}
-    <span class="layui-badge layui-bg-green">已审核</span>
+    <span class="text-success">已审核</span>
     {{#  } else if(d.status == 0) { }}
-    <span class="layui-badge layui-bg-gray">禁用</span>
+    <span class="text-gray">禁用</span>
     {{#  } else{ }}
-    <span class="layui-badge layui-bg-black">驳回</span>
+    <span class="text-black">驳回</span>
     {{#  } }}
 </script>
 

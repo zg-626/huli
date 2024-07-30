@@ -32,7 +32,7 @@
                         <div class="layui-input-inline">
                             <select name="status">
                                 <option value="">--- 全部 ---</option>
-                                <option value="1">启用</option>
+                                <option value="1">正常</option>
                                 <option value="0">禁用</option>
                             </select>
                         </div>
@@ -57,8 +57,8 @@
 </script>
 <!-- 表格状态列 -->
 <script type="text/html" id="userTbState">
-    <input type="checkbox" lay-filter="userTbStateCk" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" {{d.status==1?'checked':''}} style="display: none;"/>
-    <p style="display: none;">{{d.status==1?'启用':'禁用'}}</p>
+    <input type="checkbox" lay-filter="userTbStateCk" value="{{d.id}}" lay-skin="switch" lay-text="正常|禁用" {{d.status==1?'checked':''}} style="display: none;"/>
+    <p style="display: none;">{{d.status==1?'正常':'禁用'}}</p>
 </script>
 
 <!-- 表单弹窗 -->
