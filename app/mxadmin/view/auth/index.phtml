@@ -14,7 +14,7 @@
 <!-- 表格操作列 -->
 <script type="text/html" id="authTbBar">
     <a class="layui-btn layui-btn-xs layui-btn-normal{{#if(d.ismenu != 0){}} layui-btn-disabled{{#}}}"{{#if(d.ismenu == 0){}} lay-event="addson"{{#}}}>添加子规则</a>
-    <a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-xs layui-btn-danger{{#if(d.children){}} layui-btn-disabled{{#}}}"{{#if(!d.children){}} lay-event="del"{{#}}}>删除</a>
 </script>
 <!-- 表单弹窗 -->
@@ -138,7 +138,7 @@
         treeTable.on('tool(authTable)', function (obj) {
             if (obj.event === 'addson') { // 添加子菜单
                 showEditModel(obj.data, 'son');
-            } else if (obj.event === 'edit') { // 修改
+            } else if (obj.event === 'edit') { // 编辑
                 showEditModel(obj.data);
             } else if (obj.event === 'del') { // 删除
                 doDel(obj);
@@ -184,7 +184,7 @@
             admin.open({
                 type: 1,
                 area: '510px',
-                title: (btnType ? '添加子' : mData ? '修改' : '添加') + '规则',
+                title: (btnType ? '添加子' : mData ? '编辑' : '添加') + '规则',
                 shade: 0.5,
                 //shadeClose: true,
                 content: $('#authEditDialog').html(),

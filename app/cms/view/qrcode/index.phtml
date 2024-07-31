@@ -196,7 +196,7 @@
 
         /* 表格操作列点击事件 */
         table.on('tool(mxTable)', function (obj) {
-            if (obj.event === 'edit') { // 修改
+            if (obj.event === 'edit') { // 编辑
                 showEditModel(obj.data);
             } else if (obj.event === 'del') { // 删除
                 doDel(obj);
@@ -246,7 +246,7 @@
             admin.open({
                 type: 1,
                 area: '650px',
-                title: (mData ? '修改' : '添加') + '收款码',
+                title: (mData ? '编辑' : '添加') + '收款码',
                 shade: 0.5,
                 //shadeClose: true,
                 content: $('#mxEditDialog').html(),
@@ -330,7 +330,7 @@
             });
         }
 
-        /* 修改状态 */
+        /* 编辑状态 */
         form.on('switch(mxTbStateCk)', function (obj) {
             var loadIndex = layer.load(2);
             $.post("{:url('cms/qrcode/edit_state_same')}", {

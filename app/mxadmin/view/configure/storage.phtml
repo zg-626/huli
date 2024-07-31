@@ -5,7 +5,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">存储引擎</label>
             <div class="layui-input-block">
-                <input type="radio" name="engine" lay-filter="raEngine" value="1" title="本地(不推荐)" {present name="storage.engine"}{eq name="storage.engine" value="1"}checked{/eq}{/present}/>
+                <input type="radio" name="engine" lay-filter="raEngine" value="1" title="本地" {present name="storage.engine"}{eq name="storage.engine" value="1"}checked{/eq}{/present}/>
                 <input type="radio" name="engine" lay-filter="raEngine" value="2" title="七牛云" {present name="storage.engine"}{eq name="storage.engine" value="2"}checked{/eq}{/present}/>
             </div>
         </div>

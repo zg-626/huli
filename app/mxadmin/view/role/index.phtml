@@ -14,10 +14,17 @@
 
 <!-- 表格操作列 -->
 <script type="text/html" id="roleTbBar">
-    <a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
     <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="auth">权限分配</a>
 </script>
+<!-- 表格操作列 -->
+<script type="text/html" id="eCourseTbLook">
+    <span class="layui-text">
+        <a href="javascript:;" lay-event="look">{{d.groupaccess_count}}</a>
+    </span>
+</script>
+{/block}
 <!-- 表单弹窗 -->
 <script type="text/html" id="roleEditDialog">
     <form id="roleEditForm" lay-filter="roleEditForm" class="layui-form model-form">
@@ -64,11 +71,12 @@
             cellMinWidth: 100,
             cols: [[
                 {type: 'checkbox'},
-                {field: 'id', title: '角色ID', align: 'center', sort: true, width: 90},
+                {field: 'id', title: '序号', align: 'center', sort: true, width: 90},
                 {field: 'title', title: '角色名称', align: 'center', sort: true},
+                {field: 'groupaccess_count', title: '用户数',toolbar: '#eCourseTbLook', align: 'center', sort: true},
                 {field: 'comments', title: '角色描述', align: 'center',},
                 {field: 'create_time', title: '创建时间', align: 'center', sort: true},
-                {field: 'update_time', title: '更新时间', align: 'center', sort: true},
+                //{field: 'update_time', title: '更新时间', align: 'center', sort: true},
                 {title: '操作', toolbar: '#roleTbBar', align: 'center', minWidth: 200}
             ]],
             parseData: function(res){ //res 即为原始返回的数据
@@ -83,12 +91,27 @@
 
         /* 表格工具条点击事件 */
         table.on('tool(roleTable)', function (obj) {
-            if (obj.event === 'edit') { // 修改
+            if (obj.event === 'edit') { // 编辑
                 showEditModel(obj.data);
             } else if (obj.event === 'del') { // 删除
                 doDel(obj);
             } else if (obj.event === 'auth') {  // 权限管理
                 showPermModel(obj.data.id, obj.data.title);
+            }else if (obj.event === 'look') {
+                admin.open({
+                    type: 2,
+                    area: ['1420px', '630px'],
+                    title: '人员列表',
+                    shade: 0.5,
+                    //shadeClose: true,
+                    //content: '<table id="mxSigninfo" lay-filter="mxSigninfo"></table>',
+                    content: "{:url('mxadmin/role/user')}?id="+obj.data.id,
+                    data: { group_id: obj.data.id },  // 使用data参数传值给弹窗页面
+                    success: function (layero, dIndex) {
+
+
+                    }
+                });
             }
         });
 
@@ -113,7 +136,7 @@
         function showEditModel(mData) {
             admin.open({
                 type: 1,
-                title: (mData ? '修改' : '添加') + '角色',
+                title: (mData ? '编辑' : '添加') + '角色',
                 shade: 0.5,
                 //shadeClose: true,
                 content: $('#roleEditDialog').html(),

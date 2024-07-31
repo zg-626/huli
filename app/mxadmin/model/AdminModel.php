@@ -33,4 +33,9 @@ class AdminModel extends Model
     {
         return $this->hasMany(AuthGroupAccess::class,'uid','id')->with('group')->order('group_id');
     }
+
+    public function user()
+    {
+        return $this->hasOne(UserModel::class, 'phone', 'username');
+    }
 }

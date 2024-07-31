@@ -102,7 +102,7 @@
 
 <!-- 表格操作列 -->
 <script type="text/html" id="dictDataTbBar">
-    <a class="layui-btn layui-btn layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
 </script>
 <!-- 表格状态列 -->
@@ -153,7 +153,7 @@
             height: 'full-100',
             toolbar: ['<p>',
                 '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>',
-                '<button lay-event="edit" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe642;</i>修改</button>&nbsp;',
+                '<button lay-event="edit" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe642;</i>编辑</button>&nbsp;',
                 '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加字典</button>&nbsp;',
                 '</p>'].join(''),
             defaultToolbar: [],
@@ -177,7 +177,7 @@
         table.on('toolbar(dictTable)', function (obj) {
             if (obj.event === 'add') { // 添加
                 showEditModel();
-            } else if (obj.event === 'edit') { // 修改
+            } else if (obj.event === 'edit') { // 编辑
                 showEditModel(selObj.data);
             } else if (obj.event === 'del') { // 删除
                 doDel(selObj);
@@ -216,7 +216,7 @@
         function showEditModel(mData) {
             admin.open({
                 type: 1,
-                title: (mData ? '修改' : '添加') + '字典',
+                title: (mData ? '编辑' : '添加') + '字典',
                 shade: 0.5,
                 //shadeClose: true,
                 content: $('#dictEditDialog').html(),
@@ -307,7 +307,7 @@
 
         /* 表格2工具条点击事件 */
         table.on('tool(dictDataTable)', function (obj) {
-            if (obj.event === 'edit') { // 修改
+            if (obj.event === 'edit') { // 编辑
                 showEditModel2(obj.data);
             } else if (obj.event === 'del') { // 删除
                 doDel2(obj);
@@ -356,7 +356,7 @@
         function showEditModel2(mData) {
             admin.open({
                 type: 1,
-                title: (mData ? '修改' : '添加') + '字典项',
+                title: (mData ? '编辑' : '添加') + '字典项',
                 shade: 0.5,
                 //shadeClose: true,
                 content: $('#dictDataEditDialog').html(),
@@ -407,7 +407,7 @@
             });
         }
 
-        /* 修改状态 */
+        /* 编辑状态 */
         form.on('switch(dictDataTbStateCk)', function (obj) {
             var loadIndex = layer.load(2);
             $.post("{:url('mxadmin/dictionary/edit_state_same')}", {

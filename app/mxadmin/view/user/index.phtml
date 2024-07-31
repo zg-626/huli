@@ -105,7 +105,7 @@
     '}}
     </a>
 <!--    <a class="layui-btn layui-btn-xs " lay-event="shenhe">审核</a>-->
-<!--    <a class="layui-btn layui-btn-xs " lay-event="edits">修改</a>-->
+<!--    <a class="layui-btn layui-btn-xs " lay-event="edits">编辑</a>-->
     {{# if (d.status == 1) { }}
     <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="editStatus">禁用</a>
     {{# } else if (d.status == 0) { }}
@@ -138,7 +138,7 @@
     <p style="display: none;">{{d.is_white==1?'已授权':'未授权'}}</p>
 </script>
 
-<!-- 修改表单弹窗 -->
+<!-- 编辑表单弹窗 -->
 <script type="text/html" id="userEditDialog">
     <form id="userEditForm" lay-filter="userEditForm" class="layui-form model-form">
         <input name="id" type="hidden"/>
@@ -219,10 +219,10 @@
 <script type="text/html" id="userShenheDialog">
     <form id="userShenheForm" lay-filter="userShenheForm" class="layui-form model-form">
         <input name="id" type="hidden"/>
-        <div class="layui-form-item">
-            <label class="layui-form-label layui-form-required">登录账号</label>
+        <!--<div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">手机号码</label>
             <div class="layui-input-block">
-                <input name="phone" class="layui-input" autocomplete="off" placeholder="请输入登录账号" minlength="2" maxlength="20" lay-verType="tips" lay-verify="required|h5" required/>
+                <input name="phone" class="layui-input" autocomplete="off" placeholder="手机号码" minlength="2" maxlength="20" lay-verType="tips" lay-verify="required|h5" required/>
             </div>
         </div>
         <div class="layui-form-item">
@@ -230,7 +230,7 @@
             <div class="layui-input-block">
                 <input name="nickname" class="layui-input" autocomplete="off" placeholder="请输入姓名" minlength="2" maxlength="20" lay-verType="tips" lay-verify="required|h5" required/>
             </div>
-        </div>
+        </div>-->
         <div class="layui-form-item">
             <label class="layui-form-label layui-form-required">审核结果</label>
             <div class="layui-input-block">
@@ -280,7 +280,7 @@
             limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
             toolbar: ['<p>',
                 //'<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>批量删除</button>',
-                //'<button lay-event="update_vip" class="layui-btn layui-btn-sm layui-btn-normal icon-btn"><i class="layui-icon">&#xe640;</i>批量修改时间</button>',
+                //'<button lay-event="update_vip" class="layui-btn layui-btn-sm layui-btn-normal icon-btn"><i class="layui-icon">&#xe640;</i>批量编辑时间</button>',
                 //'{if $is_admin == 1}<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加账号</button>&nbsp;{else/}<button lay-event="adds" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加账号</button>&nbsp;{/if}',
                 //'<button lay-event="Padd" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>导入用户</button>&nbsp;',
                 //'<a href="/storage/file/用户模板.xlsx" class="layui-btn layui-btn-sm layui-btn-radius layui-btn-primary"><i class="layui-icon">&#xe601;</i>用户模板</a>',
@@ -375,12 +375,12 @@
 
         /* 表格操作列点击事件 */
         table.on('tool(userTable)', function (obj) {
-            if (obj.event === 'edit') { // 修改
+            if (obj.event === 'edit') { // 编辑
                 showEditModel(obj.data);
             }else if (obj.event === 'shenhe') { // 审核
                 showShenheModel(obj.data);
-            }else if (obj.event === 'editStatus') { // 修改
-                doEditStatus(obj,'您确定要修改“' + obj.data.phone + '”的状态吗？');
+            }else if (obj.event === 'editStatus') { // 编辑
+                doEditStatus(obj,'您确定要编辑“' + obj.data.phone + '”的状态吗？');
             } else if (obj.event === 'del') { // 删除
                 doDel(obj,'您确定要删除“' + obj.data.phone + '”的账号吗？');
             }else{
@@ -493,7 +493,7 @@
         function showEditModel(mData) {
             admin.open({
                 type: 1,
-                title: (mData ? '修改' : '添加') + '账号',
+                title: (mData ? '编辑' : '添加') + '账号',
                 shade: 0.5,
                 area: ['600px', '620px'],
                 //shadeClose: true,
@@ -578,7 +578,7 @@
                     if (mData) {
                         //$(layero).find('[name="phone"]').attr('disabled','disabled').addClass("layui-bg-gray");
                         $(layero).find('[name="newpassword"]').removeAttr('lay-verType lay-verify required');
-                        $(layero).find('[name="newpassword"]').attr('placeholder','若不修改密码，请留空');
+                        $(layero).find('[name="newpassword"]').attr('placeholder','若不编辑密码，请留空');
                         $(layero).find('[name="repassword"]').attr('lay-verify','equalTo');
                         $(layero).find('[name="repassword"]').removeAttr('required');
                         if (mData.is_admin === 1) {$(layero).find('#roleName').remove();}
@@ -593,7 +593,7 @@
         function showUpdateModel(obj) {
             admin.open({
                 type: 1,
-                title: (obj ? '修改' : '添加') + '时间',
+                title: (obj ? '编辑' : '添加') + '时间',
                 shade: 0.5,
                 area : [ '600px', '520px' ],
                 //shadeClose: true,
@@ -701,7 +701,7 @@
                     if (mData) {
                         $(layero).find('[name="phone"]').attr('disabled','disabled').addClass("layui-bg-gray");
                         $(layero).find('[name="new    "]').removeAttr('lay-verType lay-verify required');
-                        $(layero).find('[name="newpassword"]').attr('placeholder','若不修改密码，请留空');
+                        $(layero).find('[name="newpassword"]').attr('placeholder','若不编辑密码，请留空');
                         $(layero).find('[name="repassword"]').attr('lay-verify','equalTo');
                         $(layero).find('[name="repassword"]').removeAttr('required');
                         if (mData.is_admin === 1) {$(layero).find('#roleName').remove();}
@@ -737,11 +737,11 @@
             });
         }
 
-        /* 删除 */
+        /* 编辑状态 */
         function doEditStatus(obj,txt) {
             console.log(obj)
             layer.confirm(txt, {
-                title: '修改状态',
+                title: '编辑状态',
                 skin: 'layui-layer-admin',
                 shade: 0.5,
                 shadeClose: true,
@@ -764,7 +764,7 @@
             });
         }
 
-        /* 修改用户状态 */
+        /* 编辑用户状态 */
         form.on('switch(userTbStateCk)', function (obj) {
             var loadIndex = layer.load(2);
             $.post("{:url('mxadmin/user/edit_state_same')}", {
@@ -782,7 +782,7 @@
                 }
             }, 'json');
         });
-        /* 修改用户权限 */
+        /* 编辑用户权限 */
         form.on('switch(userTbPermissionsCk)', function (obj) {
             var loadIndex = layer.load(2);
             $.post("{:url('mxadmin/user/edit_permissions_same')}", {
@@ -800,7 +800,7 @@
                 }
             }, 'json');
         });
-        /* 修改跨部门权限 */
+        /* 编辑跨部门权限 */
         form.on('switch(userWhiteCk)', function (obj) {
             var loadIndex = layer.load(2);
             $.post("{:url('mxadmin/user/edit_white_same')}", {

@@ -22,13 +22,22 @@ class Role extends AdminBase
     }
 
     /**
+     * 角色管理-用户列表
+     * @return \think\response\View
+     */
+    public function user()
+    {
+        return view();
+    }
+
+    /**
      * 返回Json格式的数据
      * @param int $limit
      * @throws \think\db\exception\DbException
      */
     public function datalist($limit=15)
     {
-        $list = AuthGroup::order('id')->paginate($limit);
+        $list = AuthGroup::withCount(['groupaccess'])->order('id')->paginate($limit);
         return $this->result($list);
     }
 

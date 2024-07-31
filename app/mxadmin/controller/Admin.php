@@ -32,7 +32,51 @@ class Admin extends AdminBase
      */
     public function datalist($limit=15)
     {
-        $list = AdminModel::with(['roles'])->order('id', 'desc')->paginate($limit);
+        $list = AdminModel::with(['roles','user'=> function ($query) {
+            $query->with(['department','educationalType','positionType','professionalType']);
+        }])->order('id', 'desc')->paginate($limit);
+        if(!$list->isEmpty()){
+            $user=[];
+            foreach ($list as $k => $v) {
+                if (empty($v->user)) {
+                    $v->user = $user;
+                }
+                $v->departmentname= $v->user->departmentname ?? '';
+                $v->educational_name= $v->user->educational_name ?? '';
+                $v->position_name= $v->user->position_name ?? '';
+                $v->professional_name= $v->user->professional_name ?? '';
+                $v->sex= $v->user->sex ?? '';
+            }
+        }
+        return $this->result($list);
+    }
+
+    /**
+     * 返回Json格式的数据
+     * @param int $limit
+     * @throws \think\db\exception\DbException
+     */
+    public function role_datalist($id,$limit=15)
+    {
+        // 查询当前组所有用户
+        $uids = AuthGroupAccess::where('group_id', $id)->column('uid');
+
+        $list = AdminModel::with(['roles','user'=> function ($query) {
+            $query->with(['department','educationalType','positionType','professionalType']);
+        }])->whereIn('id', $uids)->order('id', 'desc')->paginate($limit);
+        if(!$list->isEmpty()){
+            $user=[];
+            foreach ($list as $k => $v) {
+                if (empty($v->user)) {
+                    $v->user = $user;
+                }
+                $v->departmentname= $v->user->departmentname ?? '';
+                $v->educational_name= $v->user->educational_name ?? '';
+                $v->position_name= $v->user->position_name ?? '';
+                $v->professional_name= $v->user->professional_name ?? '';
+                $v->sex= $v->user->sex ?? '';
+            }
+        }
         return $this->result($list);
     }
 
@@ -45,20 +89,80 @@ class Admin extends AdminBase
     {
         if (request()->isGet()) {
             $data = input('param.');
-            $serach = new AdminModel();
-            if ($data['username'] != '') {
-                $serach = $serach->whereLike('username', '%' . $data['username'] . '%');
-            }
-            if ($data['nickname'] != '') {
-                $serach = $serach->whereLike('nickname', '%' . $data['nickname'] . '%');
-            }
-            if ($data['startDate'] != '' && $data['endDate'] != '') {
-                $serach = $serach->whereBetweenTime('create_time', strtotime($data['startDate']), strtotime($data['endDate']) + 86399);
-            }
+
+            $where = [];
             if ($data['status'] != '') {
-                $serach = $serach->where('status', $data['status']);
+                $where['status'] = $data['status'];
             }
-            $list = $serach->with(['roles'])->order('id', 'desc')->paginate($limit);
+            if ($data['phone'] != '') {
+                $where['username'] = $data['phone'];
+            }
+            $nickname = $data['nickname'] ?? '';
+            $list = AdminModel::hasWhere('user' , function ($query) use ($nickname) {
+                $query->field('id,nickname');
+                if (!empty($nickname)) {
+                    $query->where('nickname', 'like', '%' . $nickname . '%');
+                }
+            })->with(['roles','user'=> function ($query) {
+                $query->with(['department','educationalType','positionType','professionalType']);
+            }])->where($where)->order('id', 'desc')->paginate($limit);
+            if(!$list->isEmpty()){
+                $user=[];
+                foreach ($list as $k => $v) {
+                    if (empty($v->user)) {
+                        $v->user = $user;
+                    }
+                    $v->departmentname= $v->user->departmentname ?? '';
+                    $v->educational_name= $v->user->educational_name ?? '';
+                    $v->position_name= $v->user->position_name ?? '';
+                    $v->professional_name= $v->user->professional_name ?? '';
+                    $v->sex= $v->user->sex ?? '';
+                }
+            }
+            return $this->result($list);
+        }
+    }
+
+    /**
+     * 搜索数据
+     * @param int $limit
+     * @throws \think\db\exception\DbException
+     */
+    public function role_datalist_serach($id,$limit=15)
+    {
+        if (request()->isGet()) {
+            $data = input('param.');
+            // 查询当前组所有用户
+            $uids = AuthGroupAccess::where('group_id', $id)->column('uid');
+            $where = [];
+            if ($data['status'] != '') {
+                $where['status'] = $data['status'];
+            }
+            if ($data['phone'] != '') {
+                $where['username'] = $data['phone'];
+            }
+            $nickname = $data['nickname'] ?? '';
+            $list = AdminModel::hasWhere('user' , function ($query) use ($nickname) {
+                $query->field('id,nickname');
+                if (!empty($nickname)) {
+                    $query->where('nickname', 'like', '%' . $nickname . '%');
+                }
+            })->with(['roles','user'=> function ($query) {
+                $query->with(['department','educationalType','positionType','professionalType']);
+            }])->whereIn('id', $uids)->where($where)->order('id', 'desc')->paginate($limit);
+            if(!$list->isEmpty()){
+                $user=[];
+                foreach ($list as $k => $v) {
+                    if (empty($v->user)) {
+                        $v->user = $user;
+                    }
+                    $v->departmentname= $v->user->departmentname ?? '';
+                    $v->educational_name= $v->user->educational_name ?? '';
+                    $v->position_name= $v->user->position_name ?? '';
+                    $v->professional_name= $v->user->professional_name ?? '';
+                    $v->sex= $v->user->sex ?? '';
+                }
+            }
             return $this->result($list);
         }
     }
@@ -184,6 +288,39 @@ class Admin extends AdminBase
                 return $this->success('账号删除成功');
             } else {
                 return $this->error('账号删除失败');
+            }
+        }
+    }
+
+    /**
+     * 重置密码
+     */
+    public function reset($id)
+    {
+        if (request()->isPost()) {
+            $data = input('param.');
+            if (empty($id)) {
+                $ids = explode(',', $data['ids']);
+            } else {
+                $ids = $id;
+            }
+            //$idsdata = AdminModel::whereIn('id', $ids)->select();
+            /*foreach($idsdata as $value){
+                if ($value['id'] == getAdminId()) {
+                    return $this->error('自己账号禁止删除');
+                } elseif ($value['is_admin'] == 1) {
+                    return $this->error('超级管理员禁止删除');
+                }
+            }*/
+            $data['password'] = 'Yj@123456';
+
+        $result = AdminModel::update($data)->whereIn('id', $ids);
+
+            if ($result == true) {
+
+                return $this->success('密码重置成功');
+            } else {
+                return $this->error('密码重置失败');
             }
         }
     }

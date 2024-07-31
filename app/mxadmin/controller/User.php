@@ -6,6 +6,7 @@ namespace app\mxadmin\controller;
 
 use app\cms\model\CmsCategory;
 use app\mxadmin\AdminBase;
+use app\mxadmin\model\AdminModel;
 use app\mxadmin\model\UserModel;
 use app\mxadmin\model\AuthGroup;
 use app\mxadmin\model\AuthGroupAccess;
@@ -184,6 +185,23 @@ class User extends AdminBase
             $result = UserModel::update($data, ['id' => $id]);
 
             if ($result == true) {
+                // 如果审核成功，同步管理员表
+                if($data['status'] == 1){
+                    $user = UserModel::where('id', $id)->find();
+                    $create=[
+                        'password'=>$user['password'],
+                        'nickname'=>$user['nickname'],
+                        'username'=>$user['phone'],
+                    ];
+                    $admin_info=AdminModel::create($create);
+                    // 新增用户所属角色
+                    $role_id = explode(',','2');
+                    foreach ($role_id as $value) {
+                        $dataset[] = ['uid' => $admin_info->id, 'group_id' => $value];
+                    }
+                    AuthGroupAccess::insertAll($dataset);
+                }
+
                 return $this->success('账号审核成功');
             } else {
                 return $this->error('账号审核失败');
