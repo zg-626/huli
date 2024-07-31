@@ -3,6 +3,7 @@ layui.config({  // common.js是配置layui扩展模块的目录，每个页面�
     base: getProjectUrl() + 'assets/module/'
 }).extend({
     steps: 'steps/steps',
+    defaultTheme: 'theme-white',
     notice: 'notice/notice',
     cascader: 'cascader/cascader',
     dropdown: 'dropdown/dropdown',
