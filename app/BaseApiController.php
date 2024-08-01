@@ -12,7 +12,7 @@ use think\Validate;
 /**
  * 控制器基础类
  */
-abstract class BaseController
+abstract class BaseApiController
 {
     /**
      * Request实例
@@ -92,9 +92,4 @@ abstract class BaseController
 
         return $v->failException(true)->check($data);
     }
-
-    /**
-     * 调用跳转扩展
-     */
-    use Jump;
 }
