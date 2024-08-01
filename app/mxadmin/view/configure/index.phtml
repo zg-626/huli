@@ -83,7 +83,7 @@
             }
         }
         // 初始化加载
-        changeType({$storage.engine|default='1'});
+        changeType({$storage.engine});
 
         // 监听tab切换 操作：文档 - 内置模块 - 常用元素操作 element - 监听tab切换
         element.on('tab(configInfoTab)', function() {

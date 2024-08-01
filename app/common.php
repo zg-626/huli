@@ -144,4 +144,17 @@ if (!function_exists('list_to_trees')) {
         }
         return $tree;
     }
+
+    /**
+     * 驼峰命名转下划线命名
+     * @param $str
+     * @return string
+     */
+    function toUnderScore($str)
+    {
+        $dstr = preg_replace_callback('/([A-Z]+)/', function ($matchs) {
+            return '_' . strtolower($matchs[0]);
+        }, $str);
+        return trim(preg_replace('/_{2,}/', '_', $dstr), '_');
+    }
 }
