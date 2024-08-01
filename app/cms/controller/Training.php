@@ -50,9 +50,16 @@ class Training extends AdminBase
      * 学习管理
      * @return \think\response\View
      */
-    public function study()
+    public function study($id)
     {
-        return view('study');
+        $userlist = UserModel::alias('u')
+            ->join('training_sign ts', 'ts.user_id = u.id')
+            ->join('training t', 't.id = ts.training_id')
+            ->join('cms_category c', 'c.id = u.d_id')
+            ->where('ts.training_id', $id)
+            ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
+           ->select();
+        return view('study',['userlist'=>$userlist]);
     }
 
     /**
