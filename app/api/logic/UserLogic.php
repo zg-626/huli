@@ -283,4 +283,41 @@ class UserLogic extends BaseLogic
         }
     }
 
+    public static function changeInfo(int $userId, $params)
+    {
+        try {
+            $data = [
+                'd_id' => $params['d_id'],
+                'headimg' => $params['headimg'],
+                'department' => $params['department'],
+                'first_education' => $params['first_education'],
+                'first_graduate_school' => $params['first_graduate_school'],
+                'first_graduate_time' => $params['first_graduate_time'],
+                'highest_education' => $params['highest_education'],
+                'highest_graduate_school' => $params['highest_graduate_school'],
+                'highest_graduate_time' => $params['highest_graduate_time'],
+                'level' => $params['level'],
+                'id_type' => $params['id_type'],
+                'id_number' => $params['id_number'],
+                'birthday' => $params['birthday'],
+                'work_start_date' => $params['work_start_date'],
+                'specialized_nurse' => $params['specialized_nurse'],
+                'specialized_name' => $params['specialized_name'],
+                'political_status' => $params['political_status'],
+                'ethnicity' => $params['ethnicity'],
+                'marital_status' => $params['marital_status'],
+                'native_place' => $params['native_place'],
+                'work_phone' => $params['work_phone'],
+                'credit_card_number' => $params['credit_card_number'],
+                'employment_status' => $params['employment_status'],
+            ];
+
+            return User::update($data)->where('id', $userId);
+        } catch (\Exception $e) {
+            self::$error = $e->getMessage();
+            return false;
+        }
+
+    }
+
 }

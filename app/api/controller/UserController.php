@@ -126,6 +126,19 @@ class UserController extends BaseApiController
         return $this->success('操作成功', [], 1, 1);
     }
 
+    /**
+     * 修改用户信息
+     */
+    public function changeInfo()
+    {
+        $params = $this->request->post();
+        $result = UserLogic::changeInfo($this->userId, $params);
+        if (false === $result) {
+            return $this->fail(UserLogic::getError());
+        }
+        return $this->success('操作成功', [], 1, 1);
+    }
+
 
     /**
      * @notes 绑定/变更 手机号

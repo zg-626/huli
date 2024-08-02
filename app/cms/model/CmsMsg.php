@@ -49,4 +49,10 @@ class CmsMsg extends Model
         }
         return $list;
     }
+
+    // 关联阅读表
+    public function read()
+    {
+        return $this->hasMany(MsgRead::class, 'm_id', 'id');
+    }
 }

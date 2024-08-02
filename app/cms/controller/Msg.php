@@ -8,8 +8,6 @@ use app\mxadmin\AdminBase;
 use app\cms\model\CmsMsg;
 use app\cms\model\CmsCategory;
 use think\facade\Db;
-use MobTech\MobPush\Config\MobPushConfig;
-use MobTech\MobPush\Client\Push\PushV3Client;
 use think\exception\ValidateException;
 
 class Msg extends AdminBase
@@ -49,7 +47,7 @@ class Msg extends AdminBase
      */
     public function datalist($limit=15)
     {
-        $list = CmsMsg::with(['admin', 'type'])->order('weight asc,id desc')->paginate($limit);
+        $list = CmsMsg::with(['admin', 'type'])->withCount('read')->order('weight asc,id desc')->paginate($limit);
         return $this->result($list);
     }
 
