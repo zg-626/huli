@@ -5,8 +5,10 @@ declare (strict_types = 1);
 namespace app\mxadmin\controller;
 
 use app\cms\model\CmsCategory;
+use app\cms\model\Fees;
 use app\mxadmin\AdminBase;
 use app\mxadmin\model\AdminModel;
+use app\mxadmin\model\DictData;
 use app\mxadmin\model\UserModel;
 use app\mxadmin\model\AuthGroup;
 use app\mxadmin\model\AuthGroupAccess;
@@ -201,10 +203,33 @@ class User extends AdminBase
                     }
                     AuthGroupAccess::insertAll($dataset);
                 }
-
+                // 如果审核成功，增加缴费记录
+                self::addFees($id);
                 return $this->success('账号审核成功');
             } else {
                 return $this->error('账号审核失败');
+            }
+        }
+    }
+
+    //增加缴费记录
+    public static function addFees($id)
+    {
+        //获取分类
+        $categories = DictData::where('dict_id', 11)->select();
+        //获取年份
+        $years = DictData::where('dict_id', 12)->select();
+        // 示例的嵌套循环创建记录
+        foreach ($years as $year) {
+            foreach ($categories as $category) {
+                Fees::create([
+                    'dict_id' => $category->id,
+                    'dict_data_id' => $year->id,
+                    'user_id' => $id, // 替换为你实际的用户ID
+                    'status' => 0,
+                    'fees_year' => $year->name,
+                    'fees_type' => $category->name,
+                ]);
             }
         }
     }

@@ -15,7 +15,7 @@
 namespace app\api\lists;
 
 
-use app\common\model\feedback\Department;
+use app\common\model\Department;
 use app\common\service\FileService;
 
 
@@ -72,25 +72,15 @@ class DepartmentLists extends BaseApiDataLists
      */
     public function lists(): array
     {
-        $list = Department::where($this->searchWhere)
+        $list = Department::with('position')->where($this->searchWhere)
             ->where($this->queryWhere())
-            ->field(['id', 'user_id', 'content', 'contact', 'attachment', 'feeb_status', 'create_time'])
+            //->field(['id', 'user_id', 'content', 'contact', 'attachment', 'feeb_status', 'create_time'])
             ->limit($this->limitOffset, $this->limitLength)
             ->order(['id' => 'desc'])
             ->select()
             ->toArray();
-        foreach ($list as &$item) {
-            if (isset($item['attachment']) && !empty($item['attachment'])) {
-                // 如果 $item['attachment'] 存在、不为空字符串，则进行转换处理
-                $attachmentArray = explode(',', $item['attachment']);
-                $attachmentArray = FileService::getFileUrl($attachmentArray);
-                $attachmentString = implode(',', $attachmentArray);
-            } else {
-                // 如果 $item['attachment'] 不存在或者为空字符串，则直接转化为空字符串
-                $attachmentString = '';
-            }
-            $item['attachment'] = $attachmentString;
-        }
+        /*foreach ($list as &$item) {
+        }*/
         return $list;
     }
 

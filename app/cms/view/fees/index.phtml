@@ -1,0 +1,575 @@
+{extend name="../../mxadmin/view/base" /}
+
+{block name="title"}阅读列表{/block}
+
+{block name="body"}
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表格工具栏 -->
+            <form class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <!-- <div class="layui-inline">
+                        <label class="layui-form-label">所属栏目</label>
+                        <div class="layui-input-inline">
+                            <div id="classifyParentSelSearch" class="mx-xmselect-tree"></div>
+                        </div>
+                    </div> -->
+                    <div class="layui-inline">
+                        <label class="layui-form-label">用户昵称</label>
+                        <div class="layui-input-inline">
+                            <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入标题关键词"/>
+                        </div>
+                    </div>
+                    <!--<div class="layui-inline">
+                        <label class="layui-form-label">签到时间</label>
+                        <div class="layui-input-inline">
+                            <input name="createDateSel" class="layui-input icon-date" placeholder="选择日期范围" autocomplete="off"/>
+                        </div>
+                    </div>-->
+                    <!--<div class="layui-inline">
+                        <label class="layui-form-label">签到类型</label>
+                        <div class="layui-input-inline">
+                            <select name="signtype">
+                                <option value="">--- 全部 ---</option>
+                                <option value="1">本地签到</option>
+                                <option value="2">远程签到</option>
+                            </select>
+                        </div>
+                    </div>-->
+                    <div class="layui-inline">&emsp;
+                        <button class="layui-btn icon-btn" lay-filter="mxTbSearch" lay-submit>
+                            <i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+<!--                        <button class="layui-btn" lay-filter="signinfo" type="button" id="signinfo">签到记录</button>-->
+<!--                        <a class="layui-btn layui-btn-xs" lay-event="signinfo">签到记录</a>-->
+<!--                        <button class="layui-btn" lay-filter="printer" type="button" id="printer">打印全部</button>-->
+                    </div>
+                </div>
+            </form>
+            <!-- 数据表格 -->
+            <table id="mxTable" lay-filter="mxTable"></table>
+        </div>
+    </div>
+</div>
+<!--图片模板-->
+<script type="text/html" id="imgTpl">
+    <ul class="layui-cricle">
+        <li><img src="{{d.selfie}}" class="layui-table-img layui-circle" width="100px" height="100px" /></li>
+    </ul>
+</script>
+<!-- 表格操作列 -->
+<script type="text/html" id="mxTbBar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">查看</a>
+    <a class="layui-btn layui-btn-xs {{ (d.status != 1) ? 'layui-btn-disabled' : '' }}"
+       {{ (d.status == 1) ? 'lay-event="shenhe"' : 'lay-event="disabled"' }}>
+    审核
+    </a>
+
+
+    <!--    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>-->
+</script>
+<!-- 表格状态列 -->
+<script type="text/html" id="mxTbState">
+    <input type="checkbox" lay-filter="mxTbStateCk" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" {{d.status==1?'checked':''}} style="display: none;"/>
+    <p style="display: none;">{{d.status==1?'启用':'禁用'}}</p>
+</script>
+<!-- 表格状态列 -->
+<script type="text/html" id="feesStatus">
+    {{#  if(d.status == 1){ }}
+    <span class="text-danger">未审核</span>
+    {{#  } else if(d.status == 2) { }}
+    <span class="text-success">已审核</span>
+    {{#  } else if(d.status == 0) { }}
+    <span class="text-cyan">未缴费</span>
+    {{#  } else{ }}
+    <span class="text-black">驳回</span>
+    {{#  } }}
+</script>
+<!-- 表单弹窗 -->
+<script type="text/html" id="mxEditDialog">
+    <form id="mxEditForm" lay-filter="mxEditForm" class="layui-form model-form">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">缴费类型</label>
+            <div class="layui-input-block">
+                <select disabled name="fees_type" lay-verType="tips" lay-verify="required" required>
+                    <option value="">请选择缴费类型</option>
+                    {volist name="feestype" id="vo"}
+                    <option value="{$vo.name}">{$vo.name}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">缴费年份</label>
+            <div class="layui-input-block">
+                <select disabled name="fees_year" lay-verType="tips" lay-verify="required" required>
+                    <option value="">请选择缴费年份</option>
+                    {volist name="feesyear" id="vo"}
+                    <option value="{$vo.name}">{$vo.name}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">缴费时间</label>
+            <div class="layui-input-block">
+                <input disabled name="fees_time" class="layui-input" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">缴费金额</label>
+            <div class="layui-input-block">
+                <input disabled name="money" class="layui-input" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">缴费方式</label>
+            <div class="layui-input-block">
+                <input disabled name="way" class="layui-input" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">缴费截图</label>
+            <div class="layui-input-block">
+                <input name="image" class="layui-input" autocomplete="off" placeholder="请选择图片"/>
+                <button disabled type="button" class="layui-btn layui-btn-normal imageMore"><i class="layui-icon">&#xe681;</i>上传图片</button>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">缴费备注</label>
+            <div class="layui-input-block">
+                <textarea name="remark" class="layui-textarea" disabled></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="mxEditSubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+<!-- 审核表单弹窗 -->
+<script type="text/html" id="userShenheDialog">
+    <form id="userShenheForm" lay-filter="userShenheForm" class="layui-form model-form">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">审核结果</label>
+            <div class="layui-input-block">
+                <input name="status" type="radio" value="1" title="通过" checked/>
+                <input name="status" type="radio" value="2" title="驳回"/>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <textarea name="remark" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="userShenheSubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+<!-- 表格打印 -->
+<script type="text/html" id="divTablePrint">
+
+
+</script>
+{/block}
+
+{block name="script"}
+<script>
+    layui.use(['layer', 'form', 'table', 'admin' , 'printer', 'xmSelect', 'laydate','upload'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var admin = layui.admin;
+        var xmSelect = layui.xmSelect;
+        var laydate = layui.laydate;
+        var printer = layui.printer;
+        var upload = layui.upload;
+        /*var pWindow = printer.printHtml({
+            html: '<span>xxxx</span>',  // 要打印的内容
+            horizontal: true,         // 是否横向打印
+            blank: true,              // 是否打开新页面打印
+            close: true,              // 如果是打开新页面，打印完是否关闭
+            iePreview: true,          // 是否兼容ie打印预览
+            print: true              // 如果是打开新窗口是否自动打印
+        });*/
+        // 自定义打印
+        $('#printer').on('click', function (e) {
+            printer.printHtml({
+                //html: '<div style="color: red;text-align: center;">Hello Word !</div>',
+                html: $('#divTablePrint').html(),
+                blank: true,              // 是否打开新页面打印
+                close: true,              // 如果是打开新页面，打印完是否关闭
+                iePreview: false,          // 是否兼容ie打印预览
+            });
+        })
+        
+        /* 渲染表格 */
+        var insTb = table.render({
+            elem: '#mxTable',
+            url: "{:url('cms/fees/datalist')}",
+            page: {limit: 15},
+            limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
+            toolbar: ['<p>',
+                '<button lay-event="open" class="layui-btn layui-btn-sm layui-btn-green icon-btn">批量审核</button>',
+                '<button lay-event="cancel" class="layui-btn layui-btn-sm layui-btn-danger icon-btn">批量驳回</button>',
+                //'<button lay-event="signinfo"  class="layui-btn layui-btn-sm layui-btn-danger icon-btn" id="no" style="display: none"><i class="layui-icon">&#xe655;</i>部分打印</button>',
+                '</p>'].join(''),
+                //defaultToolbar: ['filter'],
+            cellMinWidth: 100,
+            cols: [[
+                //{type: 'checkbox'},
+                {field: 'id', title: '序号', align: 'center'},
+                {field: 'fees_type', title: '缴费类型', align: 'center'},
+                {field: 'fees_year', title: '缴费年份', align: 'center'},
+                {field: 'departmentname', title: '医院名称', align: 'center'},
+                {field: 'nickname', title: '姓名', align: 'center'},
+                {field: 'sex', title: '性别', align: 'center', templet: function(d){
+                        return d.sex === 0 ? '女' : '男';}
+                },
+                {field: 'phone', title: '手机号码', align: 'center'},
+                {
+                    field: 'image', title: '缴费截图', templet: function (d) {
+                        if (d.image) {
+                            return '<img src="' + d.image + '" class="tb-img-circle" tb-img alt="' + d.title + '"/>';
+                        } else {
+                            return '';
+                        }
+                    }, align: 'center', width: 160, unresize: true
+                },
+                {field: 'position_name', title: '职务', align: 'center'},
+                {field: 'professional_name', title: '职称', align: 'center'},
+                {field: 'educational_name', title: '学历', align: 'center'},
+                //{field: 'update_time', title: '更新时间', align: 'center', sort: true},
+                {field: 'status', title: '缴费状态', align: 'center',templet: '#feesStatus'},
+                {title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 180}
+            ]],
+            parseData: function(res){ //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+        });
+
+        /* 点击图片放大 */
+        $(document).off('click.tbImg').on('click.tbImg', '[tb-img]', function () {
+            layer.photos({photos: {data: [{src: $(this).attr('src'), alt: $(this).attr('alt')}]}, shade: .5, closeBtn: true});
+        });
+        /* 渲染时间选择 */
+        laydate.render({
+            elem: 'input[name="createDateSel"]',
+            type: 'date',
+            range: true,
+            trigger: 'click'
+        });
+        /* 表格搜索 */
+        form.on('submit(mxTbSearch)', function (data) {
+            if (data.field.createDateSel) {
+                var searchDate = data.field.createDateSel.split(' - ');
+                data.field.startDate = searchDate[0];
+                data.field.endDate = searchDate[1];
+            } else {
+                data.field.startDate = null;
+                data.field.endDate = null;
+            }
+            data.field.createDateSel = undefined;
+            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/fees/serach')}"});
+
+            // 显示按钮
+            var button = document.getElementById('no');
+            if (button) {
+                button.style.display = 'block'; // 或者使用 'inline', 'inline-block' 根据需要
+            }
+
+            return false;
+        });
+
+        /* 表格操作列点击事件 */
+        table.on('tool(mxTable)', function (obj) {
+            if (obj.event === 'edit') { // 编辑
+                showEditModel(obj.data);
+                //showModel(obj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel(obj);
+            }else if (obj.event === 'shenhe') { // 审核
+                console.log(obj.data);
+                showShenheModel(obj.data);
+            }else if (obj.event === 'send') { // 推送
+                doSend(obj);
+            }
+        });
+
+        /* 监听单元格编辑 */
+        table.on('edit(mxTable)', function(obj){
+            if(isNaN(obj.value)){
+                layer.msg('只能输入数字！', {icon: 5, anim: 6});
+                return false;
+            }
+            var loadIndex = layer.load(2);
+            $.post("{:url('cms/fees/edit_weight_same')}", {
+                id: obj.data.id,
+                weight: obj.value
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                }
+            }, 'json');
+        });
+
+        /* 表格头工具栏点击事件 */
+        table.on('toolbar(mxTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel();
+                //showModel();
+            } else if (obj.event === 'del') { // 删除
+                var checkRows = table.checkStatus('mxTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要删除的数据', {icon: 5, anim: 6});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.id;
+                });
+                doDel({ids: ids});
+            }else{
+                showSignModel(obj);
+            }
+        });
+
+
+        /* 显示表单弹窗 */
+        function showSignModel(obj) {
+
+            //console.log(m_id);
+            admin.open({
+                type: 2,
+                area: ['1620px', '1080px'],
+                title: '签到记录',
+                shade: 0.5,
+                //shadeClose: true,
+                //content: '<table id="mxSigninfo" lay-filter="mxSigninfo"></table>',
+                content: "{:url('cms/fees/printer')}?id="+87,
+                success: function (layero, dIndex) {
+
+
+                }
+            });
+
+        }
+
+        /* 显示表单弹窗 */
+        function showShenheModel(mData) {
+            admin.open({
+                type: 1,
+                title: (mData ? '审核' : '添加') + '缴费',
+                shade: 0.5,
+                area : [ '600px', '560px' ],
+                //shadeClose: true,
+                content: $('#userShenheDialog').html(),
+                success: function (layero, dIndex) {
+                    // 回显表单数据
+                    form.val('userShenheForm', mData);
+                    // 表单提交事件
+                    form.on('submit(userShenheSubmit)', function (data) {
+                        //data.field.d_id = insXmSel.getValue('valueStr');
+                        var loadIndex = layer.load(2);
+                        $.post(mData ? "{:url('cms/fees/shenhe')}" : "{:url('cms/fees/add')}", data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (res.code === 1) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                insTb.reload();  // 保存成功刷新表格
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }, 'json');
+                        return false;
+                    });
+
+                    if (mData) {
+                        // 上传图片小图显示
+                        var imageValue = $('#imageMore').prev('input').val();
+                        if (imageValue) {
+                            $('#imageMore').after(' <a href="'+imageValue+'" target="_blank"><img src="'+imageValue+'" height="38"></a>');
+                        }
+                        var imageValues = $('#imageMores').prev('input').val();
+                        if (imageValues) {
+                            $('#imageMores').after(' <a href="'+imageValues+'" target="_blank"><img src="'+imageValues+'" height="38"></a>');
+                        }
+                    }
+                    // 编辑文本框状态
+                    if (mData) {
+                        $(layero).find('[name="phone"]').attr('disabled','disabled').addClass("layui-bg-gray");
+                        $(layero).find('[name="new    "]').removeAttr('lay-verType lay-verify required');
+                        $(layero).find('[name="newpassword"]').attr('placeholder','若不编辑密码，请留空');
+                        $(layero).find('[name="repassword"]').attr('lay-verify','equalTo');
+                        $(layero).find('[name="repassword"]').removeAttr('required');
+                        if (mData.is_admin === 1) {$(layero).find('#roleName').remove();}
+                    }
+                    // 禁止弹窗出现滚动条
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');
+                }
+            });
+        }
+
+        /* 显示表单弹窗 */
+        function showEditModel(mData) {
+            admin.open({
+                type: 1,
+                area: '650px',
+                title: (mData ? '编辑' : '添加') + '缴费',
+                shade: 0.5,
+                //shadeClose: true,
+                content: $('#mxEditDialog').html(),
+                success: function (layero, dIndex) {
+                    //图片上传
+                    upload.render({
+                        elem: '.imageMore',
+                        url: "{:url('mxadmin/upload/upload')}", //改成您自己的上传接口
+                        acceptMime: 'image/*',
+                        size: 2048, //限制文件大小，单位 KB
+                        done: function(res){
+                            if (res.code === 1) {
+                                layer.msg(res.msg, {icon: 1});
+                                this.item.prev('input').val(res.data.filePath);
+                                this.item.after(' <a href="'+res.data.filePath+'" target="_blank"><img src="'+res.data.filePath+'" height="38"></a>');
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }
+                    });
+
+                    // 回显表单数据
+                    form.val('mxEditForm', mData);
+                    // 表单提交事件
+                    form.on('submit(mxEditSubmit)', function (data) {
+                        var loadIndex = layer.load(2);
+                        $.post(mData ? "{:url('cms/fees/edit')}" : "{:url('cms/fees/add')}", data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (res.code === 1) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                insTb.reload();  // 保存成功刷新表格
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }, 'json');
+                        return false;
+                    });
+
+                    if (mData) {
+                        // 上传图片小图显示
+                        var imageValue = $('.imageMore').prev('input').val();
+                        if (imageValue) {
+                            $('.imageMore').after(' <a href="'+imageValue+'" target="_blank"><img src="'+imageValue+'" height="38"></a>');
+                        }
+                    }
+                }
+            });
+        }
+        
+        /* 显示表单弹窗 */
+        function showModel(mData) {
+            var layIndex = admin.open({
+                title: (mData ? '编辑' : '添加') + '文章',
+                shade: 0.5,
+                //shadeClose: true,
+                url: "{:url('cms/fees/form')}",
+                data: {formdata: mData},     // 传递数据到表单页面
+                end: function () {
+                    if (admin.getLayerData(layIndex, 'formOk')) {  // 判断表单操作成功标识
+                        insTb.reload();  // 成功刷新表格
+                    }
+                },
+                success: function (layero, dIndex) {
+                    // 弹窗超出范围不出现滚动条
+                    //$(layero).children('.layui-layer-content').css('overflow', 'visible');
+                }
+            });
+            // 窗口打开即全屏
+            layer.full(layIndex);
+        }
+
+        /* 删除 */
+        function doDel(obj) {
+            layer.confirm('确定要删除选中的数据吗？', {
+                title: '删除数据',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('cms/fees/del')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : ''
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+        /* 推送 */
+        function doSend(obj) {
+            layer.confirm('确定要推送选中的数据吗？', {
+                title: '推送数据',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('cms/fees/send')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : ''
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+
+        /* 编辑状态 */
+        form.on('switch(mxTbStateCk)', function (obj) {
+            var loadIndex = layer.load(2);
+            $.post("{:url('cms/fees/edit_state_same')}", {
+                id: obj.elem.value,
+                status: obj.elem.checked ? 1 : 0
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                    $(obj.elem).prop('checked', !obj.elem.checked);
+                    form.render('checkbox');
+                }
+            }, 'json');
+        });
+    });
+</script>
+{/block}

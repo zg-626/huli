@@ -4,9 +4,11 @@ declare (strict_types = 1);
 
 namespace app\mxadmin\controller;
 
+use app\cms\model\Fees;
 use app\mxadmin\AdminBase;
 use app\mxadmin\model\Dict;
 use app\mxadmin\model\DictData;
+use app\mxadmin\model\UserModel;
 use think\exception\ValidateException;
 
 class Dictionary extends AdminBase
@@ -110,12 +112,46 @@ class Dictionary extends AdminBase
             }
             $result = DictData::create($data);
             if ($result == true) {
+                // 特定的字典项逻辑处理
+                if($data['dict_id'] == 11 || $data['dict_id'] == 12){
+                    $this->synchronous($data['dict_id'],$result->id,$data);
+                }
                 return $this->success('字典项添加成功');
             } else {
                 return $this->error('字典项添加失败');
             }
         }
     }
+
+    // 添加字典项后同步用户缴费记录表
+    public function synchronous($dict_id,$dict_data_id,$data)
+    {
+        switch($dict_id){
+            case 11:
+                $this_year = date('Y');
+                // 给所有人增加缴费记录
+                $users = UserModel::where('status',1)->column('id');
+                foreach($users as $key => $value){
+                    Fees::create([
+                        'dict_id' => $dict_id,
+                        'dict_data_id' => $dict_data_id,
+                        'fees_type' => $data['name'],
+                        'fees_year' => $this_year,//当前年
+                        'user_id' => $value,
+                        'status' => 0
+                    ]);
+                }
+                break;
+            case 12:
+                $this_year = date('Y');
+                if($data['name'] != $this_year){
+                    $this_year=$data['name'];
+                }
+                break;
+        }
+
+    }
+
 
     /**
      * 修改字典

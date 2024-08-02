@@ -17,6 +17,7 @@ namespace app\common\model;
 
 use app\common\model\BaseModel;
 use app\common\model\user\User;
+use app\mxadmin\model\DictData;
 use think\model\concern\SoftDelete;
 
 
@@ -42,6 +43,11 @@ class Department extends BaseModel
     public function user()
     {
         return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
+    public function position()
+    {
+        return $this->hasOne(DictData::class, 'id', 'position_id')->bind(['position_name' => 'name']);
     }
 
 
