@@ -1,0 +1,479 @@
+{extend name="../../mxadmin/view/base" /}
+
+{block name="title"}试题列表{/block}
+
+{block name="body"}
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表格工具栏 -->
+            <form class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">姓名</label>
+                        <div class="layui-input-inline">
+                            <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入标题关键词"/>
+                        </div>
+                    </div>
+                    <!--<div class="layui-inline">
+                        <label class="layui-form-label">签到时间</label>
+                        <div class="layui-input-inline">
+                            <input name="createDateSel" class="layui-input icon-date" placeholder="选择日期范围" autocomplete="off"/>
+                        </div>
+                    </div>-->
+                    <!--<div class="layui-inline">
+                        <label class="layui-form-label">签到类型</label>
+                        <div class="layui-input-inline">
+                            <select name="signtype">
+                                <option value="">--- 全部 ---</option>
+                                <option value="1">本地签到</option>
+                                <option value="2">远程签到</option>
+                            </select>
+                        </div>
+                    </div>-->
+                    <div class="layui-inline">&emsp;
+                        <button class="layui-btn icon-btn" lay-filter="mxTbSearch" lay-submit>
+                            <i class="layui-icon">&#xe615;</i>搜索
+                        </button>
+<!--                        <button class="layui-btn" lay-filter="signinfo" type="button" id="signinfo">签到记录</button>-->
+<!--                        <a class="layui-btn layui-btn-xs" lay-event="signinfo">签到记录</a>-->
+<!--                        <button class="layui-btn" lay-filter="printer" type="button" id="printer">打印全部</button>-->
+                    </div>
+                </div>
+            </form>
+            <!-- 数据表格 -->
+            <table id="mxTable" lay-filter="mxTable"></table>
+        </div>
+    </div>
+</div>
+<!--图片模板-->
+<script type="text/html" id="imgTpl">
+    <ul class="layui-cricle">
+        <li><img src="{{d.selfie}}" class="layui-table-img layui-circle" width="100px" height="100px" /></li>
+    </ul>
+</script>
+<!-- 表格操作列 -->
+<script type="text/html" id="mxTbBar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="send">推送</a>
+</script>
+<!-- 表格状态列 -->
+<script type="text/html" id="mxTbState">
+    <input type="checkbox" lay-filter="mxTbStateCk" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" {{d.status==1?'checked':''}} style="display: none;"/>
+    <p style="display: none;">{{d.status==1?'启用':'禁用'}}</p>
+</script>
+<!-- 表格状态列 -->
+<script type="text/html" id="signStatus">
+    {{# if(d.study_Status === 1){ }}
+    <span class="text-success">已学习</span>
+    {{# } else { }}
+    <span class="text-danger">未学习</span>
+    {{# } }}
+</script>
+<!-- 表单弹窗 -->
+<!-- 页面加入样式 -->
+<style>
+    body .tox-tinymce-aux {
+        z-index: 19892000 !important;
+    }
+</style>
+<script type="text/html" id="mxEditDialog">
+    <form class="layui-form" lay-filter="eQuestionForm" style="max-width: 960px;">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">分值</label>
+            <div class="layui-input-block">
+                <input name="score" type="number" style="width: 160px;" class="layui-input" autocomplete="off" placeholder="请输入分值" lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">试题类型：</label>
+            <div class="layui-input-block">
+                <input type="radio" lay-filter="raQT" name="typeId" value="1" title="单选题" checked>
+                <input type="radio" lay-filter="raQT" name="typeId" value="2" title="多选题">
+                <input type="radio" lay-filter="raQT" name="typeId" value="3" title="判断题">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">试题内容：</label>
+            <div class="layui-input-block">
+                        <textarea name="content" id="eQuestionContentEdt" lay-verType="tips" lay-verify="required"
+                        ></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text" id="eQuestionSelGroup">
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">正确答案：</label>
+            <div id="qaRIGroup" class="layui-input-block">
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="mxEditSubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+<!-- 不同类型题目的正确答案选项 -->
+<script type="text/html" id="eQuestionSinTpl">
+    <!-- 单选题 -->
+    <div style="max-width: 160px;">
+        <select name="answer" lay-verType="tips" lay-verify="required" required>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+        </select>
+    </div>
+</script>
+<script type="text/html" id="eQuestionMulTpl">
+    <!-- 多选题 -->
+    <div style="max-width: 220px;" id="qaRIMore">
+    </div>
+</script>
+<script type="text/html" id="eQuestionTfTpl">
+    <!-- 判断题 -->
+    <div style="max-width: 160px;">
+        <select name="answer" lay-verType="tips" lay-verify="required" required>
+            <option value="T">正确</option>
+            <option value="F">错误</option>
+        </select>
+    </div>
+</script>
+<script type="text/html" id="eQuestionSelTpl">
+    <label class="layui-form-label">试题选项：</label>
+    <div class="layui-input-block">
+        <div class="qa-xx-item">
+            <span class="qa-xx-item-title">A：</span>
+            <input type="text" name="A" placeholder="请输入选项内容" class="layui-input"
+                   autocomplete="off" lay-verType="tips" lay-verify="required" required/>
+        </div>
+        <div class="qa-xx-item">
+            <span class="qa-xx-item-title">B：</span>
+            <input type="text" name="B" placeholder="请输入选项内容" class="layui-input"
+                   autocomplete="off" lay-verType="tips" lay-verify="required" required/>
+        </div>
+        <div class="qa-xx-item">
+            <span class="qa-xx-item-title">C：</span>
+            <input type="text" name="C" placeholder="请输入选项内容" class="layui-input"
+                   autocomplete="off" lay-verType="tips" lay-verify="required" required/>
+        </div>
+        <div class="qa-xx-item">
+            <span class="qa-xx-item-title">D：</span>
+            <input type="text" name="D" placeholder="请输入选项内容" class="layui-input" autocomplete="off"/>
+        </div>
+    </div>
+</script>
+
+
+</script>
+{/block}
+
+{block name="script"}
+<script type="text/javascript" src="/static/assets/libs/tinymce/tinymce.min.js"></script>
+<script>
+    layui.use(['layer', 'form', 'table', 'admin' , 'printer', 'xmSelect', 'laydate'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var admin = layui.admin;
+        var xmSelect = layui.xmSelect;
+        var laydate = layui.laydate;
+        var printer = layui.printer;
+
+        var paper_id = admin.getLayerData().paper_id;  // 获取列表页面传递的数据
+        /* 渲染表格 */
+        var insTb = table.render({
+            elem: '#mxTable',
+            url: "{:url('cms/question/datalist')}?id="+paper_id,
+            page: {limit: 15},
+            limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
+            toolbar: ['<p>',
+                //'<button lay-event="signinfo"  class="layui-btn layui-btn-sm layui-btn-danger icon-btn" id="no" style="display: none"><i class="layui-icon">&#xe655;</i>部分打印</button>',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>新增</button>&nbsp;',
+                '</p>'].join(''),
+                //defaultToolbar: ['filter'],
+            cellMinWidth: 100,
+            cols: [[
+                //{type: 'checkbox'},
+                {field: 'id', title: '序号', align: 'center'},
+                {field: 'title', title: '试题标题', align: 'center'},
+                {field: 'type', title: '试题类型', align: 'center'},
+                {field: 'score', title: '分值', align: 'center', sort: true},
+                {field: 'create_time', title: '创建时间', align: 'center', sort: true},
+                //{field: 'status', title: '状态', templet: '#mxTbState', align: 'center', sort: true, width: 80},
+                //{title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 80}
+            ]],
+            parseData: function(res){ //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+        });
+
+        // 试题类型切换事件
+        form.on('radio(raQT)', function (data) {
+            changeQT(data.value);
+        });
+
+        function changeQT(value, sel) {
+            if (value == 1) {
+                $('#qaRIGroup').html($('#eQuestionSinTpl').html());
+                form.render('select', 'eQuestionForm');
+                $('#eQuestionSelGroup').html($('#eQuestionSelTpl').html());
+            } else if (value == 2) {
+                $('#qaRIGroup').html($('#eQuestionMulTpl').html());
+                xmSelect.render({
+                    el: '#qaRIMore',
+                    data: [
+                        {name: 'A', value: 'A'},
+                        {name: 'B', value: 'B'},
+                        {name: 'C', value: 'C'},
+                        {name: 'D', value: 'D'}
+                    ]
+                });
+                $('#eQuestionSelGroup').html($('#eQuestionSelTpl').html());
+            } else if (value == 3) {
+                $('#qaRIGroup').html($('#eQuestionTfTpl').html());
+                form.render('select', 'eQuestionForm');
+                $('#eQuestionSelGroup').html('');
+            }
+        }
+
+        /*setTimeout(function () {
+            changeQT(1);
+        }, 50);*/
+
+        /* 渲染时间选择 */
+        laydate.render({
+            elem: 'input[name="createDateSel"]',
+            type: 'date',
+            range: true,
+            trigger: 'click'
+        });
+
+        /* 表格搜索 */
+        form.on('submit(mxTbSearch)', function (data) {
+            if (data.field.createDateSel) {
+                var searchDate = data.field.createDateSel.split(' - ');
+                data.field.startDate = searchDate[0];
+                data.field.endDate = searchDate[1];
+            } else {
+                data.field.startDate = null;
+                data.field.endDate = null;
+            }
+            data.field.createDateSel = undefined;
+            data.field.question_id = question_id;
+            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/training/datalist_same_study_search')}?id="+question_id});
+
+            // 显示按钮
+            var button = document.getElementById('no');
+            if (button) {
+                button.style.display = 'block'; // 或者使用 'inline', 'inline-block' 根据需要
+            }
+
+            return false;
+        });
+
+
+        /* 表格操作列点击事件 */
+        table.on('tool(mxTable)', function (obj) {
+            if (obj.event === 'edit') { // 编辑
+                showEditModel(obj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel(obj);
+            }
+        });
+
+        /* 监听单元格编辑 */
+        table.on('edit(mxTable)', function(obj){
+            if(isNaN(obj.value)){
+                layer.msg('只能输入数字！', {icon: 5, anim: 6});
+                return false;
+            }
+            var loadIndex = layer.load(2);
+            $.post("{:url('cms/training/edit_weight_same')}", {
+                id: obj.data.id,
+                weight: obj.value
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                }
+            }, 'json');
+        });
+
+        /* 表格头工具栏点击事件 */
+        table.on('toolbar(mxTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel();
+            } else if (obj.event === 'del') { // 删除
+                var checkRows = table.checkStatus('mxTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要删除的数据', {icon: 5, anim: 6});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.id;
+                });
+                doDel({ids: ids});
+            }
+        });
+
+        /* 显示表单弹窗 */
+        function showEditModel(mData) {
+            admin.open({
+                type: 1,
+                area: '950px',
+                title: (mData ? '编辑' : '新增') + '试题',
+                shade: 0.5,
+                //shadeClose: true,
+                content: $('#mxEditDialog').html(),
+                success: function (layero, dIndex) {
+                    // 渲染富文本编辑器
+                    tinymce.init({
+                        selector: '#eQuestionContentEdt',
+                        height: 525,
+                        branding: false,
+                        language: 'zh_CN',
+                        plugins: 'code print preview fullscreen paste searchreplace save autosave link autolink image imagetools media table codesample lists advlist hr charmap emoticons anchor directionality pagebreak quickbars nonbreaking visualblocks visualchars wordcount',
+                        toolbar: 'fullscreen preview code | undo redo | forecolor backcolor | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | formatselect fontselect fontsizeselect | link image media emoticons charmap pagebreak | anchor codesample ltr rtl',
+                        content_style: "img {max-width:100%;}",
+                        convert_urls: false,
+                        images_upload_handler: function (blobInfo, succFun, failFun) {
+                            var xhr, formData;
+                            var file = blobInfo.blob();//转化为易于理解的file对象
+                            xhr = new XMLHttpRequest();
+                            xhr.withCredentials = false;
+                            xhr.open('POST', "{:url('mxadmin/upload/upload_editor_same')}");
+                            xhr.onload = function() {
+                                var json;
+                                if (xhr.status != 200) {
+                                    failFun('HTTP Error: ' + xhr.status);
+                                    return;
+                                }
+                                json = JSON.parse(xhr.responseText);
+                                if (!json || typeof json.location != 'string') {
+                                    failFun('Invalid JSON: ' + xhr.responseText);
+                                    return;
+                                }
+                                succFun(json.location);
+                            };
+                            formData = new FormData();
+                            formData.append('file', file, file.name );//此处与源文档不一样
+                            xhr.send(formData);
+                        },
+                        setup: function(editor){
+                            editor.on('change',function(){ editor.save(); }); //ajax提交表单自动同步textarea
+                        }
+                    });
+
+                    // 回显表单数据
+                    form.val('eQuestionForm', mData);
+
+                    // 医院类型切换初始化加载
+                    mData ? changeQT(mData.urltype) : changeQT(1);
+
+                    // 表单提交事件
+                    form.on('submit(mxEditSubmit)', function (data) {
+                        var loadIndex = layer.load(2);
+                        data.field.paper_id=paper_id;
+                        $.post(mData ? "{:url('cms/question/edit')}" : "{:url('cms/question/add')}", data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (res.code === 1) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                insTb.reload();  // 保存成功刷新表格
+                            } else {
+                                layer.msg(res.msg, {icon: 5, anim: 6});
+                            }
+                        }, 'json');
+                        return false;
+                    });
+
+                },
+                end: function () {
+                    // 销毁编辑器
+                    tinymce.get('eQuestionContentEdt').destroy(false);
+                }
+            });
+        }
+
+        /* 删除 */
+        function doDel(obj) {
+            layer.confirm('确定要删除选中的数据吗？', {
+                title: '删除数据',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('cms/training/del')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : ''
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+        /* 推送 */
+        function doSend(obj) {
+            layer.confirm('确定要推送选中的数据吗？', {
+                title: '推送数据',
+                skin: 'layui-layer-admin',
+                shade: 0.5,
+                shadeClose: true,
+            }, function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.post("{:url('cms/training/send')}", {
+                    id: obj.data ? obj.data.id : '',
+                    ids: obj.ids ? obj.ids.join(',') : ''
+                }, function (res) {
+                    layer.close(loadIndex);
+                    if (res.code === 1) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb.reload();
+                    } else {
+                        layer.msg(res.msg, {icon: 5, anim: 6});
+                    }
+                }, 'json');
+            });
+        }
+
+        /* 编辑状态 */
+        form.on('switch(mxTbStateCk)', function (obj) {
+            var loadIndex = layer.load(2);
+            $.post("{:url('cms/training/edit_state_same')}", {
+                id: obj.elem.value,
+                status: obj.elem.checked ? 1 : 0
+            }, function (res) {
+                layer.close(loadIndex);
+                if (res.code === 1) {
+                    layer.msg(res.msg);
+                    insTb.reload();
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 6});
+                    $(obj.elem).prop('checked', !obj.elem.checked);
+                    form.render('checkbox');
+                }
+            }, 'json');
+        });
+    });
+</script>
+{/block}

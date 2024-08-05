@@ -32,7 +32,9 @@
         "zoujingli/ip2region": "^1.0",
         "phpmailer/phpmailer": "^6.2",
         "overtrue/wechat": "~5.0",
-        "topthink/think-filesystem": "^2.0"
+        "topthink/think-filesystem": "^2.0",
+      "ext-ctype": "*",
+      "ext-json": "*"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",

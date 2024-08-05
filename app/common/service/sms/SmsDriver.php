@@ -86,6 +86,7 @@ class SmsDriver
             }
             $this->defaultEngine = $defaultEngine;
             $classSpace = __NAMESPACE__ . '\\engine\\' . ucfirst(strtolower($defaultEngine)) . 'Sms';
+            print_r($classSpace);exit();
             if (!class_exists($classSpace)) {
                 throw new \Exception('没有相应的短信驱动类');
             }
