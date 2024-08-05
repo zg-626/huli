@@ -80,7 +80,7 @@ class SmsDriver
     public function initialize()
     {
         try {
-            $defaultEngine = ConfigService::get('sms', 'engine', false);
+            $defaultEngine = ConfigService::get('sms', 'engine', true);
             if($defaultEngine === false) {
                 throw new \Exception('请开启短信配置');
             }
