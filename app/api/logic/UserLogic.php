@@ -22,7 +22,8 @@ use app\common\{enum\notice\NoticeEnum,
     model\user\User,
     model\user\UserAuth,
     service\sms\SmsDriver,
-    service\wechat\WeChatMnpService};
+    service\wechat\WeChatMnpService
+};
 use think\facade\Config;
 
 /**
@@ -70,7 +71,9 @@ class UserLogic extends BaseLogic
     public static function info(int $userId)
     {
         $user = User::where(['id' => $userId])
-            ->field('id,sex,password,nickname,headimg,phone,create_time')
+            ->withoutField(
+                'password,login_ip,login_time,create_time,update_time,last_login_ip,last_login_time,login_num,user_agent'
+            )
             ->findOrEmpty();
         $user['has_password'] = !empty($user['password']);
         //$user['has_auth'] = self::hasWechatAuth($userId);
@@ -93,7 +96,8 @@ class UserLogic extends BaseLogic
         try {
             return User::update([
                     'id' => $userId,
-                    $params['field'] => $params['value']]
+                    $params['field'] => $params['value']
+                ]
             );
         } catch (\Exception $e) {
             self::$error = $e->getMessage();
@@ -112,7 +116,7 @@ class UserLogic extends BaseLogic
     public static function hasWechatAuth(int $userId)
     {
         //是否有微信授权登录
-        $terminal = [UserTerminalEnum::WECHAT_MMP, UserTerminalEnum::WECHAT_OA,UserTerminalEnum::PC];
+        $terminal = [UserTerminalEnum::WECHAT_MMP, UserTerminalEnum::WECHAT_OA, UserTerminalEnum::PC];
         $auth = UserAuth::where(['user_id' => $userId])
             ->whereIn('terminal', $terminal)
             ->findOrEmpty();
@@ -294,6 +298,7 @@ class UserLogic extends BaseLogic
                 'first_graduate_school' => $params['first_graduate_school'],
                 'first_graduate_time' => $params['first_graduate_time'],
                 'highest_education' => $params['highest_education'],
+                'educational_id' => $params['highest_education'],
                 'highest_graduate_school' => $params['highest_graduate_school'],
                 'highest_graduate_time' => $params['highest_graduate_time'],
                 'level' => $params['level'],
@@ -317,7 +322,6 @@ class UserLogic extends BaseLogic
             self::$error = $e->getMessage();
             return false;
         }
-
     }
 
 }

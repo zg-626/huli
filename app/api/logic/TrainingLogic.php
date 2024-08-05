@@ -16,17 +16,17 @@ namespace app\api\logic;
 
 
 use app\common\logic\BaseLogic;
-use app\cms\model\Fees;
+use app\cms\model\Training;
 use app\common\service\FileService;
 use think\facade\Db;
 
 
 /**
- * Fees逻辑
- * Class FeesLogic
+ * Training逻辑
+ * Class TrainingLogic
  * @package app\api\logic
  */
-class FeesLogic extends BaseLogic
+class TrainingLogic extends BaseLogic
 {
 
 
@@ -41,14 +41,12 @@ class FeesLogic extends BaseLogic
     {
         Db::startTrans();
         try {
-            Fees::create([
+            Training::create([
                 'user_id' => $params['user_id'],
-                'fees_type' => $params['fees_type'],
-                'fees_year' => $params['fees_year'],
-                'fees_time' => $params['fees_time'],
-                'money' => $params['money'],
-                'way' => $params['way'],
-                'image' => $params['image'],
+                'position_id' => $params['position_id'],
+                'department' => $params['department'],
+                'start_time' => $params['start_time'],
+                'end_time' => $params['end_time'],
             ]);
 
             Db::commit();
@@ -73,13 +71,11 @@ class FeesLogic extends BaseLogic
         Db::startTrans();
         try {
 
-            Fees::where('id', $params['id'])->update([
-                'fees_type' => $params['fees_type'],
-                'fees_year' => $params['fees_year'],
-                'fees_time' => $params['fees_time'],
-                'money' => $params['money'],
-                'way' => $params['way'],
-                'image' => $params['image'],
+            Training::where('id', $params['id'])->update([
+                'position_id' => $params['position_id'],
+                'department' => $params['department'],
+                'start_time' => $params['start_time'],
+                'end_time' => $params['end_time'],
             ]);
 
             Db::commit();
@@ -101,7 +97,7 @@ class FeesLogic extends BaseLogic
      */
     public static function delete(array $params): bool
     {
-        return Fees::destroy($params['id']);
+        return Training::destroy($params['id']);
     }
 
 
@@ -114,38 +110,6 @@ class FeesLogic extends BaseLogic
      */
     public static function detail($params): array
     {
-        return Fees::findOrEmpty($params['id'])->toArray();
-    }
-
-
-    /**增加发票
-     * description:有劳写下注释
-     * author: esc
-     * Date: 2024/8/5 下午1:48
-     * @return bool
-     */
-    public static function addInvoice(array $params)
-    {
-        Db::startTrans();
-        try {
-            Fees::create([
-                'user_id' => $params['user_id'],
-                'company' => $params['company'],
-                'unit' => $params['unit'],
-                'project' => $params['project'],
-                'mobile' => $params['mobile'],
-                'money' => $params['money'],
-                'email' => $params['email'],
-                'remark' => $params['remark']??'',
-
-            ]);
-
-            Db::commit();
-            return true;
-        } catch (\Exception $e) {
-            Db::rollback();
-            self::setError($e->getMessage());
-            return false;
-        }
+        return Training::findOrEmpty($params['id'])->toArray();
     }
 }
