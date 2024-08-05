@@ -298,7 +298,7 @@ class UserLogic extends BaseLogic
                 'first_graduate_school' => $params['first_graduate_school'],
                 'first_graduate_time' => $params['first_graduate_time'],
                 'highest_education' => $params['highest_education'],
-                'educational_id' => $params['highest_education'],
+                'educational_id' => $params['educational_id'],
                 'highest_graduate_school' => $params['highest_graduate_school'],
                 'highest_graduate_time' => $params['highest_graduate_time'],
                 'level' => $params['level'],
