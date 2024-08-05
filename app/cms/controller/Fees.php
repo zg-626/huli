@@ -188,50 +188,6 @@ class Fees extends AdminBase
         }
     }
 
-    /**
-     * 开票
-     */
-    public function open($id)
-    {
-        if (request()->isPost()) {
-            $data = input('param.');
-            if (empty($id)) {
-                $ids = explode(',', $data['ids']);
-            } else {
-                $ids = $id;
-            }
-            $result = FeesModel::whereIn('id', $ids)->update(['status' => 1]);
-
-            if ($result == true) {
-                return $this->success('开票成功');
-            } else {
-                return $this->error('开票失败');
-            }
-        }
-    }
-
-    /**
-     * 作废
-     */
-    public function cancel($id)
-    {
-        if (request()->isPost()) {
-            $data = input('param.');
-            if (empty($id)) {
-                $ids = explode(',', $data['ids']);
-            } else {
-                $ids = $id;
-            }
-            $result = FeesModel::whereIn('id', $ids)->update(['status' => 0]);
-
-            if ($result == true) {
-                return $this->success('作废成功');
-            } else {
-                return $this->error('作废失败');
-            }
-        }
-    }
-
     // 审核
     public function shenhe($id)
     {
@@ -242,7 +198,8 @@ class Fees extends AdminBase
             } else {
                 $ids = $id;
             }
-            $result = FeesModel::whereIn('id', $ids)->update(['status' => 2]);
+
+            $result = FeesModel::whereIn('id', $ids)->update(['status' => $data['status']]);
             if ($result == true) {
                 return $this->success('审核成功');
             } else {

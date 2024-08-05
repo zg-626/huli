@@ -144,7 +144,7 @@
             </div>
         </div>
         <div class="layui-form-item text-right">
-            <button class="layui-btn" lay-filter="mxEditSubmit" lay-submit>保存</button>
+<!--            <button class="layui-btn" lay-filter="mxEditSubmit" lay-submit>保存</button>-->
             <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
         </div>
     </form>
@@ -156,8 +156,8 @@
         <div class="layui-form-item">
             <label class="layui-form-label layui-form-required">审核结果</label>
             <div class="layui-input-block">
-                <input name="status" type="radio" value="1" title="通过" checked/>
-                <input name="status" type="radio" value="2" title="驳回"/>
+                <input name="status" type="radio" value="2" title="通过" checked/>
+                <input name="status" type="radio" value="3" title="驳回"/>
             </div>
         </div>
         <div class="layui-form-item layui-form-text">
@@ -199,16 +199,7 @@
             iePreview: true,          // 是否兼容ie打印预览
             print: true              // 如果是打开新窗口是否自动打印
         });*/
-        // 自定义打印
-        $('#printer').on('click', function (e) {
-            printer.printHtml({
-                //html: '<div style="color: red;text-align: center;">Hello Word !</div>',
-                html: $('#divTablePrint').html(),
-                blank: true,              // 是否打开新页面打印
-                close: true,              // 如果是打开新页面，打印完是否关闭
-                iePreview: false,          // 是否兼容ie打印预览
-            });
-        })
+
         
         /* 渲染表格 */
         var insTb = table.render({
@@ -218,13 +209,12 @@
             limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
             toolbar: ['<p>',
                 '<button lay-event="open" class="layui-btn layui-btn-sm layui-btn-green icon-btn">批量审核</button>',
-                '<button lay-event="cancel" class="layui-btn layui-btn-sm layui-btn-danger icon-btn">批量驳回</button>',
                 //'<button lay-event="signinfo"  class="layui-btn layui-btn-sm layui-btn-danger icon-btn" id="no" style="display: none"><i class="layui-icon">&#xe655;</i>部分打印</button>',
                 '</p>'].join(''),
                 //defaultToolbar: ['filter'],
             cellMinWidth: 100,
             cols: [[
-                //{type: 'checkbox'},
+                {type: 'checkbox'},
                 {field: 'id', title: '序号', align: 'center'},
                 {field: 'fees_type', title: '缴费类型', align: 'center'},
                 {field: 'fees_year', title: '缴费年份', align: 'center'},
@@ -258,6 +248,19 @@
                     "data": res.data.data //解析数据列表
                 };
             },
+            done: function (res, curr, count) {
+                orders_data_length = res.data.length;
+                suborders_data     = res.data[0];
+                suborders_data_arr = res.data;
+                for(let suborders_key in suborders_data_arr) {
+                    if(suborders_data_arr[suborders_key]['status'] == 2){
+                        $('th[data-field="1"] input[type="checkbox"]').prop('disabled', true); // 禁止全选
+                        let index = suborders_data_arr[suborders_key]['LAY_TABLE_INDEX'];
+                        $('tr[data-index=' + index + '] input[type="checkbox"]').prop('disabled', true); // 禁止部分选择
+                    }
+                };
+                form.render('checkbox');
+            }
         });
 
         /* 点击图片放大 */
@@ -344,31 +347,20 @@
                     return d.id;
                 });
                 doDel({ids: ids});
+            }else if(obj.event === 'open'){
+                var checkRows = table.checkStatus('mxTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要审核的数据', {icon: 5, anim: 6});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.id;
+                });
+                showShenheModel({ids: ids});
             }else{
                 showSignModel(obj);
             }
         });
-
-
-        /* 显示表单弹窗 */
-        function showSignModel(obj) {
-
-            //console.log(m_id);
-            admin.open({
-                type: 2,
-                area: ['1620px', '1080px'],
-                title: '签到记录',
-                shade: 0.5,
-                //shadeClose: true,
-                //content: '<table id="mxSigninfo" lay-filter="mxSigninfo"></table>',
-                content: "{:url('cms/fees/printer')}?id="+87,
-                success: function (layero, dIndex) {
-
-
-                }
-            });
-
-        }
 
         /* 显示表单弹窗 */
         function showShenheModel(mData) {
@@ -385,6 +377,8 @@
                     // 表单提交事件
                     form.on('submit(userShenheSubmit)', function (data) {
                         //data.field.d_id = insXmSel.getValue('valueStr');
+                        data.field.id= mData.data ? mData.data.id : '';
+                            data.field.ids= mData.ids ? mData.ids.join(',') : ''
                         var loadIndex = layer.load(2);
                         $.post(mData ? "{:url('cms/fees/shenhe')}" : "{:url('cms/fees/add')}", data.field, function (res) {
                             layer.close(loadIndex);
