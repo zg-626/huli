@@ -5,8 +5,6 @@ declare (strict_types = 1);
 namespace app\cms\controller;
 
 use app\mxadmin\AdminBase;
-use app\cms\model\CmsArticle;
-use app\cms\model\CmsCategory;
 use think\exception\ValidateException;
 
 class Question extends AdminBase
@@ -39,7 +37,24 @@ class Question extends AdminBase
      */
     public function datalist($id,$limit=15)
     {
-        $list = \app\cms\model\Question::where('paper_id', $id)->order('weight asc,id desc')->paginate($limit);
+        $list = \app\cms\model\Question::where('paper_id', $id)->order('weight asc,id desc')->append(['typeName'])->paginate($limit);
+        if (!$list->isEmpty()) {
+            foreach ($list as $key => $value) {
+                // 解码 options 字段为关联数组
+                $options = json_decode($value['options'], true);
+
+                // 将 options 中的每个选项作为新字段保存
+                foreach ($options as $optionKey => $optionValue) {
+                    $list[$key][$optionKey] = $optionValue;
+                }
+                $list[$key]['options'] = $options;
+                // 如果 type 等于 2，处理 select 字段（假设 select 是以逗号分隔的字符串）
+                if ($value['type'] == 2) {
+                    $list[$key]['select'] = explode(',', $value['select']);
+                }
+            }
+        }
+
         return $this->result($list);
     }
 
@@ -52,7 +67,7 @@ class Question extends AdminBase
     {
         if (request()->isGet()) {
             $data = input('param.');
-            $serach = new CmsArticle();
+            $serach = new \app\cms\model\Question();
             if ($data['cid'] != '') {
                 $serach = $serach->where('category_id', $data['cid']);
             }
@@ -62,7 +77,7 @@ class Question extends AdminBase
             if ($data['status'] != '') {
                 $serach = $serach->where('status', $data['status']);
             }
-            $list = $serach->with(['admin', 'category'])->order('weight asc,id desc')->paginate($limit);
+            $list = $serach->where('paper_id', $id)->order('weight asc,id desc')->append(['typeName'])->paginate($limit);
             return $this->result($list);
         }
     }
@@ -89,9 +104,10 @@ class Question extends AdminBase
             $create=[
                 'score' => $data['score'],
                 'paper_id' => $data['paper_id'],
-                'typeId' => $data['typeId'],
+                'type' => $data['type'],
                 'content' => $data['content'],
-                'answer' => $data['answer'],
+                'answer' => $data['answer']??'',
+                'select' => $data['select']??'',
                 'options' => json_encode($options)
             ];
             $result = \app\cms\model\Question::create($create);
@@ -114,14 +130,28 @@ class Question extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            try {
-                $this->validate($data, 'Article');
-            } catch (ValidateException $e) {
-                // 验证失败 输出错误信息
-                return $this->error($e->getError());
+            //print_r($data);exit();
+            $lettersArray = []; // 初始化一个空数组，用来存储单个字母
+
+            foreach ($data as $key => $value) {
+                // 检查$key是否为单个字母（即长度为1的字母），并且$value不为空
+                if (strlen($key) == 1 && $this->isSingleLetter($key) && !empty($value)) {
+                    $lettersArray[$key] = $value; // 将符合条件的单个字母和对应的值存入新数组
+                }
             }
 
-            $result = CmsArticle::update($data, ['id' => $id]);
+            // 现在 $lettersArray 中包含了所有输入字段中的单个字母及其大写形式
+            $options=$lettersArray;
+            $update=[
+                'score' => $data['score'],
+                'paper_id' => $data['paper_id'],
+                'type' => $data['type'],
+                'content' => $data['content'],
+                'answer' => $data['answer']??'',
+                'select' => $data['select']??'',
+                'options' => json_encode($options)
+            ];
+            $result = \app\cms\model\Question::update($update, ['id' => $id]);
             if ($result == true) {
                 return $this->success('修改成功');
             } else {
@@ -137,7 +167,7 @@ class Question extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            $result = CmsArticle::update(['status' => $data['status']], ['id' => $id]);
+            $result = \app\cms\model\Question::update(['status' => $data['status']], ['id' => $id]);
             if ($result == true) {
                 return $this->success($data['status'] ? '已启用' : '已禁用');
             } else {
@@ -153,7 +183,7 @@ class Question extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            $result = CmsArticle::update(['weight' => $data['weight']], ['id' => $id]);
+            $result = \app\cms\model\Question::update(['weight' => $data['weight']], ['id' => $id]);
             if ($result == true) {
                 return $this->success('修改成功');
             } else {
@@ -175,7 +205,7 @@ class Question extends AdminBase
             } else {
                 $ids = $id;
             }
-            $result = CmsArticle::destroy($ids);
+            $result = \app\cms\model\Question::destroy($ids);
             if ($result == true) {
                 return $this->success('删除成功');
             } else {

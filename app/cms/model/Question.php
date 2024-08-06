@@ -13,4 +13,12 @@ class Question extends Model
     {
         return $this->hasOne(DictData::class, 'id', 'type')->bind(['type_name' => 'name']);
     }*/
+
+    // 获取试题类型
+    public function getTypeNameAttr($value,$data)
+    {
+        $type = [1=>'单选题',2=>'多选题',3=>'判断题'];
+        return $type[$data['type']];
+
+    }
 }
