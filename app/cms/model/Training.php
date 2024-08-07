@@ -30,6 +30,12 @@ class Training extends Model
         return $this->hasMany(TrainingSign::class, 'training_id', 'id');
     }
 
+    //关联试卷
+    public function paper()
+    {
+        return $this->belongsTo(Paper::class, 'paper_id', 'id');
+    }
+
     //多图保存
     public function setPhotosAttr($value)
     {

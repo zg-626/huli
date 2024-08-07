@@ -41,56 +41,6 @@ class TrainingController extends BaseApiController
         return $this->dataLists(new TrainingLists());
     }
 
-
-    /**
-     * @notes 添加
-     * @return \think\response\Json
-     * @author esc
-     * @date 2023/09/18 14:09
-     */
-    public function add()
-    {
-        $params = (new TrainingValidate())->post()->goCheck('add');
-        $params['user_id'] = $this->userId;
-        $result = TrainingLogic::add($params);
-        if (true === $result) {
-            return $this->success('添加成功', [], 1, 1);
-        }
-        return $this->fail(TrainingLogic::getError());
-    }
-
-
-    /**
-     * @notes 编辑
-     * @return \think\response\Json
-     * @author esc
-     * @date 2023/09/18 14:09
-     */
-    public function edit()
-    {
-        $params = (new TrainingValidate())->post()->goCheck('edit');
-        $result = TrainingLogic::edit($params);
-        if (true === $result) {
-            return $this->success('编辑成功', [], 1, 1);
-        }
-        return $this->fail(TrainingLogic::getError());
-    }
-
-
-    /**
-     * @notes 删除
-     * @return \think\response\Json
-     * @author esc
-     * @date 2023/09/18 14:09
-     */
-    public function delete()
-    {
-        $params = (new TrainingValidate())->post()->goCheck('delete');
-        TrainingLogic::delete($params);
-        return $this->success('删除成功', [], 1, 1);
-    }
-
-
     /**
      * @notes 获取详情
      * @return \think\response\Json

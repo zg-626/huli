@@ -74,7 +74,7 @@ class TrainingSignLogic extends BaseLogic
             ])->findOrEmpty();
 
             if ($training->isEmpty()) {
-                throw new \Exception('该课程不存在');
+                throw new \Exception('该学习班不存在');
             }
 
             if ($training->is_exam === 0) {
@@ -130,5 +130,23 @@ class TrainingSignLogic extends BaseLogic
     public static function detail($params): array
     {
         return TrainingSign::with(['typename'])->withCount(['signups'])->findOrEmpty($params['id'])->toArray();
+    }
+
+    public static function studyLists(array $params): array
+    {
+        return TrainingSign::hasWhere('training', function ($query) {
+            $is_exam = 1;
+            if (!empty($is_exam)) {
+                $query->where('is_exam', $is_exam);
+            }
+        })->with([
+            'training' => function ($query) {
+                $query->with('paper');
+            }
+        ])->where([
+            'user_id' => $params['user_id'],
+            'is_study' => $params['is_study']
+
+        ])->order('id', 'desc')->select()->toArray();
     }
 }

@@ -20,6 +20,7 @@ use app\api\lists\TrainingSignLists;
 use app\api\logic\TrainingSignLogic;
 use app\api\validate\SignValidate;
 use app\api\validate\TrainingSignValidate;
+use think\response\Json;
 
 
 /**
@@ -33,7 +34,7 @@ class TrainingSignController extends BaseApiController
 
     /**
      * @notes 获取列表
-     * @return \think\response\Json
+     * @return Json
      * @author esc
      * @date 2023/09/18 14:09
      */
@@ -42,10 +43,20 @@ class TrainingSignController extends BaseApiController
         return $this->dataLists(new TrainingSignLists());
     }
 
+    // 学习列表
+    public function studyLists($is_study): Json
+    {
+        $params['user_id'] = $this->userId;
+        $params['is_study'] = $is_study;
+        $result = TrainingSignLogic::studyLists($params);
+
+        return $this->success('获取成功', $result, 1, 1);
+    }
+
 
     /**
      * @notes 报名
-     * @return \think\response\Json
+     * @return Json
      * @author esc
      * @date 2023/09/18 14:09
      */
@@ -62,7 +73,7 @@ class TrainingSignController extends BaseApiController
 
     /**
      * @notes 签到
-     * @return \think\response\Json
+     * @return Json
      * @author 段誉
      * @date 2022/2/17 18:29
      */
@@ -70,7 +81,7 @@ class TrainingSignController extends BaseApiController
     {
         $params = (new SignValidate())->post()->goCheck(null, ['user_id' => $this->userId]);
         $result = TrainingSignLogic::sign($params);
-        if (false === $result) {
+        if (true === $result) {
             return $this->success('签到成功', [], 1, 1);
         }
         return $this->fail(TrainingSignLogic::getError());
