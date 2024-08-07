@@ -16,17 +16,17 @@ namespace app\api\logic;
 
 
 use app\common\logic\BaseLogic;
-use app\cms\model\Training;
+use app\cms\model\Question;
 use app\common\service\FileService;
 use think\facade\Db;
 
 
 /**
- * Training逻辑
- * Class TrainingLogic
+ * Question逻辑
+ * Class QuestionLogic
  * @package app\api\logic
  */
-class TrainingLogic extends BaseLogic
+class QuestionLogic extends BaseLogic
 {
 
 
@@ -41,7 +41,7 @@ class TrainingLogic extends BaseLogic
     {
         Db::startTrans();
         try {
-            Training::create([
+            Question::create([
                 'user_id' => $params['user_id'],
                 'position_id' => $params['position_id'],
                 'department' => $params['department'],
@@ -71,7 +71,7 @@ class TrainingLogic extends BaseLogic
         Db::startTrans();
         try {
 
-            Training::where('id', $params['id'])->update([
+            Question::where('id', $params['id'])->update([
                 'position_id' => $params['position_id'],
                 'department' => $params['department'],
                 'start_time' => $params['start_time'],
@@ -97,7 +97,7 @@ class TrainingLogic extends BaseLogic
      */
     public static function delete(array $params): bool
     {
-        return Training::destroy($params['id']);
+        return Question::destroy($params['id']);
     }
 
 
@@ -110,6 +110,17 @@ class TrainingLogic extends BaseLogic
      */
     public static function detail($params): array
     {
-        return Training::with(['typename'])->withCount(['signups'])->findOrEmpty($params['id'])->toArray();
+        $info = Question::findOrEmpty($params['id'])->toArray();
+        if($info){
+            // 解码 options 字段为关联数组
+            $options = json_decode($info['options'], true);
+
+            $info['options'] = $options;
+            // 如果 type 等于 2，处理 select 字段（假设 select 是以逗号分隔的字符串）
+            if ($info['type'] == 2) {
+                $info['select'] = explode(',', $info['select']);
+            }
+        }
+        return $info;
     }
 }

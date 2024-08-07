@@ -28,7 +28,7 @@ class IndexController extends BaseApiController
 {
 
 
-    public array $notNeedLogin = ['index','getStep','getSpeak','getBarrage','getBanner', 'config', 'policy', 'decorate'];
+    public array $notNeedLogin = ['index','getCategory','getSpeak','getBarrage','getBanner', 'config', 'policy', 'decorate'];
 
 
     /**
@@ -59,14 +59,14 @@ class IndexController extends BaseApiController
     }
 
     /**
-     * @notes 步骤
+     * @notes 分类
      * @return Json
      * @author esc
      * @date 2023/09/28 09:31
      */
-    public function getStep()
+    public function getCategory($pid=0)
     {
-        $result = IndexLogic::getStep();
+        $result = IndexLogic::getCategory($pid);
         return $this->data($result);
     }
 

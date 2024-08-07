@@ -18,6 +18,7 @@ namespace app\api\controller;
 
 use app\api\lists\TrainingSignLists;
 use app\api\logic\TrainingSignLogic;
+use app\api\validate\SignValidate;
 use app\api\validate\TrainingSignValidate;
 
 
@@ -43,15 +44,15 @@ class TrainingSignController extends BaseApiController
 
 
     /**
-     * @notes 添加
+     * @notes 报名
      * @return \think\response\Json
      * @author esc
      * @date 2023/09/18 14:09
      */
     public function add()
     {
-        $params = (new TrainingSignValidate())->post()->goCheck('add');
         $params['user_id'] = $this->userId;
+        $params = (new TrainingSignValidate())->post()->goCheck('add',['user_id' => $this->userId]);
         $result = TrainingSignLogic::add($params);
         if (true === $result) {
             return $this->success('添加成功', [], 1, 1);
@@ -59,50 +60,19 @@ class TrainingSignController extends BaseApiController
         return $this->fail(TrainingSignLogic::getError());
     }
 
-
     /**
-     * @notes 编辑
+     * @notes 签到
      * @return \think\response\Json
-     * @author esc
-     * @date 2023/09/18 14:09
+     * @author 段誉
+     * @date 2022/2/17 18:29
      */
-    public function edit()
+    public function sign()
     {
-        $params = (new TrainingSignValidate())->post()->goCheck('edit');
-        $result = TrainingSignLogic::edit($params);
-        if (true === $result) {
-            return $this->success('编辑成功', [], 1, 1);
+        $params = (new SignValidate())->post()->goCheck(null, ['user_id' => $this->userId]);
+        $result = TrainingSignLogic::sign($params);
+        if (false === $result) {
+            return $this->success('签到成功', [], 1, 1);
         }
         return $this->fail(TrainingSignLogic::getError());
     }
-
-
-    /**
-     * @notes 删除
-     * @return \think\response\Json
-     * @author esc
-     * @date 2023/09/18 14:09
-     */
-    public function delete()
-    {
-        $params = (new TrainingSignValidate())->post()->goCheck('delete');
-        TrainingSignLogic::delete($params);
-        return $this->success('删除成功', [], 1, 1);
-    }
-
-
-    /**
-     * @notes 获取详情
-     * @return \think\response\Json
-     * @author esc
-     * @date 2023/09/18 14:09
-     */
-    public function detail()
-    {
-        $params = (new TrainingSignValidate())->goCheck('detail');
-        $result = TrainingSignLogic::detail($params);
-        return $this->data($result);
-    }
-
-
 }

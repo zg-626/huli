@@ -15,18 +15,19 @@
 namespace app\api\logic;
 
 
-use app\common\logic\BaseLogic;
 use app\cms\model\Training;
+use app\common\logic\BaseLogic;
+use app\cms\model\TrainingSign;
 use app\common\service\FileService;
 use think\facade\Db;
 
 
 /**
- * Training逻辑
- * Class TrainingLogic
+ * TrainingSign逻辑
+ * Class TrainingSignLogic
  * @package app\api\logic
  */
-class TrainingLogic extends BaseLogic
+class TrainingSignLogic extends BaseLogic
 {
 
 
@@ -41,12 +42,9 @@ class TrainingLogic extends BaseLogic
     {
         Db::startTrans();
         try {
-            Training::create([
+            TrainingSign::create([
                 'user_id' => $params['user_id'],
-                'position_id' => $params['position_id'],
-                'department' => $params['department'],
-                'start_time' => $params['start_time'],
-                'end_time' => $params['end_time'],
+                'training_id' => $params['training_id']
             ]);
 
             Db::commit();
@@ -60,22 +58,43 @@ class TrainingLogic extends BaseLogic
 
 
     /**
-     * @notes 编辑
+     * @notes 签到
      * @param array $params
      * @return bool
      * @author esc
      * @date 2023/09/18 14:09
      */
-    public static function edit(array $params): bool
+    public static function sign(array $params): bool
     {
         Db::startTrans();
         try {
+            //查询学习班是否需要学习，如果不需要，签到=学习
+            $training = Training::where([
+                'id' => $params['training_id']
+            ])->findOrEmpty();
 
-            Training::where('id', $params['id'])->update([
-                'position_id' => $params['position_id'],
-                'department' => $params['department'],
-                'start_time' => $params['start_time'],
-                'end_time' => $params['end_time'],
+            if ($training->isEmpty()) {
+                throw new \Exception('该课程不存在');
+            }
+
+            if ($training->is_exam === 0) {
+                TrainingSign::where([
+                    'user_id' => $params['user_id'],
+                    'training_id' => $params['training_id']
+                ])->update([
+                    'is_check' => 1,
+                    'check_time' => time(),
+                    'is_study' => 1,
+                    'study_time' => time()
+                ]);
+            }
+
+            TrainingSign::where([
+                'user_id' => $params['user_id'],
+                'training_id' => $params['training_id']
+            ])->update([
+                'is_check' => 1,
+                'check_time' => time()
             ]);
 
             Db::commit();
@@ -97,7 +116,7 @@ class TrainingLogic extends BaseLogic
      */
     public static function delete(array $params): bool
     {
-        return Training::destroy($params['id']);
+        return TrainingSign::destroy($params['id']);
     }
 
 
@@ -110,6 +129,6 @@ class TrainingLogic extends BaseLogic
      */
     public static function detail($params): array
     {
-        return Training::with(['typename'])->withCount(['signups'])->findOrEmpty($params['id'])->toArray();
+        return TrainingSign::with(['typename'])->withCount(['signups'])->findOrEmpty($params['id'])->toArray();
     }
 }

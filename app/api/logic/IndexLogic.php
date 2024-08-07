@@ -15,6 +15,7 @@
 namespace app\api\logic;
 
 
+use app\cms\model\CmsCategory;
 use app\common\logic\BaseLogic;
 use app\common\model\article\Article;
 use app\common\model\Banner;
@@ -104,7 +105,7 @@ class IndexLogic extends BaseLogic
     }
 
     /**
-     * @notes banner
+     * @notes 分类
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -112,21 +113,17 @@ class IndexLogic extends BaseLogic
      * @author 段誉
      * @date 2022/9/21 19:15
      */
-    public static function getStep()
+    public static function getCategory($pid = 0)
     {
-        // banner
         $field = [
             'id',
-            'image'
+            'name'
         ];
 
-        $article = Step::field($field)
-            ->where(['delete_time' => null])
-            ->order(['sort' => 'desc'])
+        $article = CmsCategory::field($field)
+            ->where(['pid' => $pid, 'status' => 1])
+            ->order(['weight' => 'desc'])
             ->select()->toArray();
-        /*foreach ($article as &$item) {
-            $item['image'] = FileService::getFileUrl($item['image']);
-        }*/
 
         return $article;
     }
