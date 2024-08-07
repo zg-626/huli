@@ -15,6 +15,8 @@
 namespace app\api\logic;
 
 
+use app\cms\model\Paper;
+use app\cms\model\Question;
 use app\cms\model\Training;
 use app\common\logic\BaseLogic;
 use app\cms\model\TrainingSign;
@@ -148,5 +150,68 @@ class TrainingSignLogic extends BaseLogic
             'is_study' => $params['is_study']
 
         ])->order('id', 'desc')->select()->toArray();
+    }
+
+    public static function answer(array $params)
+    {
+        // 获取试卷的信息
+        //$info=Paper::findOrEmpty($params['paper_id'])->toArray();
+        // 获取试题列表
+        // 获取试题列表，并将试题以题目ID为键存储在哈希表中
+        $questionList=Question::where('paper_id', $params['paper_id'])->field('id,answer,select,type,score')
+            ->select();
+        // 初始化得分和答题记录数组
+        $totalScore = 0;
+        $answerRecords = [];
+
+        foreach ($params['answers'] as $answer) {
+            // 直接从哈希表中获取试题信息
+            $question = Question::where('id', $answer['question_id'])->find()->toArray();
+
+            if (!$question) {
+                continue; // 如果找不到对应试题，跳过
+            }
+
+            // 初始化答题记录
+            $record = [
+                'question_id' => $answer['question_id'],
+                'user_answer' => $answer['user_answer'],
+                'is_correct' => false,
+                'score_obtained' => 0,
+                'correct_answer' => $question,
+                'question_score' => $question['score'],
+            ];
+
+            // 根据题目类型判断答案是否正确
+            if ($question['type'] == 1 || $question['type'] == 3) { // 单选题或判断题
+                if ($answer['user_answer'] == $question['answer']) {
+                    $record['is_correct'] = true;
+                    $record['score_obtained'] = $question['score'];
+                    $totalScore += $question['score'];
+                }
+            } elseif ($question['type'] == 2) { // 多选题
+                //print_r($question);exit;
+                $question['select'] = explode(',', $question['select']);
+                sort($answer['user_answer']); // 排序用户答案，方便比较
+                sort($question['select']); // 排序正确答案，方便比较
+
+                if ($answer['user_answer'] == $question['select']) {
+                    $record['is_correct'] = true;
+                    $record['score_obtained'] = $question['score'];
+                    $totalScore += $question['score'];
+                }
+            }
+            // 将答题记录添加到记录数组中
+            $answerRecords[] = $record;
+        }
+
+        // 保存答题记录到数据库或返回给前端，此处省略
+
+        // 返回总得分和答题记录
+        return [
+            'total_score' => $totalScore,
+            'answer_records' => $answerRecords,
+        ];
+
     }
 }
