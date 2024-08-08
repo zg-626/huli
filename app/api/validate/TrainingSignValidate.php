@@ -65,7 +65,7 @@ class TrainingSignValidate extends BaseValidate
      */
     public function sceneEdit()
     {
-        return $this->only(['id', 'training_id']);
+        return $this->only(['id', 'total_score']);
     }
 
 

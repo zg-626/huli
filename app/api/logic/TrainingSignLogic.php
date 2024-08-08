@@ -158,7 +158,7 @@ class TrainingSignLogic extends BaseLogic
         //$info=Paper::findOrEmpty($params['paper_id'])->toArray();
         // 获取试题列表
         // 获取试题列表，并将试题以题目ID为键存储在哈希表中
-        $questionList=Question::where('paper_id', $params['paper_id'])->field('id,answer,select,type,score')
+        $questionList = Question::where('paper_id', $params['paper_id'])->field('id,answer,select,type,score')
             ->select();
         // 初始化得分和答题记录数组
         $totalScore = 0;
@@ -205,13 +205,21 @@ class TrainingSignLogic extends BaseLogic
             $answerRecords[] = $record;
         }
 
-        // 保存答题记录到数据库或返回给前端，此处省略
+        // 保存答题记录到数据
+        TrainingSign::where([
+            'user_id' => $params['user_id'],
+            'training_id' => $params['training_id'],
+        ])->update([
+            'total_score' => $totalScore,
+            'is_study' => 1,
+            'study_time' => time(),
+            //'answer_records' => $answerRecords,
+        ]);
 
         // 返回总得分和答题记录
         return [
             'total_score' => $totalScore,
             'answer_records' => $answerRecords,
         ];
-
     }
 }
