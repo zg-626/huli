@@ -98,7 +98,8 @@
 
 <!-- 表格操作列 -->
 <script type="text/html" id="userTbBar">
-    <a class="layui-btn layui-btn-xs" lay-event="edit">查看</a>
+    <!--<a class="layui-btn layui-btn-xs" lay-event="edit">查看</a>-->
+    <a class="layui-btn layui-btn-xs" lay-event="find">查看</a>
     <a  class="layui-btn layui-btn-xs {{(d.status == 1)?'layui-btn-disabled':''}}" {{(d.status == 1)?'':'lay-event="shenhe"'}}>
     {{(d.status == 1)?'审核
     </span>':'审核
@@ -379,6 +380,8 @@
                 showEditModel(obj.data);
             }else if (obj.event === 'shenhe') { // 审核
                 showShenheModel(obj.data);
+            }else if (obj.event === 'find') { // 查看
+                showModel(obj.data);
             }else if (obj.event === 'editStatus') { // 编辑
                 doEditStatus(obj,'您确定要编辑“' + obj.data.phone + '”的状态吗？');
             } else if (obj.event === 'del') { // 删除
@@ -413,6 +416,29 @@
                 });
             }
         });
+
+        /* 显示表单弹窗 */
+        function showModel(mData) {
+            var layIndex = admin.open({
+                title: (mData ? '查看' : '添加') + '会员',
+                shade: 0.5,
+                //shadeClose: true,
+                url: "{:url('mxadmin/user/find')}?id=" + mData.id,
+                data: {formdata: mData},     // 传递数据到表单页面
+                end: function () {
+                    if (admin.getLayerData(layIndex, 'formOk')) {  // 判断表单操作成功标识
+                        insTb.reload();  // 成功刷新表格
+                    }
+                },
+                success: function (layero, dIndex) {
+                    // 弹窗超出范围不出现滚动条
+                    //$(layero).children('.layui-layer-content').css('overflow', 'visible');
+                }
+            });
+            // 窗口打开即全屏
+            layer.full(layIndex);
+        }
+
 
         /* 表格头工具栏点击事件 */
         table.on('toolbar(userTable)', function (obj) {

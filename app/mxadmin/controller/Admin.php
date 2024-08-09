@@ -33,7 +33,7 @@ class Admin extends AdminBase
     public function datalist($limit=15)
     {
         $list = AdminModel::with(['roles','user'=> function ($query) {
-            $query->with(['department','educationalType','positionType','professionalType']);
+            $query->with(['hospital','educationalType','positionType','professionalType']);
         }])->order('id', 'desc')->paginate($limit);
         if(!$list->isEmpty()){
             $user=[];
@@ -62,7 +62,7 @@ class Admin extends AdminBase
         $uids = AuthGroupAccess::where('group_id', $id)->column('uid');
 
         $list = AdminModel::with(['roles','user'=> function ($query) {
-            $query->with(['department','educationalType','positionType','professionalType']);
+            $query->with(['hospital','educationalType','positionType','professionalType']);
         }])->whereIn('id', $uids)->order('id', 'desc')->paginate($limit);
         if(!$list->isEmpty()){
             $user=[];
@@ -104,7 +104,7 @@ class Admin extends AdminBase
                     $query->where('nickname', 'like', '%' . $nickname . '%');
                 }
             })->with(['roles','user'=> function ($query) {
-                $query->with(['department','educationalType','positionType','professionalType']);
+                $query->with(['hospital','educationalType','positionType','professionalType']);
             }])->where($where)->order('id', 'desc')->paginate($limit);
             if(!$list->isEmpty()){
                 $user=[];
@@ -148,7 +148,7 @@ class Admin extends AdminBase
                     $query->where('nickname', 'like', '%' . $nickname . '%');
                 }
             })->with(['roles','user'=> function ($query) {
-                $query->with(['department','educationalType','positionType','professionalType']);
+                $query->with(['hospital','educationalType','positionType','professionalType']);
             }])->whereIn('id', $uids)->where($where)->order('id', 'desc')->paginate($limit);
             if(!$list->isEmpty()){
                 $user=[];

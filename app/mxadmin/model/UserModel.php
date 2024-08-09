@@ -15,10 +15,10 @@ class UserModel extends Model
     public $appSecret = '76134647047f674973cafec310743b8f';
 
     /**
-     * 获取发布者信息
+     * 获取医院
      * @return \think\model\relation\HasOne
      */
-    public function department()
+    public function hospital()
     {
         return $this->hasOne(CmsCategory::class, 'id', 'd_id')->bind(['departmentname'=>'name']);
     }

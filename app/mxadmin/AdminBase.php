@@ -18,7 +18,7 @@ class AdminBase extends BaseController
      * 无需权限判断的方法
      * @var array
      */
-    protected $noNeedAuth = ['form', 'serach'];
+    protected $noNeedAuth = ['form', 'serach','find'];
 
     /**
      * 类初始化

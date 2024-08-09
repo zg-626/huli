@@ -30,7 +30,7 @@ class Fees extends AdminBase
     public function datalist($limit=15)
     {
         $list = FeesModel::with(['user'=> function ($query) {
-            $query->with(['department','educationalType','positionType','professionalType']);
+            $query->with(['hospital','educationalType','positionType','professionalType']);
         }])->order('id desc')->paginate($limit);
         if(!$list->isEmpty()){
             $user=[];

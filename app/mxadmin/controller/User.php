@@ -6,6 +6,7 @@ namespace app\mxadmin\controller;
 
 use app\cms\model\CmsCategory;
 use app\cms\model\Fees;
+use app\common\model\Department;
 use app\mxadmin\AdminBase;
 use app\mxadmin\model\AdminModel;
 use app\mxadmin\model\DictData;
@@ -52,6 +53,18 @@ class User extends AdminBase
         ]);
     }
 
+    // 查看
+    public function find($id)
+    {
+        $info = UserModel::where('id', $id)->find();
+        // 职务变更记录
+        $department=Department::with('position')->where('user_id', $id)->order('start_time desc')->select();
+        return view('', [
+            'info' => $info,
+            'department' => $department
+        ]);
+    }
+
     /**
      * 返回Json格式的数据
      * @param int $limit
@@ -60,7 +73,7 @@ class User extends AdminBase
     public function datalist($limit=15)
     {
 
-        $list = UserModel::with(['department','educationalType','positionType','professionalType'])->order('id', 'desc')->paginate($limit);
+        $list = UserModel::with(['hospital','educationalType','positionType','professionalType'])->order('id', 'desc')->paginate($limit);
 
         
         return $this->result($list);
@@ -108,7 +121,7 @@ class User extends AdminBase
             if ($data['d_id'] != '') {
                 $serach = $serach->where('d_id', $data['d_id']);
             }
-            $list = $serach->with(['department','educationalType','positionType','professionalType'])->order('id', 'desc')->paginate($limit);
+            $list = $serach->with(['hospital','educationalType','positionType','professionalType'])->order('id', 'desc')->paginate($limit);
 
            
             return $this->result($list);
