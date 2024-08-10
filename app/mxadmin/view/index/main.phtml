@@ -5,43 +5,36 @@
 
 <div class="layui-fluid mx-console-wrapper">
     <div class="layui-row layui-col-space15">
-        <div class="layui-col-xs12">
-            <div class="layui-card">
-                <div class="layui-card-header">系统信息</div>
+        <!-- 统计图表 -->
+        <div class="layui-col-md4 layui-col-sm6">
+            <div class="layui-card" style="overflow: hidden;">
+                <div class="layui-card-header">按职称统计</div>
                 <div class="layui-card-body">
-                    <table class="layui-table layui-text">
-                        <colgroup>
-                            <col width="190">
-                            <col>
-                        </colgroup>
-                        <tbody>
-                            <tr>
-                                <td align="center">系统版本</td>
-                                <td>v1.0</td>
-                            </tr>
-                            <script type="text/html" mx-tpl>
-                            <tr>
-                                <td align="center">前端框架</td>
-                                <td><a href="https://www.layui.com/" target="_blank">Layui-v{{layui.v}}</a></td>
-                            </tr>
-                            </script>
-                            <tr>
-                                <td align="center">后端框架</td>
-                                <td><a href="http://www.thinkphp.cn/" target="_blank">ThinkPHP V{$version}</a></td>
-                            </tr>
-                            <!--<tr>
-                                <td align="center">主要特色</td>
-                                <td>响应式布局 / 简约 / 易上手 / 完善的多角色权限管理</td>
-                            </tr>
-                            <tr>
-                                <td align="center">获取渠道</td>
-                                <td>
-                                    <a href="https://gitee.com/muxue2020/mxAdmin/issues/new" class="layui-btn layui-btn-sm layui-btn-danger" target="_blank">意见反馈</a>
-                                    <a href="https://gitee.com/muxue2020/mxAdmin" target="_blank" class="layui-btn layui-btn-sm">立即下载</a>
-                                </td>
-                            </tr>-->
-                        </tbody>
-                    </table>
+                    <div id="consoleChartsWeek" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4 layui-col-sm6">
+            <div class="layui-card" style="overflow: hidden;">
+                <div class="layui-card-header">按学历统计</div>
+                <div class="layui-card-body">
+                    <div id="consoleChartsWeek" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4 layui-col-sm6">
+            <div class="layui-card" style="overflow: hidden;">
+                <div class="layui-card-header">按年龄统计</div>
+                <div class="layui-card-body">
+                    <div id="consoleChartsWeek" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4 layui-col-sm6">
+            <div class="layui-card" style="overflow: hidden;">
+                <div class="layui-card-header">按性别统计</div>
+                <div class="layui-card-body">
+                    <div id="consoleChartsSex" style="height: 300px;"></div>
                 </div>
             </div>
         </div>
@@ -49,4 +42,42 @@
 </div>
 {/block}
 {block name="script"}
+<script>
+    layui.use(['layer'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+
+        /** 渲染周统计图表 */
+        var myCharts2 = echarts.init(document.getElementById('consoleChartsWeek'));
+        var options2 = {
+            tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
+            color: ['#10B4E8', '#FFA800'],
+            legend: {
+                orient: 'vertical', right: '0px', top: '0px',
+                data: ['已签到', '未签到'], textStyle: {color: '#595959'}
+            },
+            series: [
+                {
+                    name: '签到情况',
+                    type: 'pie',
+                    radius: '50%',
+                    data: [
+                        {value: 5, name: '已签到'},
+                        {value: 10, name: '未签到'}
+                    ],
+                    label: {
+                        normal: {
+                            show: true,
+                            formatter: '{b}: {c} ({d}%)'
+                        }
+                    }
+                }
+            ]
+        };
+        myCharts2.setOption(options2);
+        // 赋值
+        myCharts2.setOption({series: [{data: [5, 9, 6, 3, 10]}, {data: [10, 6, 9, 12, 5]}]});
+
+    });
+</script>
 {/block}

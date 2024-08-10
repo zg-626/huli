@@ -263,13 +263,21 @@
         console.log(mData);
         // 回显数据
         // 更新表格内容
+        // 转换sex
+        if (mData.sex === 1) {
+            document.getElementById('sex').innerText = '男';
+        } else if (mData.sex === 0) {
+            document.getElementById('sex').innerText = '女';
+        }else{
+            document.getElementById('sex').innerText = '未知';
+        }
         document.getElementById('headimg').src = mData.headimg;
         document.getElementById('departmentname').innerText = mData.departmentname;
         document.getElementById('department').innerText = mData.department;
         document.getElementById('nickname').innerText = mData.nickname;
         document.getElementById('phone').innerText = mData.phone;
         document.getElementById('position_name').innerText = mData.position_name;
-        document.getElementById('sex').innerText = mData.sex;
+        //document.getElementById('sex').innerText = mData.sex;
         document.getElementById('employment_status').innerText = mData.employment_status;
         document.getElementById('credit_card_number').innerText = mData.credit_card_number;
         document.getElementById('work_phone').innerText = mData.work_phone;
