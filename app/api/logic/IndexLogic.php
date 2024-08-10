@@ -26,6 +26,7 @@ use app\common\model\Speak;
 use app\common\model\Step;
 use app\common\service\ConfigService;
 use app\common\service\FileService;
+use app\mxadmin\model\DictData;
 
 
 /**
@@ -243,6 +244,11 @@ class IndexLogic extends BaseLogic
             'webPage' => $webPage,
             'version' => config('project.version')
         ];
+    }
+
+    public static function getDictionary(mixed $dict_id)
+    {
+        return DictData::where(['dict_id' => $dict_id, 'status' => 1])->select()->toArray();
     }
 
 }

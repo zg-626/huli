@@ -422,8 +422,10 @@
             var layIndex = admin.open({
                 title: (mData ? '查看' : '添加') + '会员',
                 shade: 0.5,
+                type: 2,
                 //shadeClose: true,
-                url: "{:url('mxadmin/user/find')}?id=" + mData.id,
+                //url: "{:url('mxadmin/user/find')}?id=" + mData.id,
+                content: 'find?id=' + mData.id,
                 data: {formdata: mData},     // 传递数据到表单页面
                 end: function () {
                     if (admin.getLayerData(layIndex, 'formOk')) {  // 判断表单操作成功标识

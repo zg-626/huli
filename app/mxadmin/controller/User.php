@@ -1,11 +1,12 @@
 <?php
 
-declare (strict_types = 1);
+declare (strict_types=1);
 
 namespace app\mxadmin\controller;
 
 use app\cms\model\CmsCategory;
 use app\cms\model\Fees;
+use app\cms\model\TrainingSign;
 use app\common\model\Department;
 use app\mxadmin\AdminBase;
 use app\mxadmin\model\AdminModel;
@@ -23,13 +24,15 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use think\exception\ValidateException;
 use think\facade\Filesystem;
 use think\facade\Db;
+
 class User extends AdminBase
 {
     /**
      * 无需权限判断的方法
      * @var array
      */
-    protected $noNeedAuth = ['edit_update_time','form', 'serach', 'update'];
+    protected $noNeedAuth = ['edit_update_time', 'form', 'serach', 'update'];
+
     /**
      * 账号管理
      * @return \think\response\View
@@ -40,16 +43,15 @@ class User extends AdminBase
 
         $department = list_to_trees(CmsCategory::getCategoryData(), true);
 
-        
-        
-        return view('',[
-            'rolelist'  =>  $rolelist,
+
+        return view('', [
+            'rolelist' => $rolelist,
             'admin_id' => getAdminId(),
-            'category'   =>  $department,
+            'category' => $department,
             'educational_type' => getDictDataId(2),
             'position_type' => getDictDataId(3),
             'professional_type' => getDictDataId(4),
-            'is_admin'   =>  session('admin_info.is_admin'),
+            'is_admin' => session('admin_info.is_admin'),
         ]);
     }
 
@@ -58,10 +60,56 @@ class User extends AdminBase
     {
         $info = UserModel::where('id', $id)->find();
         // 职务变更记录
-        $department=Department::with('position')->where('user_id', $id)->order('start_time desc')->select();
+        $department = Department::with('position')->where('user_id', $id)->order('start_time desc')->select();
+        // 缴费记录
+        $fees = Fees::with('user')->where('user_id', $id)->order('fees_year desc fees_time desc')->select();
+        // 报名记录
+        $trainingSign = TrainingSign::with(
+            [
+                'user',
+                'training' => function ($query) use ($id) {
+                    $query->with('class');
+                }])->where('user_id', $id)->order('check_time desc')->select();
+        if(!$trainingSign->isEmpty()){
+            foreach ($trainingSign as $key => $value) {
+                $value['check_time'] = date('Y-m-d H:i:s', $value['check_time']);
+            }
+        }
+        // 学习记录，只查询已经学习的
+        $studySign = TrainingSign::with(
+            [
+                'user',
+                'training' => function ($query) use ($id) {
+                    $query->with('class');
+                }])->where(['user_id' => $id, 'is_study' => 1])->order('study_time desc')->select();
+        if(!$studySign->isEmpty()){
+            foreach ($studySign as $key => $value) {
+                $value['check_time'] = date('Y-m-d H:i:s', $value['check_time']);
+                $value['study_time'] = date('Y-m-d H:i:s', $value['study_time']);
+            }
+        }
+        // 考核记录  只查询有分数的
+        $assessSign = TrainingSign::with(
+            [
+                'user',
+                'training' => function ($query) use ($id) {
+                    $query->with('class');
+                }])->where(['user_id' => $id])->where('total_score', '>', 0)->order('check_time desc')->order('study_time desc')->select();
+        if(!$assessSign->isEmpty()){
+            foreach ($assessSign as $key => $value) {
+                $value['check_time'] = date('Y-m-d H:i:s', $value['check_time']);
+                $value['study_time'] = date('Y-m-d H:i:s', $value['study_time']);
+                // 分数大于80的为合格
+                $value['outcome'] = $value['total_score'] > 80 ? '合格' : '不合格';
+            }
+        }
         return view('', [
             'info' => $info,
-            'department' => $department
+            'department' => $department,
+            'fees' => $fees,
+            'trainingSign' => $trainingSign,
+            'studySign' => $studySign,
+            'assessSign' => $assessSign,
         ]);
     }
 
@@ -70,12 +118,14 @@ class User extends AdminBase
      * @param int $limit
      * @throws \think\db\exception\DbException
      */
-    public function datalist($limit=15)
+    public function datalist($limit = 15)
     {
+        $list = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
+            'id',
+            'desc'
+        )->paginate($limit);
 
-        $list = UserModel::with(['hospital','educationalType','positionType','professionalType'])->order('id', 'desc')->paginate($limit);
 
-        
         return $this->result($list);
     }
 
@@ -84,12 +134,12 @@ class User extends AdminBase
      * @param int $limit
      * @throws \think\db\exception\DbException
      */
-    public function serach($limit=15)
+    public function serach($limit = 15)
     {
         if (request()->isGet()) {
             $data = input('param.');
             $serach = new UserModel();
-            
+
             if ($data['phone'] != '') {
                 $serach = $serach->whereLike('phone', '%' . $data['phone'] . '%');
             }
@@ -97,7 +147,11 @@ class User extends AdminBase
                 $serach = $serach->whereLike('nickname', '%' . $data['nickname'] . '%');
             }
             if ($data['startDate'] != '' && $data['endDate'] != '') {
-                $serach = $serach->whereBetweenTime('create_time', strtotime($data['startDate']), strtotime($data['endDate']) + 86399);
+                $serach = $serach->whereBetweenTime(
+                    'create_time',
+                    strtotime($data['startDate']),
+                    strtotime($data['endDate']) + 86399
+                );
             }
             if ($data['status'] != '') {
                 $serach = $serach->where('status', $data['status']);
@@ -121,9 +175,12 @@ class User extends AdminBase
             if ($data['d_id'] != '') {
                 $serach = $serach->where('d_id', $data['d_id']);
             }
-            $list = $serach->with(['hospital','educationalType','positionType','professionalType'])->order('id', 'desc')->paginate($limit);
+            $list = $serach->with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
+                'id',
+                'desc'
+            )->paginate($limit);
 
-           
+
             return $this->result($list);
         }
     }
@@ -142,7 +199,7 @@ class User extends AdminBase
                 return $this->error($e->getError());
             }
             $data['password'] = $data['newpassword'];
-            $data['vip_time'] = time()+86400*15;
+            $data['vip_time'] = time() + 86400 * 15;
             $result = UserModel::create($data);
 
             if ($result == true) {
@@ -201,16 +258,16 @@ class User extends AdminBase
 
             if ($result == true) {
                 // 如果审核成功，同步管理员表
-                if($data['status'] == 1){
+                if ($data['status'] == 1) {
                     $user = UserModel::where('id', $id)->find();
-                    $create=[
-                        'password'=>$user['password'],
-                        'nickname'=>$user['nickname'],
-                        'username'=>$user['phone'],
+                    $create = [
+                        'password' => $user['password'],
+                        'nickname' => $user['nickname'],
+                        'username' => $user['phone'],
                     ];
-                    $admin_info=AdminModel::create($create);
+                    $admin_info = AdminModel::create($create);
                     // 新增用户所属角色
-                    $role_id = explode(',','2');
+                    $role_id = explode(',', '2');
                     foreach ($role_id as $value) {
                         $dataset[] = ['uid' => $admin_info->id, 'group_id' => $value];
                     }
@@ -255,9 +312,9 @@ class User extends AdminBase
         if (request()->isPost()) {
             $data = input('param.');
 
-            if($data['status'] == 1){
+            if ($data['status'] == 1) {
                 $status = 0;
-            }else{
+            } else {
                 $status = 1;
             }
 
@@ -284,7 +341,7 @@ class User extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            if(session('admin_info.is_admin') == 1){
+            if (session('admin_info.is_admin') == 1) {
                 $value = UserModel::where('id', $id)->find();
                 $result = UserModel::update(['permissions' => $data['permissions']], ['id' => $id]);
 
@@ -292,11 +349,10 @@ class User extends AdminBase
                     return $this->success($data['permissions'] ? '已开启' : '未开启');
                 } else {
                     return $this->error('账号状态修改失败');
-                }        
-            }else{
+                }
+            } else {
                 return $this->error('请使用总管理员修改当前权限');
             }
-            
         }
     }
 
@@ -307,7 +363,7 @@ class User extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            if(session('admin_info.is_admin') == 1){
+            if (session('admin_info.is_admin') == 1) {
                 $value = UserModel::where('id', $id)->find();
                 $result = UserModel::update(['is_white' => $data['is_white']], ['id' => $id]);
 
@@ -315,11 +371,10 @@ class User extends AdminBase
                     return $this->success($data['is_white'] ? '已授权' : '未授权');
                 } else {
                     return $this->error('修改失败');
-                }        
-            }else{
+                }
+            } else {
                 return $this->error('请使用总管理员修改当前权限');
             }
-            
         }
     }
 
@@ -335,14 +390,14 @@ class User extends AdminBase
             } else {
                 $ids = $id;
             }
-            
+
             $result = UserModel::destroy($ids);
 
             if ($result == true) {
                 // 删除用户所属角色
                 //AuthGroupAccess::whereIn('uid', $ids)->delete();
                 //删除token
-                Db::name('user_token')->where('u_id',$id)->delete();
+                Db::name('user_token')->where('u_id', $id)->delete();
                 return $this->success('账号删除成功');
             } else {
                 return $this->error('账号删除失败');
@@ -362,9 +417,8 @@ class User extends AdminBase
             } else {
                 $ids = $id;
             }
-            $result=UserModel::whereIn('id',$ids)->update(['vip_time'=>strtotime($data['vip_time'])]);
+            $result = UserModel::whereIn('id', $ids)->update(['vip_time' => strtotime($data['vip_time'])]);
             if ($result == true) {
-
                 return $this->success('批量更新成功');
             } else {
                 return $this->error('批量更新失败');
@@ -381,13 +435,19 @@ class User extends AdminBase
         if (request()->isPost()) {
             $UserModel = new UserModel;
             //$data = input('param.');
-            if(session('admin_info.is_admin') == 1){
+            if (session('admin_info.is_admin') == 1) {
                 $data = [
-                    ['phone'=>185,'nickname'=>'masterplate','headimg'=>'','status'=>1,'d_id'=>10],
-                ];        
-            }else{
+                    ['phone' => 185, 'nickname' => 'masterplate', 'headimg' => '', 'status' => 1, 'd_id' => 10],
+                ];
+            } else {
                 $data = [
-                    ['phone'=>185,'nickname'=>'masterplate','headimg'=>'','status'=>1,'d_id'=>session('admin_info.d_id')],
+                    [
+                        'phone' => 185,
+                        'nickname' => 'masterplate',
+                        'headimg' => '',
+                        'status' => 1,
+                        'd_id' => session('admin_info.d_id')
+                    ],
                 ];
             }
             $result = $UserModel->saveAll($data);
@@ -406,8 +466,8 @@ class User extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            if(!empty($data['field'])){
-                $data['field']=strtotime($data['field']);
+            if (!empty($data['field'])) {
+                $data['field'] = strtotime($data['field']);
             }
             //print_r($data['field']);exit;
             $result = UserModel::update(['vip_time' => $data['field']], ['id' => $id]);
@@ -426,13 +486,15 @@ class User extends AdminBase
         try {
             // 验证文件大小，名称等是否正确
             //validate(['file' => 'filesize:51200|fileExt:xls,xlsx'])->check($file);
-            validate(['file' => [
-                // 限制文件大小(单位b)，这里限制为8M
-                'fileSize' => 8 * 1024 * 1024,
-                // 限制文件后缀，多个后缀以英文逗号分割
-                'fileExt'  => 'xls,xlsx'
-                // 更多规则请看“上传验证”的规则，文档地址https://www.kancloud.cn/manual/thinkphp6_0/1037629#_444
-            ]])->check(['file' => $file]);
+            validate([
+                'file' => [
+                    // 限制文件大小(单位b)，这里限制为8M
+                    'fileSize' => 8 * 1024 * 1024,
+                    // 限制文件后缀，多个后缀以英文逗号分割
+                    'fileExt' => 'xls,xlsx'
+                    // 更多规则请看“上传验证”的规则，文档地址https://www.kancloud.cn/manual/thinkphp6_0/1037629#_444
+                ]
+            ])->check(['file' => $file]);
 
             // 将文件保存到本地
             //$savename = Filesystem::putFile('topic', $file[0]);
@@ -446,7 +508,7 @@ class User extends AdminBase
                 $objReader = IOFactory::createReader('Xls');
             }
             // 设置文件为只读
-            $objReader->setReadDataOnly(TRUE);
+            $objReader->setReadDataOnly(true);
             // 读取文件，tp6默认上传的文件，在runtime的相应目录下，可根据实际情况自己更改
             $objPHPExcel = $objReader->load(public_path() . 'storage/' . $savename);
             //excel中的第一张sheet
@@ -481,19 +543,22 @@ class User extends AdminBase
         // 调用类库，读取excel中的内容
         $excel_array = self::importExcel($file);
         foreach ($excel_array as $key => $value) {
-            $number = $key +2;
+            $number = $key + 2;
             // 正则去除多余空白字符
             $data[$key]['phone'] = preg_replace('/\s+/', '', $value['0']);
             //查询是否存在
-            $userinfo=Db::name('user')->where('phone',$value['0'])->find();
-            if($userinfo){
-                return $this->error('登录账号已经存在，请检查，在第'. $number.'行');
+            $userinfo = Db::name('user')->where('phone', $value['0'])->find();
+            if ($userinfo) {
+                return $this->error('登录账号已经存在，请检查，在第' . $number . '行');
             }
             $data[$key]['nickname'] = preg_replace('/\s+/', '', $value['1']);
-         
+
             //通过名称获取部门id
             //$data[$key]['department'] = preg_replace('/\s+/', '', $value['2']);
-            $data[$key]['d_id']=Db::name('cms_department')->where('name',preg_replace('/\s+/', '', $value['2']))->value('id');
+            $data[$key]['d_id'] = Db::name('cms_department')->where(
+                'name',
+                preg_replace('/\s+/', '', $value['2'])
+            )->value('id');
             $value3 = preg_replace('/\s+/', '', $value['3']);
             if ($value3 === '男') {
                 $data[$key]['sex'] = 1;
@@ -507,26 +572,25 @@ class User extends AdminBase
             $data[$key]['create_time'] = time();
             $data[$key]['update_time'] = time();
             $data[$key]['status'] = 1;
-            $data[$key]['vip_time'] = time()+86400*15;
+            $data[$key]['vip_time'] = time() + 86400 * 15;
         }
-    
+
         // 启动事务
         Db::startTrans();
-        try{
+        try {
             //进行数据库操作的一系列语句
             $result = UserModel::insertAll($data);
-            if ($result!=true) {
+            if ($result != true) {
                 return $this->error('导入数据失败');
             }
             // 提交事务
             Db::commit();
-            return $this->success('文件上传成功，已经导入'.$result.'条数据');
-        }catch (\Throwble $t){
+            return $this->success('文件上传成功，已经导入' . $result . '条数据');
+        } catch (\Throwble $t) {
             // 回滚事务
             Db::rollback();
-            return $this->error('导入数据失败'. $e->getMessage());
-        } 
-               
+            return $this->error('导入数据失败' . $e->getMessage());
+        }
         /*echo "<pre>";
         print_r($data);   //  二维数组*/
     }

@@ -1,4 +1,4 @@
-
+{extend name="base" /}
 {block name="body"}
 <style>
     .layui-tab-content {
@@ -11,7 +11,7 @@
 </style>
 <form id="mxForm" lay-filter="mxForm" class="layui-form" style="background:#f5f7f9;">
     <div class="form-group-bottom text-center" id="hidden">
-        <button class="layui-btn" lay-filter="mxSubmit" lay-submit>导出</button>
+        <button class="layui-btn">导出</button>
         <button class="layui-btn layui-btn-primary" type="button" id="printer">打印</button>
     </div>
     <div class="layui-container">
@@ -26,36 +26,36 @@
                     </colgroup>
                     <tbody>
                     <tr>
-                        <td>医院名称：</td>
+                        <td>医院名称</td>
                         <td id="departmentname"></td>
-                        <td>姓名：</td>
+                        <td>姓名</td>
                         <td id="nickname"></td>
-                        <td>手机号码：</td>
+                        <td>手机号码</td>
                         <td id="phone"></td>
-                        <td rowspan="6" colspan="8"  style="text-align: center;"><img style="width: 100%; height: auto;" id="headimg" src="" alt="Image Description"></td>
+                        <td rowspan="6" colspan="8"  style="text-align: center;"><img style="width: 50%; height: 50%;" id="headimg" src="" alt="Image Description"></td>
                     </tr>
                     <tr>
-                        <td>工作科室：</td>
+                        <td>工作科室</td>
                         <td id="department"></td>
-                        <td>职务：</td>
+                        <td>职务</td>
                         <td id="position_name"></td>
-                        <td>性别：</td>
+                        <td>性别</td>
                         <td id="sex">女</td>
                     </tr>
                     <tr>
-                        <td>证件类型：</td>
+                        <td>证件类型</td>
                         <td id="id_type"></td>
-                        <td>证件号码：</td>
+                        <td>证件号码</td>
                         <td id="idcard"></td>
-                        <td>出生日期：</td>
+                        <td>出生日期</td>
                         <td id="birthday"></td>
                     </tr>
                     <tr>
-                        <td>婚姻状况：</td>
+                        <td>婚姻状况</td>
                         <td id="marital_status"></td>
                         <td>民族</td>
                         <td id="ethnicity"></td>
-                        <td>政治面貌：</td>
+                        <td>政治面貌</td>
                         <td id="political_status"></td>
                     </tr>
                     <tr>
@@ -63,45 +63,45 @@
                         <td id="highest_education"></td>
                         <td>最高学历学校</td>
                         <td id="highest_graduate_school"></td>
-                        <td>毕业日期：</td>
+                        <td>毕业日期</td>
                         <td id="highest_graduate_time"></td>
                     </tr>
                     <tr>
-                        <td>初始学历：</td>
+                        <td>初始学历</td>
                         <td id="first_education"></td>
-                        <td>初始学历学校：</td>
+                        <td>初始学历学校</td>
                         <td id="first_graduate_school"></td>
-                        <td>毕业日期：</td>
+                        <td>毕业日期</td>
                         <td id="first_graduate_time"></td>
                     </tr>
                     <tr>
-                        <td>籍贯：</td>
+                        <td>籍贯</td>
                         <td id="native_place"></td>
-                        <td>户口所在地：</td>
-                        <td></td>
-                        <td>住址：</td>
-                        <td></td>
-                        <td>邮编：</td>
-                        <td></td>
+                        <td>户口所在地</td>
+                        <td id="household"></td>
+                        <td>住址</td>
+                        <td id="address"></td>
+                        <td>邮编</td>
+                        <td id="zip_code"></td>
                     </tr>
                     <tr>
-                        <td>工作电话：</td>
+                        <td>工作电话</td>
                         <td id="work_phone"></td>
-                        <td>电子邮箱：</td>
+                        <td>电子邮箱</td>
                         <td id="email"></td>
-                        <td>专科护士：</td>
+                        <td>专科护士</td>
                         <td id="specialized_name"></td>
-                        <td>学分卡号：</td>
+                        <td>学分卡号</td>
                         <td id="credit_card_number"></td>
                     </tr>
                     <tr>
-                        <td>职称：</td>
+                        <td>职称</td>
                         <td id="professional_name"></td>
-                        <td>层级：</td>
+                        <td>层级</td>
                         <td id="level"></td>
-                        <td>参加工作日期：</td>
+                        <td>参加工作日期</td>
                         <td id="work_start_date"></td>
-                        <td>人员状态：</td>
+                        <td>人员状态</td>
                         <td id="employment_status">在职</td>
                     </tr>
                     </tbody>
@@ -142,29 +142,94 @@
                         <td>缴费金额</td>
                         <td>缴费方式</td>
                     </tr>
+                    {volist name="fees" id="vo"}
                     <tr>
-                        <td>1</td>
-                        <td>2019</td>
-                        <td>张三</td>
-                        <td>2019-07-01</td>
-                        <td>1000</td>
-                        <td>现金</td>
+                        <td>{$vo.id}</td>
+                        <td>{$vo.fees_year}</td>
+                        <td>{$vo.nickname}</td>
+                        <td>{$vo.fees_time}</td>
+                        <td>{$vo.money}</td>
+                        <td>{$vo.way}</td>
                     </tr>
+                    {/volist}
                     </tbody>
                 </table>
                 <blockquote class="layui-elem-quote" style="margin-top: 30px;">
                     学习班报名记录
                 </blockquote>
+                <table class="layui-table">
+                    <tbody>
+                    <tr>
+                        <td>序号</td>
+                        <td>学习班分类</td>
+                        <td>学习班名称</td>
+                        <td>学习地点</td>
+                        <td>报名时间</td>
+                    </tr>
+                    {volist name="trainingSign" id="vo"}
+                    <tr>
+                        <td>{$vo.id}</td>
+                        <td>{$vo.training.classname}</td>
+                        <td>{$vo.training.title}</td>
+                        <td>{$vo.training.address}</td>
+                        <td>{$vo.check_time}</td>
+                    </tr>
+                    {/volist}
+                    </tbody>
+                </table>
                 <blockquote class="layui-elem-quote" style="margin-top: 30px;">
                     学习班学习记录
                 </blockquote>
+                <table class="layui-table">
+                    <tbody>
+                    <tr>
+                        <td>序号</td>
+                        <td>学习班分类</td>
+                        <td>学习班名称</td>
+                        <td>学习地点</td>
+                        <td>学习时间</td>
+                    </tr>
+                    {volist name="studySign" id="vo"}
+                    <tr>
+                        <td>{$vo.id}</td>
+                        <td>{$vo.training.classname}</td>
+                        <td>{$vo.training.title}</td>
+                        <td>{$vo.training.address}</td>
+                        <td>{$vo.study_time}</td>
+                    </tr>
+                    {/volist}
+                    </tbody>
+                </table>
                 <blockquote class="layui-elem-quote" style="margin-top: 30px;">
                     学习班考核记录
                 </blockquote>
+                <table class="layui-table">
+                    <tbody>
+                    <tr>
+                        <td>序号</td>
+                        <td>学习班分类</td>
+                        <td>学习班名称</td>
+                        <td>学习地点</td>
+                        <td>考核时间</td>
+                        <td>考核分数</td>
+                        <td>考核结果</td>
+                    </tr>
+                    {volist name="assessSign" id="vo"}
+                    <tr>
+                        <td>{$vo.id}</td>
+                        <td>{$vo.training.classname}</td>
+                        <td>{$vo.training.title}</td>
+                        <td>{$vo.training.address}</td>
+                        <td>{$vo.study_time}</td>
+                        <td>{$vo.total_score}</td>
+                        <td>{$vo.outcome}</td>
+                    </tr>
+                    {/volist}
+                    </tbody>
+                </table>
             </div>
         </div>
         <div class="form-group-bottom text-center">
-            <button class="layui-btn" lay-filter="mxSubmit" lay-submit>保存</button>
             <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
         </div>
     </div>
@@ -182,7 +247,7 @@
         var xmSelect = layui.xmSelect;
         var printer = layui.printer;
         var upload = layui.upload;
-        var mData = admin.getLayerData('#mxForm').formdata;
+        var mData = admin.getLayerData().formdata;
         console.log(mData);
         // 回显数据
         // 更新表格内容
@@ -215,6 +280,9 @@
         document.getElementById('highest_graduate_school').innerText = mData.highest_graduate_school;
         document.getElementById('highest_graduate_time').innerText = mData.highest_graduate_time;
         document.getElementById('professional_name').innerText = mData.professional_name;
+        document.getElementById('zip_code').innerText = mData.zip_code;
+        document.getElementById('address').innerText = mData.address;
+        document.getElementById('household').innerText = mData.household;
 
         // 自定义打印
         $('#printer').on('click', function (e) {
@@ -226,13 +294,6 @@
                 close: true,              // 如果是打开新页面，打印完是否关闭
                 iePreview: false          // 是否兼容ie打印预览
             });
-            /*printer.printHtml({
-                //html: '<div style="color: red;text-align: center;">Hello Word !</div>',
-                html: $('#mxForm').html(),
-                blank: false,              // 是否打开新页面打印
-                close: false,              // 如果是打开新页面，打印完是否关闭
-                iePreview: false,          // 是否兼容ie打印预览
-            });*/
         })
 
     });

@@ -28,7 +28,7 @@ class IndexController extends BaseApiController
 {
 
 
-    public array $notNeedLogin = ['index','getCategory','getSpeak','getBarrage','getBanner', 'config', 'policy', 'decorate'];
+    public array $notNeedLogin = ['index','getCategory','getDictionary','getSpeak','getBarrage','getBanner', 'config', 'policy', 'decorate'];
 
 
     /**
@@ -67,6 +67,13 @@ class IndexController extends BaseApiController
     public function getCategory($pid=0)
     {
         $result = IndexLogic::getCategory($pid);
+        return $this->data($result);
+    }
+
+    // 获取数据字典
+    public function getDictionary($dict_id = 0)
+    {
+        $result = IndexLogic::getDictionary($dict_id);
         return $this->data($result);
     }
 

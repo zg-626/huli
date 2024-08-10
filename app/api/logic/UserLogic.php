@@ -315,6 +315,9 @@ class UserLogic extends BaseLogic
                 'work_phone' => $params['work_phone'],
                 'credit_card_number' => $params['credit_card_number'],
                 'employment_status' => $params['employment_status'],
+                'address'=> $params['address'],
+                'zip_code' => $params['zip_code'],
+                'household' => $params['household']
             ];
 
             return User::update($data)->where('id', $userId);

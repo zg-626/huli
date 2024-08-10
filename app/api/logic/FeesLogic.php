@@ -41,14 +41,19 @@ class FeesLogic extends BaseLogic
     {
         Db::startTrans();
         try {
-            Fees::create([
+            Fees::where([
                 'user_id' => $params['user_id'],
+                'fees_type' => $params['fees_type'],
+                'fees_year' => $params['fees_year'],
+            ])->update([
                 'fees_type' => $params['fees_type'],
                 'fees_year' => $params['fees_year'],
                 'fees_time' => $params['fees_time'],
                 'money' => $params['money'],
                 'way' => $params['way'],
                 'image' => $params['image'],
+                'remark' => $params['remark'],
+                'status' => 1,
             ]);
 
             Db::commit();
@@ -72,7 +77,6 @@ class FeesLogic extends BaseLogic
     {
         Db::startTrans();
         try {
-
             Fees::where('id', $params['id'])->update([
                 'fees_type' => $params['fees_type'],
                 'fees_year' => $params['fees_year'],
@@ -136,7 +140,7 @@ class FeesLogic extends BaseLogic
                 'mobile' => $params['mobile'],
                 'money' => $params['money'],
                 'email' => $params['email'],
-                'remark' => $params['remark']??'',
+                'remark' => $params['remark'] ?? '',
 
             ]);
 
