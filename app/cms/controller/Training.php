@@ -211,7 +211,7 @@ class Training extends AdminBase
         // 查询所有用户及其阅读情况
         /*$users = UserModel::with(['trainingSigns' => function ($query) use ($notificationId) {
             $query->where('training_id', $notificationId)->with('training');
-        },'department'])
+        },'hospital'])
             ->paginate($limit);
         // 遍历用户及其报名情况
         foreach ($users as $user) {
@@ -259,7 +259,7 @@ class Training extends AdminBase
         // 查询所有用户及其阅读情况
         /*$users = UserModel::with(['trainingSigns' => function ($query) use ($notificationId) {
             $query->where('training_id', $notificationId)->with('training');
-        },'department'])
+        },'hospital'])
             ->paginate($limit);
         // 遍历用户及其报名情况
         foreach ($users as $user) {
@@ -314,7 +314,7 @@ class Training extends AdminBase
         // 查询所有用户及其阅读情况
         /*$users = UserModel::with(['trainingSigns' => function ($query) use ($notificationId) {
             $query->where('training_id', $notificationId)->with('training');
-        },'department'])
+        },'hospital'])
             ->paginate($limit);
         // 遍历用户及其报名情况
         foreach ($users as $user) {
@@ -362,7 +362,7 @@ class Training extends AdminBase
         // 查询所有用户及其阅读情况
         /*$users = UserModel::with(['trainingSigns' => function ($query) use ($notificationId) {
             $query->where('training_id', $notificationId)->with('training');
-        },'department'])
+        },'hospital'])
             ->paginate($limit);
         // 遍历用户及其报名情况
         foreach ($users as $user) {

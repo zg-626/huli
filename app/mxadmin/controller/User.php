@@ -56,7 +56,7 @@ class User extends AdminBase
     }
 
     // 查看
-    public function find($id)
+    public function find($id=0)
     {
         $info = UserModel::where('id', $id)->find();
         // 职务变更记录

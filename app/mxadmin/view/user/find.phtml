@@ -1,21 +1,15 @@
 {extend name="base" /}
 {block name="body"}
-<style>
-    .layui-tab-content {
-        margin: 15px auto 0;
-    }
-    .layui-form-label{
-        padding-left: 0;
-        width: 95px;
-    }
-</style>
+<script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://printjs-4de6.kxcdn.com/print.min.css">
 <form id="mxForm" lay-filter="mxForm" class="layui-form" style="background:#f5f7f9;">
     <div class="form-group-bottom text-center" id="hidden">
-        <button class="layui-btn">导出</button>
+        <p class="layui-btn" id="export-btn">导出</p>
         <button class="layui-btn layui-btn-primary" type="button" id="printer">打印</button>
     </div>
-    <div class="layui-container">
+    <div class="layui-container" id="main-body">
         <div class="layui-row">
+            <div style="margin: 5px 0; padding: 16px; line-height: 21px; text-align: center; cursor: pointer; box-sizing: border-box; font-weight: 700; background-color: #f7f7f7;" id="title">阳江市妇幼保健院 王莉—护士长 的个人档案</div>
             <div class="layui-col-md12">
                 <table class="layui-table">
                     <colgroup>
@@ -239,6 +233,24 @@
 
 {block name="script"}
 <script>
+    document.getElementById('export-btn').addEventListener('click', function () {
+        var x = document.getElementById("mxForm");
+        x.style.display = "none";
+        //printJS('main-body', 'html');
+        printJS({
+            printable: 'main-body',
+            type: 'html',
+            scanStyles: true,
+            header: '<a href="https://blog.quanqinle.com/">check this page online</a>',
+            css: ['/static/assets/libs/layui/css/layui.css', '/static/assets/module/admin.css'],
+            //style: '.skill-tags {background-color: #eee; padding: 1px 5px; margin: 0 5px 5px 0; display: inline-block;}',
+            maxWidth: 2480,
+            targetStyles: ['*']
+        });
+        x.style.display = "inline";
+    });
+</script>
+<script>
     layui.use(['layer', 'form', 'admin', 'xmSelect', 'upload','printer'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
@@ -283,6 +295,7 @@
         document.getElementById('zip_code').innerText = mData.zip_code;
         document.getElementById('address').innerText = mData.address;
         document.getElementById('household').innerText = mData.household;
+        document.getElementById('title').innerText = mData.departmentname+' '+mData.nickname+'—'+mData.position_name+' 的个人档案';
 
         // 自定义打印
         $('#printer').on('click', function (e) {
@@ -295,6 +308,10 @@
                 iePreview: false          // 是否兼容ie打印预览
             });
         })
+
+        /*$('#export-btn').on('click', function (e) {
+            layer.alert('暂未开放', {icon: 5});
+        })*/
 
     });
 </script>
