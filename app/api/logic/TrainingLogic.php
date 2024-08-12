@@ -37,6 +37,32 @@ class TrainingLogic extends BaseLogic
      */
     public static function detail($params): array
     {
-        return Training::with(['typename'])->withCount(['signups'])->findOrEmpty($params['id'])->toArray();
+        $userId = $params['user_id'] ?? 0;
+        $info = Training::with(['typename', 'signups'=>function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        }])->withCount(['signups'])->findOrEmpty($params['id']);
+        if ($info->isEmpty()) {
+            return [];
+        }
+
+        // 增加点击量
+        $info->click += 1;
+        $info->save();
+
+        // 格式化每个 signup 的 check_time
+        foreach ($info->signups as $signup) {
+            if ($signup->check_time) {
+                $signup->check_time = date('Y-m-d H:i:s',$signup->check_time);
+            }
+            if ($signup->study_time) {
+                $signup->study_time = date('Y-m-d H:i:s',$signup->study_time);
+            }
+        }
+
+
+
+
+        return $info->append(['click'])
+            ->toArray();
     }
 }

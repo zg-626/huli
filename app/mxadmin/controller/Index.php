@@ -4,7 +4,10 @@ declare (strict_types = 1);
 
 namespace app\mxadmin\controller;
 
+use app\cms\model\CmsCategory;
 use app\mxadmin\AdminBase;
+use app\mxadmin\model\DictData;
+use think\facade\App;
 
 class Index extends AdminBase
 {
@@ -42,8 +45,26 @@ class Index extends AdminBase
      */
     public function main()
     {
+        $ageData = [
+            '20岁已下',
+            '20-30岁',
+            '30-40岁',
+            '40-50岁',
+            '50-60岁',
+            '60岁以上',
+            '未知'
+        ];
+        $professional= DictData::where(['dict_id' => 4, 'status' => 1])->order('weight,id')->column('name');
+        $qualifications= DictData::where(['dict_id' => 2, 'status' => 1])->order('weight,id')->column('name');
+        $department = list_to_trees(CmsCategory::getCategoryData(), true);
+        //print_r($professional);exit();
         return view('', [
-            'version' => \think\facade\App::version(),
+            'version' => App::version(),
+            'category' => $department,
+            'yeartype' => getDictDataId(12),
+            'professional' => $professional,//职称
+            'qualifications' => $qualifications,//学历
+            'age' => $ageData
         ]);
     }
 }

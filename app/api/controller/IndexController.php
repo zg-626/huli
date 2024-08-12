@@ -28,7 +28,7 @@ class IndexController extends BaseApiController
 {
 
 
-    public array $notNeedLogin = ['index','getCategory','getDictionary','getSpeak','getBarrage','getBanner', 'config', 'policy', 'decorate'];
+    public array $notNeedLogin = ['index','getQrcode','getCategory','getDictionary','getSpeak','getBarrage','getBanner', 'config', 'policy', 'decorate'];
 
 
     /**
@@ -55,6 +55,18 @@ class IndexController extends BaseApiController
     public function getBanner()
     {
         $result = IndexLogic::getBanner();
+        return $this->data($result);
+    }
+
+    /**
+     * @notes 收款码
+     * @return Json
+     * @author esc
+     * @date 2023/09/28 09:31
+     */
+    public function getQrcode()
+    {
+        $result = IndexLogic::getQrcode();
         return $this->data($result);
     }
 

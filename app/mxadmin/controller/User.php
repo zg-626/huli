@@ -49,7 +49,7 @@ class User extends AdminBase
             'admin_id' => getAdminId(),
             'category' => $department,
             'educational_type' => getDictDataId(2),
-            'position_type' => getDictDataId(3),
+            'professional_type' => getDictDataId(3),
             'professional_type' => getDictDataId(4),
             'is_admin' => session('admin_info.is_admin'),
         ]);
@@ -60,7 +60,7 @@ class User extends AdminBase
     {
         $info = UserModel::where('id', $id)->find();
         // 职务变更记录
-        $department = Department::with('position')->where('user_id', $id)->order('start_time desc')->select();
+        $department = Department::with('professional')->where('user_id', $id)->order('start_time desc')->select();
         // 缴费记录
         $fees = Fees::with('user')->where('user_id', $id)->order('fees_year desc fees_time desc')->select();
         // 报名记录
@@ -120,7 +120,7 @@ class User extends AdminBase
      */
     public function datalist($limit = 15)
     {
-        $list = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
+        $list = UserModel::with(['hospital', 'educationalType', 'professionalType', 'professionalType'])->order(
             'id',
             'desc'
         )->paginate($limit);
@@ -168,14 +168,14 @@ class User extends AdminBase
                 $serach = $serach->where('professional_id', $data['professional_id']);
             }
 
-            /*if ($data['position_id'] != '') {
-                $serach = $serach->where('position_id', $data['position_id']);
+            /*if ($data['professional_id'] != '') {
+                $serach = $serach->where('professional_id', $data['professional_id']);
             }*/
 
             if ($data['d_id'] != '') {
                 $serach = $serach->where('d_id', $data['d_id']);
             }
-            $list = $serach->with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
+            $list = $serach->with(['hospital', 'educationalType', 'professionalType', 'professionalType'])->order(
                 'id',
                 'desc'
             )->paginate($limit);
@@ -478,6 +478,115 @@ class User extends AdminBase
             }
         }
     }
+
+    // 图表筛选
+    public function chart()
+    {
+        $data = input('param.');
+        $serach = new UserModel();
+
+        if (isset($data['d_id']) && $data['d_id'] != '') {
+            $serach = $serach->where('d_id', $data['d_id']);
+        }
+        if (isset($data['year']) && $data['year'] != '') {
+            $serach = $serach->whereYear('create_time', $data['year']);
+        }
+        $list = $serach->with(['hospital', 'educationalType', 'professionalType', 'professionalType'])->order(
+            'id',
+            'desc'
+        )->select();
+
+        // 初始化数据
+        $genderData = ['male' => 0, 'female' => 0];
+        $ageData = [
+            '20岁已下' => 0,
+            '20-30岁' => 0,
+            '30-40岁' => 0,
+            '40-50岁' => 0,
+            '50-60岁' => 0,
+            '60岁以上' => 0,
+            '未知' => 0
+        ];
+        // 获取职位分组
+        $professionals = self::getDictdata(4); // 从预设职位列表中获取
+        // 获取学历分组
+        $qualifications = self::getDictdata(2); // 从预设学历列表中获取
+
+        // 初始化职位数据统计
+        $professionalData = array_fill_keys($professionals, 0);
+
+        // 初始化职位数据统计
+        $qualificationsData = array_fill_keys($qualifications, 0);
+
+        //$qualificationsData = [];
+
+        foreach ($list as $user) {
+            // 统计性别比例
+            if ($user->sex == 1) {
+                $genderData['male']++;
+            } else {
+                $genderData['female']++;
+            }
+
+            // 统计年龄分布
+            $ageGroup = self::getAgeGroup($user->age);
+            if (!isset($ageData[$ageGroup])) $ageData[$ageGroup] = 0;
+            $ageData[$ageGroup]++;
+
+            // 统计职位类型
+            /*$professional = $user->professional_name; // 根据实际字段调整
+            if (!isset($professionalData[$professional])) $professionalData[$professional] = 0;
+            $professionalData[$professional]++;*/
+            $professional = $user->professional_name; // 根据实际字段调整
+            if (array_key_exists($professional, $professionalData)) {
+                $professionalData[$professional]++;
+            }
+
+            // 统计学历类型 (假设有 highest_education 字段)
+            /*$education = $user->highest_education; // 根据实际字段调整
+            if (!isset($qualificationsData[$education])) $qualificationsData[$education] = 0;
+            $qualificationsData[$education]++;*/
+            $education = $user->highest_education;
+            if (array_key_exists($education, $qualificationsData)) {
+                $qualificationsData[$education]++;
+            }
+        }
+
+        $response = [
+            'gender' => $genderData,
+            'age' => $ageData,
+            'professional' => $professionalData,
+            'qualifications' => $qualificationsData
+        ];
+        return $this->result($response);
+    }
+
+    // 获取字典类型
+    public static function getDictdata($dict_id)
+    {
+        $professional= DictData::where(['dict_id' => $dict_id, 'status' => 1])->order('weight,id')->column('name');
+        return $professional;
+    }
+
+    public static function getAgeGroup($age): ?string
+    {
+        if ($age <= 20) {
+            return '20岁已下';
+        } elseif ($age <= 30) {
+            return '20-30岁';
+        } elseif ($age <= 40) {
+            return '30-40岁';
+        } elseif ($age <= 50) {
+            return '40-50岁';
+        } elseif ($age <= 60) {
+            return '50-60岁';
+        } elseif ($age > 60) {
+            return '60岁以上';
+        }else{
+            return '未知';
+        }
+    }
+
 
     //excel导入
     public function importExcel($filename = "")

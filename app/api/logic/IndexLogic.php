@@ -16,6 +16,7 @@ namespace app\api\logic;
 
 
 use app\cms\model\CmsCategory;
+use app\cms\model\CmsQrcode;
 use app\common\logic\BaseLogic;
 use app\common\model\article\Article;
 use app\common\model\Banner;
@@ -101,6 +102,34 @@ class IndexLogic extends BaseLogic
         /*foreach ($article as &$item) {
             $item['image'] = FileService::getFileUrl($item['image']);
         }*/
+
+        return $article;
+    }
+
+    /**
+     * @notes banner
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @author 段誉
+     * @date 2022/9/21 19:15
+     */
+    public static function getQrcode()
+    {
+        // banner
+        $field = [
+            'id',
+            'image'
+        ];
+
+        $article = CmsQrcode::field($field)
+            ->where('validity_time', '>', time())
+            //->order(['sort' => 'desc'])
+            ->select()->toArray();
+        foreach ($article as &$item) {
+            $item['image'] = FileService::getFileUrl($item['image']);
+        }
 
         return $article;
     }

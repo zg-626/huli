@@ -143,7 +143,11 @@ class TrainingSignLogic extends BaseLogic
             }
         })->with([
             'training' => function ($query) {
-                $query->with('paper');
+                $query->with([
+                    'paper' => function ($query) {
+                        $query->withCount('questions');
+                    }
+                ]);
             }
         ])->where([
             'user_id' => $params['user_id'],

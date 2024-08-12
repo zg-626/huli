@@ -50,6 +50,7 @@ class TrainingController extends BaseApiController
     public function detail()
     {
         $params = (new TrainingValidate())->goCheck('detail');
+        $params['user_id'] = $this->userId;
         $result = TrainingLogic::detail($params);
         return $this->data($result);
     }

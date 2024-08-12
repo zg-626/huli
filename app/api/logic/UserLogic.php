@@ -24,6 +24,7 @@ use app\common\{enum\notice\NoticeEnum,
     service\sms\SmsDriver,
     service\wechat\WeChatMnpService
 };
+use app\mxadmin\model\UserModel;
 use think\facade\Config;
 
 /**
@@ -70,7 +71,7 @@ class UserLogic extends BaseLogic
      */
     public static function info(int $userId)
     {
-        $user = User::where(['id' => $userId])
+        $user = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])->where(['id' => $userId])
             ->withoutField(
                 'password,login_ip,login_time,create_time,update_time,last_login_ip,last_login_time,login_num,user_agent'
             )
@@ -292,6 +293,8 @@ class UserLogic extends BaseLogic
         try {
             $data = [
                 'd_id' => $params['d_id'],
+                'position_id' => $params['position_id'],
+                'professional_id' => $params['professional_id'],
                 'headimg' => $params['headimg'],
                 'department' => $params['department'],
                 'first_education' => $params['first_education'],
@@ -303,7 +306,8 @@ class UserLogic extends BaseLogic
                 'highest_graduate_time' => $params['highest_graduate_time'],
                 'level' => $params['level'],
                 'id_type' => $params['id_type'],
-                'id_number' => $params['id_number'],
+                'idcard' => $params['idcard'],
+                'email' => $params['email'],
                 'birthday' => $params['birthday'],
                 'work_start_date' => $params['work_start_date'],
                 'specialized_nurse' => $params['specialized_nurse'],
@@ -320,7 +324,7 @@ class UserLogic extends BaseLogic
                 'household' => $params['household']
             ];
 
-            return User::update($data)->where('id', $userId);
+            return User::where('id', $userId)->update($data);
         } catch (\Exception $e) {
             self::$error = $e->getMessage();
             return false;

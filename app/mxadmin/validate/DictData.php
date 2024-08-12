@@ -15,7 +15,8 @@ class DictData extends Validate
      * @var array
      */	
 	protected $rule = [
-        'name' => 'require|chsAlphaNum|unique:dict_data',
+        'name' => 'require|chsAlphaNum',
+        //'name' => 'require|chsAlphaNum|unique:dict_data',
         'weight' => 'number',
     ];
     
@@ -28,7 +29,7 @@ class DictData extends Validate
     protected $message = [
         'name.require' => '字典项名称不能为空！',
         'name.chsAlphaNum' => '字典项名称只能是汉字、字母和数字！',
-        'name.unique' => '字典项名称已经存在，请重新输入！',
+        //'name.unique' => '字典项名称已经存在，请重新输入！',
         'weight.number' => '排序权重只能是数字！',
     ];
 }
