@@ -40,7 +40,7 @@
 
     <div class="layui-row layui-col-space15" id="mxForm">
         <!-- 统计图表 -->
-        <div class="layui-col-md6 layui-col-sm6">
+        <div class="layui-col-md6 layui-col-sm6" id="professionalOpen">
             <div class="layui-card" style="overflow: hidden;">
                 <div class="layui-card-header">按职称统计</div>
                 <div class="layui-card-body">
@@ -48,7 +48,7 @@
                 </div>
             </div>
         </div>
-        <div class="layui-col-md6 layui-col-sm6">
+        <div class="layui-col-md6 layui-col-sm6" id="qualificationsOpen">
             <div class="layui-card" style="overflow: hidden;">
                 <div class="layui-card-header">按学历统计</div>
                 <div class="layui-card-body">
@@ -56,7 +56,7 @@
                 </div>
             </div>
         </div>
-        <div class="layui-col-md6 layui-col-sm6">
+        <div class="layui-col-md6 layui-col-sm6" id="ageOpen">
             <div class="layui-card" style="overflow: hidden;">
                 <div class="layui-card-header">按年龄统计</div>
                 <div class="layui-card-body">
@@ -83,6 +83,24 @@
         var xmSelect = layui.xmSelect;
         var form = layui.form;
         var printer = layui.printer;
+
+        var qualificationsOpen = {$qualificationsOpen};
+        //console.log(qualificationsOpen);
+        if(qualificationsOpen===0){
+            $('#qualificationsOpen').hide();
+        }
+
+        var professionalOpen = {$professionalOpen};
+        //console.log(qualificationsOpen);
+        if(professionalOpen===0){
+            $('#professionalOpen').hide();
+        }
+
+        var ageOpen = {$ageOpen};
+        //console.log(qualificationsOpen);
+        if(ageOpen===0){
+            $('#ageOpen').hide();
+        }
 
         // 自定义打印
         $('#printer').on('click', function (e) {

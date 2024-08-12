@@ -6,6 +6,7 @@ namespace app\mxadmin\controller;
 
 use app\cms\model\CmsCategory;
 use app\mxadmin\AdminBase;
+use app\mxadmin\model\Dict;
 use app\mxadmin\model\DictData;
 use think\facade\App;
 
@@ -56,6 +57,9 @@ class Index extends AdminBase
         ];
         $professional= DictData::where(['dict_id' => 4, 'status' => 1])->order('weight,id')->column('name');
         $qualifications= DictData::where(['dict_id' => 2, 'status' => 1])->order('weight,id')->column('name');
+        $professionalOpen = Dict::where('id', 4)->value('stats');
+        $qualificationsOpen = Dict::where('id', 2)->value('stats');
+        $ageOpen = Dict::where('id', 13)->value('stats');
         $department = list_to_trees(CmsCategory::getCategoryData(), true);
         //print_r($professional);exit();
         return view('', [
@@ -64,7 +68,10 @@ class Index extends AdminBase
             'yeartype' => getDictDataId(12),
             'professional' => $professional,//职称
             'qualifications' => $qualifications,//学历
-            'age' => $ageData
+            'age' => $ageData,
+            'professionalOpen' => $professionalOpen,
+            'qualificationsOpen' => $qualificationsOpen,
+            'ageOpen' => $ageOpen
         ]);
     }
 }

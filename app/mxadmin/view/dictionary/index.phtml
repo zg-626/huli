@@ -87,6 +87,13 @@
                 <input name="name" placeholder="请输入字典名称" class="layui-input" autocomplete="off" lay-verType="tips" lay-verify="required" required/>
             </div>
         </div>
+        <div class="layui-form-item" id="stats">
+            <label class="layui-form-label">是否统计</label>
+            <div class="layui-input-block">
+                <input type="radio" name="stats" value="1" title="统计" checked/>
+                <input type="radio" name="stats" value="o" title="不统计"/>
+            </div>
+        </div>
         <div class="layui-form-item">
             <label class="layui-form-label">排序权重</label>
             <div class="layui-input-block">
@@ -212,6 +219,15 @@
             }, 'json');
         });
 
+        /* 医院类型切换 */
+        function changeUrlType($value) {
+            if($value === 0){
+                $('#stats').hide();
+            }else{
+                $('#stats').show();
+            }
+        }
+
         /* 显示表单弹窗 */
         function showEditModel(mData) {
             admin.open({
@@ -223,6 +239,14 @@
                 success: function (layero, dIndex) {
                     // 回显表单数据
                     form.val('dictEditForm', mData);
+                    changeUrlType(0)
+                    if(mData){
+                        if(mData.id === 4 || mData.id === 2 || mData.id === 13){
+                            // 如果是编辑，就能显示是否统计样式
+                            $('#stats').show();
+                        }
+
+                    }
                     // 表单提交事件
                     form.on('submit(dictEditSubmit)', function (data) {
                         var loadIndex = layer.load(2);
