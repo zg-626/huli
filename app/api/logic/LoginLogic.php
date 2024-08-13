@@ -91,6 +91,11 @@ class LoginLogic extends BaseLogic
                 throw new \Exception('用户不存在');
             }
 
+            // 如果未审核
+            if ($user->status != YesNoEnum::YES) {
+                throw new \Exception('用户未审核或已被禁用');
+            }
+
             //更新登录信息
             $user->login_time = time();
             $user->login_ip = request()->ip();

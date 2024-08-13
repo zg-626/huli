@@ -329,24 +329,24 @@
             // 渲染下拉树
             var insXmSels = xmSelect.render({
                 el: '#classifyParentSels',
-                //layVerify: 'required',
                 layVerType: 'tips',
                 height: '400px',
                 name: 'd_id',
-                //initValue: mData ? [mData.d_id] : [],
-                model: {label: {type: 'text'}},
+                model: { label: { type: 'text' } },
                 prop: {
                     name: 'name',
                     value: 'id'
                 },
-                radio: true,
-                clickClose: true,
+                clickClose: false,
                 filterable: true,
-                filterMethod: function(val, item, index, prop){
-                    if(item.name.toLowerCase().indexOf(val.toLowerCase()) != -1){ //名称中包含的大小写都搜索出来
-                        return true;
+                filterMethod: function(val, item, index, prop) {
+                    if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                        // 仅允许选择子集数据
+                        if (item.parent_id) {
+                            return true;
+                        }
                     }
-                    return false; //其他的就不要了
+                    return false;
                 },
                 searchTips: '请输入关键词进行搜索',
                 tree: {
@@ -355,8 +355,23 @@
                     strict: false,
                     expandedKeys: true
                 },
-                data: {:json_encode($category)},
+                data: formatData({:json_encode($category)}),
             });
+
+            // 格式化数据函数
+            function formatData(data) {
+                return data.map(item => {
+                    if (!item.pid) {
+                        // 禁用一级数据
+                        item.disabled = true;
+                    }
+                    if (item.children) {
+                        item.children = formatData(item.children);
+                    }
+                    return item;
+                });
+            }
+
         }
 
         /* 表格搜索 */

@@ -173,7 +173,7 @@ class User extends AdminBase
             }*/
 
             if ($data['d_id'] != '') {
-                $serach = $serach->where('d_id', $data['d_id']);
+                $serach = $serach->whereIn('d_id', $data['d_id']);
             }
             $list = $serach->with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
                 'id',
@@ -486,7 +486,7 @@ class User extends AdminBase
         $serach = new UserModel();
 
         if (isset($data['d_id']) && $data['d_id'] != '') {
-            $serach = $serach->where('d_id', $data['d_id']);
+            $serach = $serach->whereIn('d_id', $data['d_id']);
         }
         if (isset($data['year']) && $data['year'] != '') {
             $serach = $serach->whereYear('create_time', $data['year']);
