@@ -227,7 +227,7 @@
                 {
                     field: 'image', title: '缴费截图', templet: function (d) {
                         if (d.image) {
-                            return '<img src="' + d.image + '" class="tb-img-circle" tb-img alt="' + d.title + '"/>';
+                            return '<img style="width: 60px;height: 60px;"  src="' + d.image + '" class="tb-img-circle" tb-img alt="' + d.title + '"/>';
                         } else {
                             return '';
                         }
@@ -377,8 +377,8 @@
                     // 表单提交事件
                     form.on('submit(userShenheSubmit)', function (data) {
                         //data.field.d_id = insXmSel.getValue('valueStr');
-                        data.field.id= mData.data ? mData.data.id : '';
-                            data.field.ids= mData.ids ? mData.ids.join(',') : ''
+                        data.field.id= mData ? mData.id : '';
+                        data.field.ids= mData.ids ? mData.ids.join(',') : ''
                         var loadIndex = layer.load(2);
                         $.post(mData ? "{:url('cms/fees/shenhe')}" : "{:url('cms/fees/add')}", data.field, function (res) {
                             layer.close(loadIndex);

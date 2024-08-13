@@ -21,6 +21,7 @@ use app\cms\model\Training;
 use app\common\logic\BaseLogic;
 use app\cms\model\TrainingSign;
 use app\common\service\FileService;
+use Exception;
 use think\facade\Db;
 
 
@@ -158,72 +159,97 @@ class TrainingSignLogic extends BaseLogic
 
     public static function answer(array $params)
     {
-        // 获取试卷的信息
-        //$info=Paper::findOrEmpty($params['paper_id'])->toArray();
-        // 获取试题列表
-        // 获取试题列表，并将试题以题目ID为键存储在哈希表中
-        $questionList = Question::where('paper_id', $params['paper_id'])->field('id,answer,select,type,score')
-            ->select();
-        // 初始化得分和答题记录数组
-        $totalScore = 0;
-        $answerRecords = [];
-
-        foreach ($params['answers'] as $answer) {
-            // 直接从哈希表中获取试题信息
-            $question = Question::where('id', $answer['question_id'])->find()->toArray();
-
-            if (!$question) {
-                continue; // 如果找不到对应试题，跳过
+        try {
+            // 获取报名信息
+            $info=TrainingSign::where('user_id', $params['user_id'])->where('training_id', $params['training_id'])->findOrEmpty();
+            if($info->isEmpty()){
+                throw new \RuntimeException('报名信息不存在');
             }
 
-            // 初始化答题记录
-            $record = [
-                'question_id' => $answer['question_id'],
-                'user_answer' => $answer['user_answer'],
-                'is_correct' => false,
-                'score_obtained' => 0,
-                'correct_answer' => $question,
-                'question_score' => $question['score'],
+            if($info->is_check === 0){
+                throw new \RuntimeException('请先签到');
+            }
+
+            // 获取试卷的信息
+            $paper=Paper::findOrEmpty($params['paper_id']);
+            if($paper->isEmpty()){
+                throw new \RuntimeException('试卷不存在');
+            }
+
+            if($info->is_study === 1){
+                throw new \RuntimeException('请勿重复答题');
+            }
+
+            ++$paper->answer_count;
+            $paper->save();
+            // 获取试题列表
+            // 获取试题列表，并将试题以题目ID为键存储在哈希表中
+            $questionList = Question::where('paper_id', $params['paper_id'])->field('id,answer,select,type,score')
+                ->select();
+            // 初始化得分和答题记录数组
+            $totalScore = 0;
+            $answerRecords = [];
+
+            foreach ($params['answers'] as $answer) {
+                // 直接从哈希表中获取试题信息
+                $question = Question::where('id', $answer['question_id'])->find()->toArray();
+
+                if (!$question) {
+                    continue; // 如果找不到对应试题，跳过
+                }
+
+                // 初始化答题记录
+                $record = [
+                    'question_id' => $answer['question_id'],
+                    'user_answer' => $answer['user_answer'],
+                    'is_correct' => false,
+                    'score_obtained' => 0,
+                    'correct_answer' => $question,
+                    'question_score' => $question['score'],
+                ];
+
+                // 根据题目类型判断答案是否正确
+                if ($question['type'] == 1 || $question['type'] == 3) { // 单选题或判断题
+                    if ($answer['user_answer'] == $question['answer']) {
+                        $record['is_correct'] = true;
+                        $record['score_obtained'] = $question['score'];
+                        $totalScore += $question['score'];
+                    }
+                } elseif ($question['type'] == 2) { // 多选题
+                    //print_r($question);exit;
+                    $question['select'] = explode(',', $question['select']);
+                    sort($answer['user_answer']); // 排序用户答案，方便比较
+                    sort($question['select']); // 排序正确答案，方便比较
+
+                    if ($answer['user_answer'] == $question['select']) {
+                        $record['is_correct'] = true;
+                        $record['score_obtained'] = $question['score'];
+                        $totalScore += $question['score'];
+                    }
+                }
+                // 将答题记录添加到记录数组中
+                $answerRecords[] = $record;
+            }
+
+            // 保存答题记录到数据
+            TrainingSign::where([
+                'user_id' => $params['user_id'],
+                'training_id' => $params['training_id'],
+            ])->update([
+                'total_score' => $totalScore,
+                'is_study' => 1,
+                'study_time' => time(),
+                //'answer_records' => $answerRecords,
+            ]);
+
+            // 返回总得分和答题记录
+            return [
+                'total_score' => $totalScore,
+                'answer_records' => $answerRecords,
             ];
-
-            // 根据题目类型判断答案是否正确
-            if ($question['type'] == 1 || $question['type'] == 3) { // 单选题或判断题
-                if ($answer['user_answer'] == $question['answer']) {
-                    $record['is_correct'] = true;
-                    $record['score_obtained'] = $question['score'];
-                    $totalScore += $question['score'];
-                }
-            } elseif ($question['type'] == 2) { // 多选题
-                //print_r($question);exit;
-                $question['select'] = explode(',', $question['select']);
-                sort($answer['user_answer']); // 排序用户答案，方便比较
-                sort($question['select']); // 排序正确答案，方便比较
-
-                if ($answer['user_answer'] == $question['select']) {
-                    $record['is_correct'] = true;
-                    $record['score_obtained'] = $question['score'];
-                    $totalScore += $question['score'];
-                }
-            }
-            // 将答题记录添加到记录数组中
-            $answerRecords[] = $record;
+        }catch (Exception $e){
+            self::setError($e->getMessage());
+            return false;
         }
-
-        // 保存答题记录到数据
-        TrainingSign::where([
-            'user_id' => $params['user_id'],
-            'training_id' => $params['training_id'],
-        ])->update([
-            'total_score' => $totalScore,
-            'is_study' => 1,
-            'study_time' => time(),
-            //'answer_records' => $answerRecords,
-        ]);
-
-        // 返回总得分和答题记录
-        return [
-            'total_score' => $totalScore,
-            'answer_records' => $answerRecords,
-        ];
     }
 }

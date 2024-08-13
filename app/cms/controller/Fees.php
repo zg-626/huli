@@ -189,7 +189,7 @@ class Fees extends AdminBase
     }
 
     // 审核
-    public function shenhe($id)
+    public function shenhe($id=0)
     {
         if (request()->isPost()) {
             $data = input('param.');

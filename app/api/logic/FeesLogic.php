@@ -15,6 +15,7 @@
 namespace app\api\logic;
 
 
+use app\cms\model\Invoices;
 use app\common\logic\BaseLogic;
 use app\cms\model\Fees;
 use app\common\service\FileService;
@@ -132,8 +133,9 @@ class FeesLogic extends BaseLogic
     {
         Db::startTrans();
         try {
-            Fees::create([
+            Invoices::create([
                 'user_id' => $params['user_id'],
+                'fees_id' => $params['fees_id'],
                 'company' => $params['company'],
                 'unit' => $params['unit'],
                 'project' => $params['project'],

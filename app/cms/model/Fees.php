@@ -37,7 +37,7 @@ class Fees extends BaseModel
     public function getImageAttr($value)
     {
         if($value){
-            return trim($value) ? FileService::setFileUrl($value) : '';
+            return trim($value) ? FileService::getFileUrl('/'.$value) : '';
         }
     }
 
