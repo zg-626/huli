@@ -656,8 +656,8 @@ class User extends AdminBase
             // 正则去除多余空白字符
             $data[$key]['phone'] = preg_replace('/\s+/', '', $value['0']);
             //查询是否存在
-            $userinfo = Db::name('user')->where('phone', $value['0'])->find();
-            if ($userinfo) {
+            $userinfo = Db::name('user')->where('phone', $value['1'])->find();
+            if (!$userinfo) {
                 return $this->error('登录账号已经存在，请检查，在第' . $number . '行');
             }
             $data[$key]['nickname'] = preg_replace('/\s+/', '', $value['1']);

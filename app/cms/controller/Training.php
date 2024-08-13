@@ -4,11 +4,15 @@ declare (strict_types = 1);
 
 namespace app\cms\controller;
 
+use app\cms\model\TrainingSign;
 use app\mxadmin\AdminBase;
 use app\cms\model\Training as TrainingModel;
 use app\cms\model\CmsCategory;
 use app\mxadmin\model\UserModel;
 use think\exception\ValidateException;
+use think\facade\Db;
+use think\facade\Filesystem;
+use think\Request;
 
 class Training extends AdminBase
 {
@@ -459,61 +463,72 @@ class Training extends AdminBase
         }
     }
 
-    /** @DESC [用户导入] */
-    public function daoru(Request $request)
+    /** @DESC [导入签到] */
+    public function check(Request $request)
     {
         // 接收文件上传信息
         $file = $request->file("file");
         // 调用类库，读取excel中的内容
         $excel_array = $this->importExcel($file);
-        foreach ($excel_array as $key => $value) {
-            $number = $key +2;
-            // 正则去除多余空白字符
-            $data[$key]['phone'] = preg_replace('/\s+/', '', $value['0']);
-            //查询是否存在
-            $userinfo=Db::name('user')->where('phone',$value['0'])->find();
-            if($userinfo){
-                return $this->error('登录账号已经存在，请检查，在第'. $number.'行');
-            }
-            $data[$key]['nickname'] = preg_replace('/\s+/', '', $value['1']);
 
-            //通过名称获取部门id
-            //$data[$key]['department'] = preg_replace('/\s+/', '', $value['2']);
-            $data[$key]['d_id']=Db::name('cms_department')->where('name',preg_replace('/\s+/', '', $value['2']))->value('id');
+        $data = [];
+        foreach ($excel_array as $key => $value) {
+            $number = $key + 2;
+            // 正则去除多余空白字符
+            $phone = preg_replace('/\s+/', '', $value['1']);
+            $value2 = preg_replace('/\s+/', '', $value['2']);
             $value3 = preg_replace('/\s+/', '', $value['3']);
-            if ($value3 === '男') {
-                $data[$key]['sex'] = 1;
-            } elseif ($value3 === '女') {
-                $data[$key]['sex'] = 0;
-            } else {
-                $data[$key]['sex'] = 2;
+            $value4 = preg_replace('/\s+/', '', $value['4']);
+
+            if ($value3 !== '签到') {
+                return $this->error('签到状态有误，请检查导入类型');
             }
-            $data[$key]['workname'] = preg_replace('/\s+/', '', $value['4']);
-            $data[$key]['password'] = md5(preg_replace('/\s+/', '', $value['5']));
-            $data[$key]['create_time'] = time();
-            $data[$key]['update_time'] = time();
-            $data[$key]['status'] = 1;
-            $data[$key]['vip_time'] = time()+86400*15;
+
+            // 查询用户是否存在
+            $userinfo = Db::name('user')->where('phone', $phone)->find();
+            if (!$userinfo) {
+                return $this->error('用户手机号不存在，请检查，在第' . $number . '行');
+            }
+
+            // 查询学习班详情
+            $info = \app\cms\model\Training::where('id', $value4)->find();
+            if (!$info) {
+                return $this->error('学习班不存在，请检查');
+            }
+
+            $updateData = [
+                'is_check' => 1,
+                'check_time' => $value2,
+                'training_id' => $value4
+            ];
+            // 如果学习班不需要考试，再更新学习记录
+            if ($info['is_exam'] === 0) {
+                $updateData['is_study'] = 1;
+                $updateData['study_time'] = $value2;
+            }
+
+            $data[] = $updateData;
         }
 
         // 启动事务
         Db::startTrans();
-        try{
-            //进行数据库操作的一系列语句
-            $result = UserModel::insertAll($data);
-            if ($result!=true) {
-                return $this->error('导入数据失败');
+        try {
+            // 批量更新
+            foreach ($data as $item) {
+                TrainingSign::where([
+                    'user_id' => $userinfo['id'], // 假设 user_id 是关联字段
+                    'training_id' => $item['training_id']
+                ])->update($item);
             }
+
             // 提交事务
             Db::commit();
-            return $this->success('文件上传成功，已经导入'.$result.'条数据');
-        }catch (\Throwble $t){
+            return $this->success('文件上传成功，已经导入' . count($data) . '条数据');
+        } catch (\Throwable $t) {
             // 回滚事务
             Db::rollback();
-            return $this->error('导入数据失败'. $e->getMessage());
+            return $this->error('导入数据失败: ' . $t->getMessage());
         }
-
-        /*echo "<pre>";
-        print_r($data);   //  二维数组*/
     }
+
 }
