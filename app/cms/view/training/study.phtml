@@ -108,6 +108,7 @@
     </form>
 </script>
 <button style="display: none;" type="button" id="daoru"></button>
+<button style="display: none;" type="button" id="export_study"></button>
 <!-- 表格打印 -->
 <script type="text/html" id="divTablePrint">
 
@@ -158,9 +159,9 @@
                 //'<button lay-event="signinfo"  class="layui-btn layui-btn-sm layui-btn-danger icon-btn" id="no" style="display: none"><i class="layui-icon">&#xe655;</i>部分打印</button>',
                 '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>新增</button>&nbsp;',
                 '<button lay-event="Padd" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>导入签到</button>&nbsp;',
-                '<a href="/storage/file/用户模板.xlsx" class="layui-btn layui-btn-sm layui-btn-radius layui-btn-primary"><i class="layui-icon">&#xe601;</i>签到模板</a>',
-                '<button lay-event="Padd" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>导入学习</button>&nbsp;',
-                '<a href="/storage/file/用户模板.xlsx" class="layui-btn layui-btn-sm layui-btn-radius layui-btn-primary"><i class="layui-icon">&#xe601;</i>学习模板</a>',
+                '<a href="/storage/template/签到导入模板.xlsx" class="layui-btn layui-btn-sm layui-btn-radius layui-btn-primary"><i class="layui-icon">&#xe601;</i>签到模板</a>',
+                '<button lay-event="Export" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>导入学习</button>&nbsp;',
+                '<a href="/storage/template/学习导入模板.xlsx" class="layui-btn layui-btn-sm layui-btn-radius layui-btn-primary"><i class="layui-icon">&#xe601;</i>学习模板</a>',
 
 
                 '</p>'].join(''),
@@ -271,15 +272,35 @@
                 doDel({ids: ids});
             }else if (obj.event === 'Padd'){
                 $("#daoru").click();
+            }else if (obj.event === 'Export'){
+                $("#export_study").click();
             }else{
                 showSignModel(obj);
             }
         });
 
-        //用户导入
+        //导入签到
         upload.render({
             elem: '#daoru',
             url: "{:url('cms/training/check')}", //改成您自己的上传接口
+            accept: 'file', //文件
+            acceptMime: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            exts: 'xlsx|xls', //只允许上传excel文件
+            size: 8048, //限制文件大小，单位 KB
+            done: function(res){
+                if (res.code === 1) {
+                    layer.msg(res.msg, {icon: 1});
+                    insTb.reload();  // 成功刷新表格
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 10});
+                }
+            }
+        });
+
+        //导入学习
+        upload.render({
+            elem: '#export_study',
+            url: "{:url('cms/training/export_study')}", //改成您自己的上传接口
             accept: 'file', //文件
             acceptMime: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             exts: 'xlsx|xls', //只允许上传excel文件
