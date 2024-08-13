@@ -4,6 +4,7 @@ declare (strict_types = 1);
 
 namespace app\cms\controller;
 
+use app\cms\model\CmsCategory;
 use app\cms\model\TrainingSign;
 use app\mxadmin\AdminBase;
 use app\cms\model\Training as TrainingModel;
@@ -50,7 +51,10 @@ class Training extends AdminBase
      */
     public function sign()
     {
-        return view('sign');
+        $department = list_to_trees(CmsCategory::getCategoryData(), true);
+        return view('sign',[
+            'category' => $department
+        ]);
     }
 
     /**
@@ -59,6 +63,7 @@ class Training extends AdminBase
      */
     public function study($id)
     {
+        $department = list_to_trees(CmsCategory::getCategoryData(), true);
         $userlist = UserModel::alias('u')
             ->join('training_sign ts', 'ts.user_id = u.id')
             ->join('training t', 't.id = ts.training_id')
@@ -66,7 +71,10 @@ class Training extends AdminBase
             ->where('ts.training_id', $id)
             ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
            ->select();
-        return view('study',['userlist'=>$userlist]);
+        return view('study',[
+            'userlist'=>$userlist,
+            'category' => $department
+        ]);
     }
 
     /**
@@ -91,15 +99,15 @@ class Training extends AdminBase
             $data = input('param.');
             $serach = new TrainingModel();
             if ($data['type'] != '') {
-                $serach = $serach->where('type', $data['type']);
+                $serach = $serach->whereIn('type', $data['type']);
             }
             if ($data['title'] != '') {
                 $serach = $serach->whereLike('title', '%' . $data['title'] . '%');
             }
-            if ($data['status'] != '') {
+            /*if ($data['status'] != '') {
                 $serach = $serach->where('status', $data['status']);
-            }
-            $list = $serach->with(['admin', 'typename'])-> order('weight asc,id desc')->paginate($limit);
+            }*/
+            $list = $serach->with(['admin', 'typename'])->withCount(['signups'])->order('weight asc,id desc')->paginate($limit);
             return $this->result($list);
         }
     }
@@ -285,9 +293,13 @@ class Training extends AdminBase
         }*/
         $data = input('param.');
         $nickname = $data['nickname'] ?? '';
+        $d_id = $data['d_id'] ?? '';
         $where = [];
         if (!empty($nickname)) {
             $where[] = ['u.nickname', 'like', '%' . $nickname . '%'];
+        }
+        if (!empty($d_id)) {
+            $where[] = ['u.d_id', 'in', $d_id];
         }
         $users = UserModel::alias('u')
             ->join('training_sign ts', 'ts.user_id = u.id')
@@ -389,9 +401,13 @@ class Training extends AdminBase
         }*/
         $data = input('param.');
         $nickname = $data['nickname'] ?? '';
+        $d_id = $data['d_id'] ?? '';
         $where = [];
         if (!empty($nickname)) {
             $where[] = ['u.nickname', 'like', '%' . $nickname . '%'];
+        }
+        if (!empty($d_id)) {
+            $where[] = ['u.d_id', 'in', $d_id];
         }
         $users = UserModel::alias('u')
             ->join('training_sign ts', 'ts.user_id = u.id')

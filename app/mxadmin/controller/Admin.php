@@ -4,6 +4,7 @@ declare (strict_types = 1);
 
 namespace app\mxadmin\controller;
 
+use app\cms\model\CmsCategory;
 use app\mxadmin\AdminBase;
 use app\mxadmin\model\AdminModel;
 use app\mxadmin\model\AuthGroup;
@@ -18,10 +19,16 @@ class Admin extends AdminBase
      */
     public function index()
     {
+        // 获取角色列表
+        $department = list_to_trees(CmsCategory::getCategoryData(), true);
         $rolelist = AuthGroup::field('id,title')->order('id')->select();
         return view('',[
             'rolelist'  =>  $rolelist,
             'admin_id' => getAdminId(),
+            'category' => $department,
+            'educational_type' => getDictDataId(2),
+            'position_type' => getDictDataId(3),
+            'professional_type' => getDictDataId(4),
         ]);
     }
 
@@ -89,7 +96,12 @@ class Admin extends AdminBase
     {
         if (request()->isGet()) {
             $data = input('param.');
-
+            $nickname = $data['nickname'] ?? '';
+            $role_id = $data['role_id'] ?? '';
+            $d_id = $data['d_id'] ?? '';
+            $phone = $data['phone'] ?? '';
+            $professional_id = $data['professional_id'] ?? '';
+            $educational_id = $data['educational_id'] ?? '';
             $where = [];
             if ($data['status'] != '') {
                 $where['status'] = $data['status'];
@@ -97,11 +109,32 @@ class Admin extends AdminBase
             if ($data['phone'] != '') {
                 $where['username'] = $data['phone'];
             }
-            $nickname = $data['nickname'] ?? '';
-            $list = AdminModel::hasWhere('user' , function ($query) use ($nickname) {
+            if($role_id){
+                // 查询当前组所有用户
+                $uids = AuthGroupAccess::whereIn('group_id', $role_id)->column('uid');
+                if($uids){
+                    // 转换数组为逗号分隔的字符串
+                    $uids_str = implode(',', $uids);
+                    $where['mx_admin.id'] = ['in', $uids_str];
+                }
+
+            }
+            $list = AdminModel::hasWhere('user' , function ($query) use ($nickname,$phone,$d_id,$educational_id,$professional_id) {
                 $query->field('id,nickname');
                 if (!empty($nickname)) {
                     $query->where('nickname', 'like', '%' . $nickname . '%');
+                }
+                /*if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }*/
+                if (!empty($d_id)) {
+                    $query->whereIn('d_id',$d_id);
+                }
+                if (!empty($educational_id)) {
+                    $query->whereIn('educational_id',$educational_id);
+                }
+                if (!empty($professional_id)) {
+                    $query->whereIn('professional_id',$professional_id);
                 }
             })->with(['roles','user'=> function ($query) {
                 $query->with(['hospital','educationalType','positionType','professionalType']);

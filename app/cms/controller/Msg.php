@@ -62,7 +62,7 @@ class Msg extends AdminBase
             $data = input('param.');
             $serach = new CmsMsg();
             if ($data['type'] != '') {
-                $serach = $serach->where('category_id', $data['type']);
+                $serach = $serach->whereIn('category_id', $data['type']);
             }
             if ($data['title'] != '') {
                 $serach = $serach->whereLike('title', '%' . $data['title'] . '%');

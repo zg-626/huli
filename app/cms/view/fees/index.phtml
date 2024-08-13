@@ -9,16 +9,34 @@
             <!-- 表格工具栏 -->
             <form class="layui-form toolbar">
                 <div class="layui-form-item">
-                    <!-- <div class="layui-inline">
-                        <label class="layui-form-label">所属栏目</label>
+                     <div class="layui-inline">
+                        <label class="layui-form-label">费用类型</label>
                         <div class="layui-input-inline">
                             <div id="classifyParentSelSearch" class="mx-xmselect-tree"></div>
                         </div>
-                    </div> -->
+                     </div>
                     <div class="layui-inline">
-                        <label class="layui-form-label">用户昵称</label>
+                        <label class="layui-form-label">缴费年份</label>
                         <div class="layui-input-inline">
-                            <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入标题关键词"/>
+                            <div id="yearParentSels" class="mx-xmselect-tree"></div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">医院名称</label>
+                        <div class="layui-input-inline">
+                            <div id="classifyParentSels" class="mx-xmselect-tree"></div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">缴费状态</label>
+                        <div class="layui-input-inline">
+                            <div id="statusParentSels" class="mx-xmselect-tree"></div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">姓名</label>
+                        <div class="layui-input-inline">
+                            <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入姓名"/>
                         </div>
                     </div>
                     <!--<div class="layui-inline">
@@ -200,7 +218,166 @@
             print: true              // 如果是打开新窗口是否自动打印
         });*/
 
-        
+        // 渲染下拉树
+        var insXmSels = xmSelect.render({
+            el: '#classifyParentSels',
+            layVerType: 'tips',
+            height: '400px',
+            name: 'd_id',
+            model: { label: { type: 'text' } },
+            prop: {
+                name: 'name',
+                value: 'id'
+            },
+            clickClose: false,
+            filterable: true,
+            filterMethod: function(val, item, index, prop) {
+                if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                    // 仅允许选择子集数据
+                    if (item.parent_id) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            searchTips: '请输入关键词进行搜索',
+            tree: {
+                show: true,
+                indent: 15,
+                strict: false,
+                expandedKeys: true
+            },
+            data: formatData({:json_encode($category)}),
+        });
+
+        // 格式化数据函数
+        function formatData(data) {
+            return data.map(item => {
+                if (!item.pid) {
+                    // 禁用一级数据
+                    item.disabled = true;
+                }
+                if (item.children) {
+                    item.children = formatData(item.children);
+                }
+                return item;
+            });
+        }
+
+        // 渲染费用类型下拉树
+        var classifyParentSel = xmSelect.render({
+            el: '#classifyParentSelSearch',
+            layVerType: 'tips',
+            height: '400px',
+            name: 'fees_type',
+            model: { label: { type: 'text' } },
+            prop: {
+                name: 'name',
+                value: 'id'
+            },
+            clickClose: false,
+            filterable: true,
+            filterMethod: function(val, item, index, prop) {
+                if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                    // 仅允许选择子集数据
+                    if (item.parent_id) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            searchTips: '请输入关键词进行搜索',
+            tree: {
+                show: true,
+                indent: 15,
+                strict: false,
+                expandedKeys: true
+            },
+            data: {:json_encode($feestype)},
+        });
+
+        // 渲染费用年份下拉树
+        var yearParentSel = xmSelect.render({
+            el: '#yearParentSels',
+            layVerType: 'tips',
+            height: '400px',
+            name: 'fees_year',
+            model: { label: { type: 'text' } },
+            prop: {
+                name: 'name',
+                value: 'id'
+            },
+            clickClose: false,
+            filterable: true,
+            filterMethod: function(val, item, index, prop) {
+                if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                    // 仅允许选择子集数据
+                    if (item.parent_id) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            searchTips: '请输入关键词进行搜索',
+            tree: {
+                show: true,
+                indent: 15,
+                strict: false,
+                expandedKeys: true
+            },
+            data: {:json_encode($feesyear)},
+        });
+
+        // 渲染缴费状态下拉树
+        var statusParentSels = xmSelect.render({
+            el: '#statusParentSels',
+            layVerType: 'tips',
+            height: '400px',
+            name: 'status',
+            model: { label: { type: 'text' } },
+            prop: {
+                name: 'name',
+                value: 'id'
+            },
+            clickClose: false,
+            filterable: true,
+            filterMethod: function(val, item, index, prop) {
+                if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                    // 仅允许选择子集数据
+                    if (item.parent_id) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            searchTips: '请输入关键词进行搜索',
+            tree: {
+                show: true,
+                indent: 15,
+                strict: false,
+                expandedKeys: true
+            },
+            data: [
+                {
+                    name: '未审核',
+                    id: 1
+                },
+                {
+                    name: '未缴费',
+                    id: 0
+                },
+                {
+                    name: '已缴费',
+                    id: 2
+                },
+                {
+                    name: '驳回',
+                    id: 3
+                },
+            ],
+        });
+
+
         /* 渲染表格 */
         var insTb = table.render({
             elem: '#mxTable',

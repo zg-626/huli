@@ -28,24 +28,30 @@
                     <div class="layui-inline">
                         <label class="layui-form-label">职称</label>
                         <div class="layui-input-inline">
+                            <div id="professionalParentSel" class="mx-xmselect-tree"></div>
+                        </div>
+                        <!--<div class="layui-input-inline">
                             <select name="professional_id">
                                 <option value="">--- 全部 ---</option>
                                 {volist name="professional_type" id="vo"}
                                 <option value="{$vo.id}">{$vo.name}</option>
                                 {/volist}
                             </select>
-                        </div>
+                        </div>-->
                     </div>
                     <div class="layui-inline">
                         <label class="layui-form-label">学历</label>
                         <div class="layui-input-inline">
+                            <div id="educationalParentSels" class="mx-xmselect-tree"></div>
+                        </div>
+                        <!--<div class="layui-input-inline">
                             <select name="educational_id">
                                 <option value="">--- 全部 ---</option>
                                 {volist name="educational_type" id="vo"}
                                 <option value="{$vo.id}">{$vo.name}</option>
                                 {/volist}
                             </select>
-                        </div>
+                        </div>-->
                     </div>
                     <div class="layui-inline">
                         <label class="layui-form-label">手机号</label>
@@ -57,12 +63,6 @@
                         <label class="layui-form-label">姓&emsp;名</label>
                         <div class="layui-input-inline">
                             <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入姓名"/>
-                        </div>
-                    </div>
-                    <div class="layui-inline">
-                        <label class="layui-form-label">职&emsp;称</label>
-                        <div class="layui-input-inline">
-                            <input name="professional" class="layui-input" autocomplete="off" placeholder="职称"/>
                         </div>
                     </div>
                     <!--<div class="layui-inline">
@@ -356,6 +356,70 @@
                     expandedKeys: true
                 },
                 data: formatData({:json_encode($category)}),
+            });
+
+            // 渲染职称下拉树
+            var professionalParentSel = xmSelect.render({
+                el: '#professionalParentSel',
+                layVerType: 'tips',
+                height: '400px',
+                name: 'professional_id',
+                model: { label: { type: 'text' } },
+                prop: {
+                    name: 'name',
+                    value: 'id'
+                },
+                clickClose: false,
+                filterable: true,
+                filterMethod: function(val, item, index, prop) {
+                    if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                        // 仅允许选择子集数据
+                        if (item.parent_id) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                searchTips: '请输入关键词进行搜索',
+                tree: {
+                    show: true,
+                    indent: 15,
+                    strict: false,
+                    expandedKeys: true
+                },
+                data: {:json_encode($professional_type)},
+            });
+
+            // 渲染学历下拉树
+            var educationalParentSel = xmSelect.render({
+                el: '#educationalParentSels',
+                layVerType: 'tips',
+                height: '400px',
+                name: 'educational_id',
+                model: { label: { type: 'text' } },
+                prop: {
+                    name: 'name',
+                    value: 'id'
+                },
+                clickClose: false,
+                filterable: true,
+                filterMethod: function(val, item, index, prop) {
+                    if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                        // 仅允许选择子集数据
+                        if (item.parent_id) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                searchTips: '请输入关键词进行搜索',
+                tree: {
+                    show: true,
+                    indent: 15,
+                    strict: false,
+                    expandedKeys: true
+                },
+                data: {:json_encode($educational_type)},
             });
 
             // 格式化数据函数

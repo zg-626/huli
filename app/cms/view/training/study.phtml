@@ -9,12 +9,12 @@
             <!-- 表格工具栏 -->
             <form class="layui-form toolbar">
                 <div class="layui-form-item">
-                    <!-- <div class="layui-inline">
-                        <label class="layui-form-label">所属栏目</label>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">医院名称</label>
                         <div class="layui-input-inline">
-                            <div id="classifyParentSelSearch" class="mx-xmselect-tree"></div>
+                            <div id="classifyParentSels" class="mx-xmselect-tree"></div>
                         </div>
-                    </div> -->
+                    </div>
                     <div class="layui-inline">
                         <label class="layui-form-label">姓名</label>
                         <div class="layui-input-inline">
@@ -138,6 +138,53 @@
             iePreview: true,          // 是否兼容ie打印预览
             print: true              // 如果是打开新窗口是否自动打印
         });*/
+
+        // 渲染下拉树
+        var insXmSels = xmSelect.render({
+            el: '#classifyParentSels',
+            layVerType: 'tips',
+            height: '400px',
+            name: 'd_id',
+            model: { label: { type: 'text' } },
+            prop: {
+                name: 'name',
+                value: 'id'
+            },
+            clickClose: false,
+            filterable: true,
+            filterMethod: function(val, item, index, prop) {
+                if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                    // 仅允许选择子集数据
+                    if (item.parent_id) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            searchTips: '请输入关键词进行搜索',
+            tree: {
+                show: true,
+                indent: 15,
+                strict: false,
+                expandedKeys: true
+            },
+            data: formatData({:json_encode($category)}),
+        });
+
+        // 格式化数据函数
+        function formatData(data) {
+            return data.map(item => {
+                if (!item.pid) {
+                    // 禁用一级数据
+                    item.disabled = true;
+                }
+                if (item.children) {
+                    item.children = formatData(item.children);
+                }
+                return item;
+            });
+        }
+
         // 自定义打印
         $('#printer').on('click', function (e) {
             printer.printHtml({

@@ -161,11 +161,11 @@ class User extends AdminBase
             }
 
             if ($data['educational_id'] != '') {
-                $serach = $serach->where('educational_id', $data['educational_id']);
+                $serach = $serach->whereIn('educational_id', $data['educational_id']);
             }
 
             if ($data['professional_id'] != '') {
-                $serach = $serach->where('professional_id', $data['professional_id']);
+                $serach = $serach->whereIn('professional_id', $data['professional_id']);
             }
 
             /*if ($data['position_id'] != '') {

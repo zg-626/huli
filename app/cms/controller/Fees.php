@@ -4,6 +4,7 @@ declare (strict_types = 1);
 
 namespace app\cms\controller;
 
+use app\cms\model\CmsCategory;
 use app\mxadmin\AdminBase;
 use app\cms\model\Fees as FeesModel;
 use app\mxadmin\model\UserModel;
@@ -16,9 +17,11 @@ class Fees extends AdminBase
      */
     public function index()
     {
+        $department = list_to_trees(CmsCategory::getCategoryData(), true);
         return view('', [
             'feestype' => getDictDataId(11),
             'feesyear' => getDictDataId(12),
+            'category' => $department,
         ]);
     }
 
@@ -59,44 +62,54 @@ class Fees extends AdminBase
     {
         if (request()->isGet()) {
             $data = input('param.');
-            /*$msgReadModel = new FeesModel();
+
             $nickname = $data['nickname'] ?? '';
             $status = $data['status'] ?? '';
+            $fees_type = $data['fees_type'] ?? '';
+            $fees_year = $data['fees_year'] ?? '';
+            $d_id = $data['d_id'] ?? '';
+            $where=[];
+            //$where[] = ['m_id', '=', cache('m_id')];
+            if ($status != '') {
+                $where[] = ['Fees.status', 'in', $status];
+            }
+            if ($fees_type != '') {
+                $where[] = ['Fees.fees_type', 'in', $fees_type];
+            }
+            if ($fees_year != '') {
+                $where[] = ['Fees.fees_year', 'in', $fees_year];
+            }
 
-            $list = $msgReadModel::hasWhere('user' , function ($query) use ($nickname) {
+            $list = FeesModel::hasWhere('user' , function ($query) use ($nickname,$d_id) {
                 $query->field('id,nickname');
                 if (!empty($nickname)) {
                     $query->where('nickname', 'like', '%' . $nickname . '%');
                 }
-            })->with('user')->where('m_id',cache('m_id'))
+                if (!empty($d_id)) {
+                    $query->whereIn('d_id',$d_id);
+                }
+            })->with(['user'=> function ($query) {
+                $query->with(['hospital','educationalType','positionType','professionalType']);
+            }])->where($where)
                 ->order('id desc')
                 ->paginate($limit);
-
-
-            return $this->result($list);*/
-            $nickname = $data['nickname'] ?? '';
-            $notificationId = cache('m_id');
-            $where = [];
-            if (!empty($nickname)) {
-                $where[] = ['nickname', 'like', '%' . $nickname . '%'];
-            }
-            // 查询所有用户及其阅读情况
-            $users = UserModel::with(['msgReads' => function ($query) use ($notificationId) {
-                $query->where('m_id', $notificationId);
-            },'hospital'])->where($where)
-                ->paginate($limit);
-            // 遍历用户及其阅读情况
-            foreach ($users as $user) {
-                $user->read_status = 0;
-                $user->read_time = null;
-                foreach ($user->msgReads as $msgRead) {
-                    $user->read_status = 1;
-                    if ($msgRead->create_time) {
-                        $user->read_time=$msgRead->create_time;
+            if(!$list->isEmpty()){
+                $user=[];
+                foreach ($list as $k => $v) {
+                    if (empty($v->user)) {
+                        $v->user = $user;
                     }
+                    $v->departmentname= $v->user->departmentname ?? '';
+                    $v->phone= $v->user->phone ?? '';
+                    $v->educational_name= $v->user->educational_name ?? '';
+                    $v->position_name= $v->user->position_name ?? '';
+                    $v->professional_name= $v->user->professional_name ?? '';
+                    $v->sex= $v->user->sex ?? '';
                 }
             }
-            return $this->result($users);
+
+            return $this->result($list);
+
         }
     }
 
