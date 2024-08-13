@@ -109,7 +109,7 @@ class Admin extends AdminBase
             if ($data['phone'] != '') {
                 $where['username'] = $data['phone'];
             }
-            if($role_id){
+            if(!$role_id){
                 // 查询当前组所有用户
                 $uids = AuthGroupAccess::whereIn('group_id', $role_id)->column('uid');
                 if($uids){
