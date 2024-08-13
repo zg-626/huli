@@ -49,7 +49,7 @@ class User extends AdminBase
             'admin_id' => getAdminId(),
             'category' => $department,
             'educational_type' => getDictDataId(2),
-            'professional_type' => getDictDataId(3),
+            'position_type' => getDictDataId(3),
             'professional_type' => getDictDataId(4),
             'is_admin' => session('admin_info.is_admin'),
         ]);
@@ -60,7 +60,7 @@ class User extends AdminBase
     {
         $info = UserModel::where('id', $id)->find();
         // 职务变更记录
-        $department = Department::with('professional')->where('user_id', $id)->order('start_time desc')->select();
+        $department = Department::with('position')->where('user_id', $id)->order('start_time desc')->select();
         // 缴费记录
         $fees = Fees::with('user')->where('user_id', $id)->order('fees_year desc fees_time desc')->select();
         // 报名记录
@@ -120,7 +120,7 @@ class User extends AdminBase
      */
     public function datalist($limit = 15)
     {
-        $list = UserModel::with(['hospital', 'educationalType', 'professionalType', 'professionalType'])->order(
+        $list = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
             'id',
             'desc'
         )->paginate($limit);
@@ -168,14 +168,14 @@ class User extends AdminBase
                 $serach = $serach->where('professional_id', $data['professional_id']);
             }
 
-            /*if ($data['professional_id'] != '') {
-                $serach = $serach->where('professional_id', $data['professional_id']);
+            /*if ($data['position_id'] != '') {
+                $serach = $serach->where('position_id', $data['position_id']);
             }*/
 
             if ($data['d_id'] != '') {
                 $serach = $serach->where('d_id', $data['d_id']);
             }
-            $list = $serach->with(['hospital', 'educationalType', 'professionalType', 'professionalType'])->order(
+            $list = $serach->with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
                 'id',
                 'desc'
             )->paginate($limit);
@@ -491,7 +491,7 @@ class User extends AdminBase
         if (isset($data['year']) && $data['year'] != '') {
             $serach = $serach->whereYear('create_time', $data['year']);
         }
-        $list = $serach->with(['hospital', 'educationalType', 'professionalType', 'professionalType'])->order(
+        $list = $serach->with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
             'id',
             'desc'
         )->select();

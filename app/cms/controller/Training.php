@@ -336,13 +336,14 @@ class Training extends AdminBase
             ->join('training t', 't.id = ts.training_id')
             ->join('cms_category c', 'c.id = u.d_id')
             ->where('ts.training_id', $notificationId)
-            ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
+            ->field('u.*,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,c.name as departmentname')
             ->paginate($limit);
         if(!$users->isEmpty()){
             foreach ($users as $user){
                 $user->study_status = 0;
-                $user->sign_time=date('Y-m-d',$user->sign_time);
-                $user->study_time=date('Y-m-d',$user->study_time);
+                $user->sign_time=date('Y-m-d h:m',$user->sign_time);
+                $user->study_time=date('Y-m-d h:m',$user->study_time);
+                $user->check_time=date('Y-m-d h:m',$user->check_time);
 
             }
         }
@@ -402,5 +403,117 @@ class Training extends AdminBase
             }
         }
         return $this->result($users);
+    }
+
+    //excel导入
+    public function importExcel($filename = "")
+    {
+        $file = $filename;
+        try {
+            // 验证文件大小，名称等是否正确
+            //validate(['file' => 'filesize:51200|fileExt:xls,xlsx'])->check($file);
+            validate(['file' => [
+                // 限制文件大小(单位b)，这里限制为8M
+                'fileSize' => 8 * 1024 * 1024,
+                // 限制文件后缀，多个后缀以英文逗号分割
+                'fileExt'  => 'xls,xlsx'
+                // 更多规则请看“上传验证”的规则，文档地址https://www.kancloud.cn/manual/thinkphp6_0/1037629#_444
+            ]])->check(['file' => $file]);
+
+            // 将文件保存到本地
+            //$savename = Filesystem::putFile('topic', $file[0]);
+            $savename = Filesystem::disk('public')->putFile('file', $file);
+            // 截取后缀
+            $fileExtendName = substr(strrchr($savename, '.'), 1);
+            // 有Xls和Xlsx格式两种
+            if ($fileExtendName == 'xlsx') {
+                $objReader = IOFactory::createReader('Xlsx');
+            } else {
+                $objReader = IOFactory::createReader('Xls');
+            }
+            // 设置文件为只读
+            $objReader->setReadDataOnly(TRUE);
+            // 读取文件，tp6默认上传的文件，在runtime的相应目录下，可根据实际情况自己更改
+            $objPHPExcel = $objReader->load(public_path() . 'storage/' . $savename);
+            //excel中的第一张sheet
+            $sheet = $objPHPExcel->getSheet(0);
+            // 取得总行数
+            $highestRow = $sheet->getHighestRow();
+            // 取得总列数
+            $highestColumn = $sheet->getHighestColumn();
+            Coordinate::columnIndexFromString($highestColumn);
+            $lines = $highestRow - 1;
+            if ($lines <= 0) {
+                //echo('数据不能为空！');
+                return $this->error('数据不能为空！');
+                exit();
+            }
+            // 直接取出excle中的数据
+            $data = $objPHPExcel->getActiveSheet()->toArray();
+            // 删除第一个元素（表头）
+            array_shift($data);
+            // 返回结果
+            return $data;
+        } catch (ValidateException $e) {
+            return $this->error($e->getMessage());
+        }
+    }
+
+    /** @DESC [用户导入] */
+    public function daoru(Request $request)
+    {
+        // 接收文件上传信息
+        $file = $request->file("file");
+        // 调用类库，读取excel中的内容
+        $excel_array = $this->importExcel($file);
+        foreach ($excel_array as $key => $value) {
+            $number = $key +2;
+            // 正则去除多余空白字符
+            $data[$key]['phone'] = preg_replace('/\s+/', '', $value['0']);
+            //查询是否存在
+            $userinfo=Db::name('user')->where('phone',$value['0'])->find();
+            if($userinfo){
+                return $this->error('登录账号已经存在，请检查，在第'. $number.'行');
+            }
+            $data[$key]['nickname'] = preg_replace('/\s+/', '', $value['1']);
+
+            //通过名称获取部门id
+            //$data[$key]['department'] = preg_replace('/\s+/', '', $value['2']);
+            $data[$key]['d_id']=Db::name('cms_department')->where('name',preg_replace('/\s+/', '', $value['2']))->value('id');
+            $value3 = preg_replace('/\s+/', '', $value['3']);
+            if ($value3 === '男') {
+                $data[$key]['sex'] = 1;
+            } elseif ($value3 === '女') {
+                $data[$key]['sex'] = 0;
+            } else {
+                $data[$key]['sex'] = 2;
+            }
+            $data[$key]['workname'] = preg_replace('/\s+/', '', $value['4']);
+            $data[$key]['password'] = md5(preg_replace('/\s+/', '', $value['5']));
+            $data[$key]['create_time'] = time();
+            $data[$key]['update_time'] = time();
+            $data[$key]['status'] = 1;
+            $data[$key]['vip_time'] = time()+86400*15;
+        }
+
+        // 启动事务
+        Db::startTrans();
+        try{
+            //进行数据库操作的一系列语句
+            $result = UserModel::insertAll($data);
+            if ($result!=true) {
+                return $this->error('导入数据失败');
+            }
+            // 提交事务
+            Db::commit();
+            return $this->success('文件上传成功，已经导入'.$result.'条数据');
+        }catch (\Throwble $t){
+            // 回滚事务
+            Db::rollback();
+            return $this->error('导入数据失败'. $e->getMessage());
+        }
+
+        /*echo "<pre>";
+        print_r($data);   //  二维数组*/
     }
 }

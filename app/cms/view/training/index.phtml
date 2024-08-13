@@ -51,7 +51,7 @@
 
 <!-- 表格操作列 -->
 <script type="text/html" id="mxTbBar">
-    <a class="layui-btn layui-btn-xs" lay-event="study">学习记录</a>
+    <a class="layui-btn layui-btn-xs" lay-event="study">签到学习记录</a>
     <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
 </script>
@@ -103,7 +103,7 @@
                 {field: 'create_time', title: '发布时间', align: 'center', sort: true},
                 //{field: 'update_time', title: '更新时间', align: 'center', sort: true},
                 //{field: 'status', title: '状态', templet: '#mxTbState', align: 'center', sort: true, width: 100},
-                {title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 180}
+                {title: '操作', toolbar: '#mxTbBar', align: 'center', minWidth: 250}
             ]],
             parseData: function(res){ //res 即为原始返回的数据
                 return {
@@ -193,7 +193,7 @@
             admin.open({
                 type: 2,
                 area: ['1620px', '630px'],
-                title: '学习记录',
+                title: '签到学习记录',
                 shade: 0.5,
                 //shadeClose: true,
                 //content: '<table id="mxSigninfo" lay-filter="mxSigninfo"></table>',

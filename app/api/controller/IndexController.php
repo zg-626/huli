@@ -16,6 +16,7 @@ namespace app\api\controller;
 
 
 use app\api\logic\IndexLogic;
+use app\Request;
 use think\response\Json;
 
 
@@ -28,7 +29,7 @@ class IndexController extends BaseApiController
 {
 
 
-    public array $notNeedLogin = ['index','getQrcode','getCategory','getDictionary','getSpeak','getBarrage','getBanner', 'config', 'policy', 'decorate'];
+    public array $notNeedLogin = ['index','captcha','getQrcode','getCategory','getDictionary','getSpeak','getBarrage','getBanner', 'config', 'policy', 'decorate'];
 
 
     /**
@@ -56,6 +57,18 @@ class IndexController extends BaseApiController
     {
         $result = IndexLogic::getBanner();
         return $this->data($result);
+    }
+
+    public function captcha(Request $request)
+    {
+        $id = mt_rand(100000, 999999);
+        $uniqid = uniqid("$id", true);
+        //返回数据 验证码图片路径、验证码标识
+        $data = [
+            'src' => $request->domain().captcha_src($uniqid),
+            'uniqid' => $uniqid
+        ];
+        return $this->data($data);
     }
 
     /**
