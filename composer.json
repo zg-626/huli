@@ -34,7 +34,8 @@
         "overtrue/wechat": "~5.0",
         "topthink/think-filesystem": "^2.0",
       "ext-ctype": "*",
-      "ext-json": "*"
+      "ext-json": "*",
+        "phpoffice/phpspreadsheet": "^2.1"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",

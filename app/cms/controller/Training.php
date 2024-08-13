@@ -7,12 +7,15 @@ namespace app\cms\controller;
 use app\cms\model\TrainingSign;
 use app\mxadmin\AdminBase;
 use app\cms\model\Training as TrainingModel;
-use app\cms\model\CmsCategory;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use app\mxadmin\model\UserModel;
+use think\db\exception\DbException;
 use think\exception\ValidateException;
 use think\facade\Db;
 use think\facade\Filesystem;
 use think\Request;
+use Throwable;
 
 class Training extends AdminBase
 {
@@ -20,7 +23,7 @@ class Training extends AdminBase
      * 表单弹窗页面
      * @return \think\response\View
      * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function form()
@@ -69,7 +72,7 @@ class Training extends AdminBase
     /**
      * 返回Json格式的数据
      * @param int $limit
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function datalist($limit=15)
     {
@@ -80,7 +83,7 @@ class Training extends AdminBase
     /**
      * 搜索数据
      * @param int $limit
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function serach($limit=15)
     {
@@ -205,7 +208,7 @@ class Training extends AdminBase
     /**
      * 返回报名记录Json格式的数据
      * @param int $limit
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function datalist_sign($id, int $limit=15)
     {
@@ -253,7 +256,7 @@ class Training extends AdminBase
     /**
      * 返回报名记录Json格式的搜索数据
      * @param int $limit
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function datalist_sign_search($id, int $limit=15)
     {
@@ -308,7 +311,7 @@ class Training extends AdminBase
     /**
      * 返回学习记录Json格式的数据
      * @param int $limit
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function datalist_same_study($id, int $limit=15)
     {
@@ -357,7 +360,7 @@ class Training extends AdminBase
     /**
      * 返回学习记录Json格式的搜索数据
      * @param int $limit
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function datalist_same_study_search($id, int $limit=15)
     {
@@ -498,24 +501,24 @@ class Training extends AdminBase
 
             $updateData = [
                 'is_check' => 1,
-                'check_time' => $value2,
+                'check_time' => strtotime($value2),
                 'training_id' => $value4
             ];
             // 如果学习班不需要考试，再更新学习记录
             if ($info['is_exam'] === 0) {
                 $updateData['is_study'] = 1;
-                $updateData['study_time'] = $value2;
+                $updateData['study_time'] = strtotime($value2);
             }
 
             $data[] = $updateData;
         }
-
+        $status = false;  //定义状态
         // 启动事务
         Db::startTrans();
         try {
             // 批量更新
             foreach ($data as $item) {
-                TrainingSign::where([
+                Db::name('training_sign')->where([
                     'user_id' => $userinfo['id'], // 假设 user_id 是关联字段
                     'training_id' => $item['training_id']
                 ])->update($item);
@@ -523,12 +526,18 @@ class Training extends AdminBase
 
             // 提交事务
             Db::commit();
-            return $this->success('文件上传成功，已经导入' . count($data) . '条数据');
-        } catch (\Throwable $t) {
+            $status = true;
+        } catch (Throwable $t) {
             // 回滚事务
             Db::rollback();
-            return $this->error('导入数据失败: ' . $t->getMessage());
+            return $this->error('导入数据失败: ' . $t->getLine());
         }
+
+        if($status){
+            return $this->success('文件上传成功，已经导入' . count($data) . '条数据');
+        }
+
+        return false;
     }
 
 }
