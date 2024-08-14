@@ -163,161 +163,12 @@
         var qualificationsNmae={:json_encode($qualifications)};
         var dataNmae={:json_encode($professional)};
 
-        $.ajax({
-            url: '{:url("mxadmin/user/chart")}',  // 替换为你的接口地址
-            method: 'POST',            // 或者 'GET'，视接口而定
-            data: '',          // 提交的表单数据
-            success: function (response) {
-                if (response.code !== 0) {
-                    layer.msg(response.msg, {icon: 5, anim: 6});
-                }
-
-                // 处理职称数据
-                var professionalData = Object.keys(response.data.professional).map(function(key) {
-                    return {
-                        value: response.data.professional[key],
-                        name: key
-                    };
-                });
-
-                // 绘制职称图表
-                var options1 = {
-                    tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
-                    color: ['#10B4E8', '#a9cc4e', '#e73939', '#8337d3', '#0000FF', '#FF00FF', '#00FFFF'],
-                    legend: {
-                        orient: 'vertical', right: '0px', top: '0px',
-                        data: dataNmae, textStyle: {color: '#595959'}
-                    },
-                    series: [
-                        {
-                            name: '职称统计',
-                            type: 'pie',
-                            radius: '50%',
-                            data: professionalData,
-                            label: {
-                                normal: {
-                                    show: true,
-                                    formatter: '{b}: {c} ({d}%)'
-                                }
-                            }
-                        }
-                    ]
-                };
-
-                // 处理学历数据
-                var qualificationsData = Object.keys(response.data.qualifications).map(function(key) {
-                    return {
-                        value: response.data.qualifications[key],
-                        name: key
-                    };
-                });
-
-                // 绘制学历图表
-                var options2 = {
-                    tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
-                    color: ['#5a7881', '#bc9bda', '#de5da6'],
-                    legend: {
-                        orient: 'vertical', right: '0px', top: '0px',
-                        data: qualificationsNmae, textStyle: {color: '#595959'}
-                    },
-                    series: [
-                        {
-                            name: '学历统计',
-                            type: 'pie',
-                            radius: '50%',
-                            data: qualificationsData,
-                            label: {
-                                normal: {
-                                    show: true,
-                                    formatter: '{b}: {c} ({d}%)'
-                                }
-                            }
-                        }
-                    ]
-                };
-
-                // 处理年龄数据
-                var ageData = Object.keys(response.data.age).map(function(key) {
-                    return {
-                        value: response.data.age[key],
-                        name: key
-                    };
-                });
-
-                // 绘制年龄图表
-                var options3 = {
-                    tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
-                    color: ['#90da6a', '#FFA800', '#c79b9b', '#d2bd69', '#0000FF', '#FF00FF', '#00FFFF'],
-                    legend: {
-                        orient: 'vertical', right: '0px', top: '0px',
-                        data: ageNmae, textStyle: {color: '#595959'}
-                    },
-                    series: [
-                        {
-                            name: '年龄统计',
-                            type: 'pie',
-                            radius: '50%',
-                            data: ageData,
-                            label: {
-                                normal: {
-                                    show: true,
-                                    formatter: '{b}: {c} ({d}%)'
-                                }
-                            }
-                        }
-                    ]
-                };
-
-                // 处理性别数据
-                var chartData = [
-                    { value: response.data.gender.male, name: '男' },
-                    { value: response.data.gender.female, name: '女' }
-                ];
-
-                // 更新性别图表配置
-                var options4 = {
-                    tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
-                    color: ['#246ec4', '#dbbeea'],
-                    legend: {
-                        orient: 'vertical', right: '0px', top: '0px',
-                        data: ['男', '女'], textStyle: { color: '#595959' }
-                    },
-                    series: [
-                        {
-                            name: '性别占比',
-                            type: 'pie',
-                            radius: '50%',
-                            data: chartData,
-                            label: {
-                                normal: {
-                                    show: true,
-                                    formatter: '{b}: {c} ({d}%)'
-                                }
-                            }
-                        }
-                    ]
-                };
-
-                // 渲染图表
-                myCharts1.setOption(options1);
-                myCharts2.setOption(options2);
-                myCharts3.setOption(options3);
-                myCharts4.setOption(options4);
-            },
-            error: function (xhr, status, error) {
-                console.error('请求失败：', error);
-            }
-        });
-
-
-        // 表单提交事件
-        form.on('submit(userTbSearch)', function (data) {
-            console.log('搜索条件：', data.field);
-            // 执行 AJAX 请求
+        // 通用 AJAX 请求函数
+        function makeAjaxRequest(url, data, successCallback) {
             $.ajax({
-                url: '{:url("mxadmin/user/chart")}',  // 替换为你的接口地址
+                url: '{:url("mxadmin/user/chart")}',
                 method: 'POST',            // 或者 'GET'，视接口而定
-                data: data.field,          // 提交的表单数据
+                data: data,          // 提交的表单数据
                 success: function (response) {
                     if (response.code !== 0) {
                         layer.msg(response.msg, {icon: 5, anim: 6});
@@ -352,7 +203,59 @@
                                     }
                                 }
                             }
-                        ]
+                        ],
+                        //工具栏组件
+                        toolbox: {
+                            show: true,          //显示工具栏 默认true
+                            orient: 'vertical',  //垂直排列
+                            left: '0%',          //设置位置
+                            top: '0%',           //设置位置
+                            //工具栏对象
+                            feature: {
+                                //保存图片工具
+                                /*saveAsImage: {
+                                    type: 'jpg',     //生成的图片格式
+                                    name: 'dataImg', //图片名称
+                                    title: '保存图片' //此工具被聚焦时显示的标题
+                                },*/
+                                //配置项还原工具
+                                restore: {
+                                    title: '重置',
+                                },
+                                //数据视图工具
+                                dataView: {
+                                    title: '数据展示',
+                                    readOnly: false,   //默认false 可修改
+                                    lang: ['数据展示', '关闭', '刷新'],    //数据视图上有三个话术
+                                    //设置一些显示文本数据的样式
+                                    backgroundColor: '#ffffff',
+                                    textareaColor: '#fcfcfc',
+                                    textColor: 'rgba(0,0,0,.8)',
+                                    buttonColor: 'rgb(10,10,10)',
+                                },
+                                //区域缩放
+                                /*dataZoom: {
+                                    title: {zoom: '缩放', back: '还原'},
+                                    //刷选框样式
+                                    brushStyle: {
+                                        color: 'rgba(255,40,80,.2)',
+                                        borderColor: '#f00',
+                                        borderWidth: 2,
+                                        borderType: 'dashed',
+                                        opacity: .5,
+                                    }
+                                },*/
+                                //动态类型切换图表
+                                /*magicType: {
+                                    type: ['line', 'bar', 'stack'],
+                                    title: {
+                                        line: '折线图',
+                                        bar: '柱状图',
+                                        stack: '堆叠图'
+                                    }
+                                }*/
+                            }
+                        },
                     };
 
                     // 处理学历数据
@@ -366,7 +269,7 @@
                     // 绘制学历图表
                     var options2 = {
                         tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
-                        color: ['#e33729', '#bc9bda', '#de5da6', '#5a7881'],
+                        color: ['#5a7881', '#bc9bda', '#de5da6'],
                         legend: {
                             orient: 'vertical', right: '0px', top: '0px',
                             data: qualificationsNmae, textStyle: {color: '#595959'}
@@ -384,7 +287,59 @@
                                     }
                                 }
                             }
-                        ]
+                        ],
+                        //工具栏组件
+                        toolbox: {
+                            show: true,          //显示工具栏 默认true
+                            orient: 'vertical',  //垂直排列
+                            left: '0%',          //设置位置
+                            top: '0%',           //设置位置
+                            //工具栏对象
+                            feature: {
+                                //保存图片工具
+                                /*saveAsImage: {
+                                    type: 'jpg',     //生成的图片格式
+                                    name: 'dataImg', //图片名称
+                                    title: '保存图片' //此工具被聚焦时显示的标题
+                                },*/
+                                //配置项还原工具
+                                restore: {
+                                    title: '重置',
+                                },
+                                //数据视图工具
+                                dataView: {
+                                    title: '数据展示',
+                                    readOnly: false,   //默认false 可修改
+                                    lang: ['数据展示', '关闭', '刷新'],    //数据视图上有三个话术
+                                    //设置一些显示文本数据的样式
+                                    backgroundColor: '#ffffff',
+                                    textareaColor: '#fcfcfc',
+                                    textColor: 'rgba(0,0,0,.8)',
+                                    buttonColor: 'rgb(10,10,10)',
+                                },
+                                //区域缩放
+                                /*dataZoom: {
+                                    title: {zoom: '缩放', back: '还原'},
+                                    //刷选框样式
+                                    brushStyle: {
+                                        color: 'rgba(255,40,80,.2)',
+                                        borderColor: '#f00',
+                                        borderWidth: 2,
+                                        borderType: 'dashed',
+                                        opacity: .5,
+                                    }
+                                },*/
+                                //动态类型切换图表
+                                /*magicType: {
+                                    type: ['line', 'bar', 'stack'],
+                                    title: {
+                                        line: '折线图',
+                                        bar: '柱状图',
+                                        stack: '堆叠图'
+                                    }
+                                }*/
+                            }
+                        },
                     };
 
                     // 处理年龄数据
@@ -416,7 +371,59 @@
                                     }
                                 }
                             }
-                        ]
+                        ],
+                        //工具栏组件
+                        toolbox: {
+                            show: true,          //显示工具栏 默认true
+                            orient: 'vertical',  //垂直排列
+                            left: '0%',          //设置位置
+                            top: '0%',           //设置位置
+                            //工具栏对象
+                            feature: {
+                                //保存图片工具
+                                /*saveAsImage: {
+                                    type: 'jpg',     //生成的图片格式
+                                    name: 'dataImg', //图片名称
+                                    title: '保存图片' //此工具被聚焦时显示的标题
+                                },*/
+                                //配置项还原工具
+                                restore: {
+                                    title: '重置',
+                                },
+                                //数据视图工具
+                                dataView: {
+                                    title: '数据展示',
+                                    readOnly: false,   //默认false 可修改
+                                    lang: ['数据展示', '关闭', '刷新'],    //数据视图上有三个话术
+                                    //设置一些显示文本数据的样式
+                                    backgroundColor: '#ffffff',
+                                    textareaColor: '#fcfcfc',
+                                    textColor: 'rgba(0,0,0,.8)',
+                                    buttonColor: 'rgb(10,10,10)',
+                                },
+                                //区域缩放
+                                /*dataZoom: {
+                                    title: {zoom: '缩放', back: '还原'},
+                                    //刷选框样式
+                                    brushStyle: {
+                                        color: 'rgba(255,40,80,.2)',
+                                        borderColor: '#f00',
+                                        borderWidth: 2,
+                                        borderType: 'dashed',
+                                        opacity: .5,
+                                    }
+                                },*/
+                                //动态类型切换图表
+                                /*magicType: {
+                                    type: ['line', 'bar', 'stack'],
+                                    title: {
+                                        line: '折线图',
+                                        bar: '柱状图',
+                                        stack: '堆叠图'
+                                    }
+                                }*/
+                            }
+                        },
                     };
 
                     // 处理性别数据
@@ -446,7 +453,59 @@
                                     }
                                 }
                             }
-                        ]
+                        ],
+                        //工具栏组件
+                        toolbox: {
+                            show: true,          //显示工具栏 默认true
+                            orient: 'vertical',  //垂直排列
+                            left: '0%',          //设置位置
+                            top: '0%',           //设置位置
+                            //工具栏对象
+                            feature: {
+                                //保存图片工具
+                                /*saveAsImage: {
+                                    type: 'jpg',     //生成的图片格式
+                                    name: 'dataImg', //图片名称
+                                    title: '保存图片' //此工具被聚焦时显示的标题
+                                },*/
+                                //配置项还原工具
+                                restore: {
+                                    title: '重置',
+                                },
+                                //数据视图工具
+                                dataView: {
+                                    title: '数据展示',
+                                    readOnly: false,   //默认false 可修改
+                                    lang: ['数据展示', '关闭', '刷新'],    //数据视图上有三个话术
+                                    //设置一些显示文本数据的样式
+                                    backgroundColor: '#ffffff',
+                                    textareaColor: '#fcfcfc',
+                                    textColor: 'rgba(0,0,0,.8)',
+                                    buttonColor: 'rgb(10,10,10)',
+                                },
+                                //区域缩放
+                                /*dataZoom: {
+                                    title: {zoom: '缩放', back: '还原'},
+                                    //刷选框样式
+                                    brushStyle: {
+                                        color: 'rgba(255,40,80,.2)',
+                                        borderColor: '#f00',
+                                        borderWidth: 2,
+                                        borderType: 'dashed',
+                                        opacity: .5,
+                                    }
+                                },*/
+                                //动态类型切换图表
+                                /*magicType: {
+                                    type: ['line', 'bar', 'stack'],
+                                    title: {
+                                        line: '折线图',
+                                        bar: '柱状图',
+                                        stack: '堆叠图'
+                                    }
+                                }*/
+                            }
+                        },
                     };
 
                     // 渲染图表
@@ -459,6 +518,24 @@
                     console.error('请求失败：', error);
                 }
             });
+        }
+
+        // 页面加载时默认请求
+        $(document).ready(function() {
+            makeAjaxRequest('/submit-data', {}, function(response) {
+                // 处理页面加载时的响应
+                console.log("页面加载响应:", response);
+            });
+        });
+
+        // 表单提交事件
+        form.on('submit(userTbSearch)', function (data) {
+            console.log('搜索条件：', data.field);
+            var postData = data.field;
+            makeAjaxRequest('/submit-data', postData, function(response) {
+                // 处理点击事件后的响应
+                console.log("点击提交响应:", response);
+            });
 
             return false; // 阻止表单默认提交
         });
@@ -466,138 +543,14 @@
         /** 渲染职称统计图表 */
         var myCharts1 = echarts.init(document.getElementById('consoleChartsWeek'));
 
-
-        // 初始化职称统计图表
-        /*var options1 = {
-            tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
-            color: ['#10B4E8', '#FFA800'],
-            legend: {
-                orient: 'vertical', right: '0px', top: '0px',
-                data: dataNmae, textStyle: {color: '#595959'}
-            },
-            series: [
-                {
-                    name: '职称统计',
-                    type: 'pie',
-                    radius: '50%',
-                    data: [ // 默认数据
-                        { value: 0, name: '暂无' },
-                        { value: 0, name: '暂无' }
-                    ],
-                    label: {
-                        normal: {
-                            show: true,
-                            formatter: '{b}: {c} ({d}%)'
-                        }
-                    }
-                }
-            ]
-        };*/
-
-        //myCharts1.setOption(options1);
-
         /** 渲染学历统计图表 */
         var myCharts2 = echarts.init(document.getElementById('consoleChartsQualifications'));
-
-
-        // 初始化学历统计图表
-        /*var options2 = {
-            tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
-            color: ['#10B4E8', '#FFA800'],
-            legend: {
-                orient: 'vertical', right: '0px', top: '0px',
-                data: dataNmae, textStyle: {color: '#595959'}
-            },
-            series: [
-                {
-                    name: '学历统计',
-                    type: 'pie',
-                    radius: '50%',
-                    data: [ // 默认数据
-                        { value: 0, name: '暂无' },
-                        { value: 0, name: '暂无' }
-                    ],
-                    label: {
-                        normal: {
-                            show: true,
-                            formatter: '{b}: {c} ({d}%)'
-                        }
-                    }
-                }
-            ]
-        };*/
-
-        //myCharts2.setOption(options2);
 
         /** 渲染年龄统计图表 */
         var myCharts3 = echarts.init(document.getElementById('consoleChartsAge'));
 
-
-        // 初始化年龄统计图表
-        /*var options3 = {
-            tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
-            color: ['#90da6a', '#FFA800', '#c79b9b', '#d2bd69', '#0000FF', '#FF00FF', '#00FFFF'],
-            legend: {
-                orient: 'vertical', right: '0px', top: '0px',
-                data: ageNmae, textStyle: {color: '#595959'}
-            },
-            series: [
-                {
-                    name: '年龄统计',
-                    type: 'pie',
-                    radius: '50%',
-                    data: [ // 默认数据
-                        { value: 0, name: '暂无' },
-                        { value: 0, name: '暂无' },
-                        { value: 0, name: '暂无' },
-                        { value: 0, name: '暂无' },
-                        { value: 0, name: '暂无' },
-                        { value: 0, name: '暂无' },
-                        { value: 0, name: '暂无' }
-                    ],
-                    label: {
-                        normal: {
-                            show: true,
-                            formatter: '{b}: {c} ({d}%)'
-                        }
-                    }
-                }
-            ]
-        };*/
-
-        //myCharts3.setOption(options3);
-
         /** 渲染性别统计图表 */
         var myCharts4 = echarts.init(document.getElementById('consoleChartsSex'));
-        // 初始化性别图表
-        /*var initialOptions = {
-            tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
-            color: ['#246ec4', '#dbbeea'],
-            legend: {
-                orient: 'vertical', right: '0px', top: '0px',
-                data: ['男', '女'], textStyle: { color: '#595959' }
-            },
-            series: [
-                {
-                    name: '性别占比',
-                    type: 'pie',
-                    radius: '50%',
-                    data: [ // 默认数据
-                        { value: 0, name: '男' },
-                        { value: 0, name: '女' }
-                    ],
-                    label: {
-                        normal: {
-                            show: true,
-                            formatter: '{b}: {c} ({d}%)'
-                        }
-                    }
-                }
-            ]
-        };*/
-        //myCharts4.setOption(initialOptions);
-        // 赋值
-        //myCharts2.setOption({series: [{data: [5, 9, 6, 3, 10]}, {data: [10, 6, 9, 12, 5]}]});
 
     });
 </script>
