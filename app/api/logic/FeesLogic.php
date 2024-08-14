@@ -42,20 +42,72 @@ class FeesLogic extends BaseLogic
     {
         Db::startTrans();
         try {
-            Fees::where([
-                'user_id' => $params['user_id'],
-                'fees_type' => $params['fees_type'],
-                'fees_year' => $params['fees_year'],
-            ])->update([
-                'fees_type' => $params['fees_type'],
-                'fees_year' => $params['fees_year'],
-                'fees_time' => $params['fees_time'],
-                'money' => $params['money'],
-                'way' => $params['way'],
-                'image' => $params['image'],
-                'remark' => $params['remark'],
-                'status' => 1,
-            ]);
+            // 根据缴费类型判断
+            if ($params['fees_type'] == '会员费') {
+                // 查询最早一条去更新
+                $fees = Fees::where([
+                    'user_id' => $params['user_id'],
+                    'fees_type' => $params['fees_type'],
+                    'fees_year' => $params['fees_year'],
+                    'status' => 0,
+                ])->order('id', 'asc')->findOrEmpty();
+                if (!$fees->isEmpty()) {
+                    Fees::where([
+                        'id' => $fees->id,
+                    ])->update([
+                        'fees_type' => $params['fees_type'],
+                        'fees_year' => $params['fees_year'],
+                        'fees_time' => $params['fees_time'],
+                        'money' => $params['money'],
+                        'way' => $params['way'],
+                        'image' => $params['image'],
+                        'remark' => $params['remark'],
+                        'status' => 1,
+                    ]);
+                }else{
+                    throw new \Exception('选择的年份已缴纳会员费，不可重复添加');
+                }
+
+            }elseif ($params['fees_type'] == '培训费') {
+                // 查询最早一条去更新
+                $fees = Fees::where([
+                    'user_id' => $params['user_id'],
+                    'fees_type' => $params['fees_type'],
+                    'fees_year' => $params['fees_year'],
+                    'status' => 0,
+                ])->order('id', 'asc')->findOrEmpty();
+                if (!$fees->isEmpty()) {
+                    // 更新
+                    Fees::where([
+                        'id' => $fees->id,
+                    ])->update([
+                        'fees_type' => $params['fees_type'],
+                        'fees_year' => $params['fees_year'],
+                        'fees_time' => $params['fees_time'],
+                        'money' => $params['money'],
+                        'way' => $params['way'],
+                        'image' => $params['image'],
+                        'remark' => $params['remark'],
+                        'status' => 1,
+                    ]);
+                }else{
+                    throw new \Exception('没有需要缴费的培训费');
+                }
+
+            }else{
+                Fees::create([
+                    'user_id' => $params['user_id'],
+                    'fees_type' => $params['fees_type'],
+                    'fees_year' => $params['fees_year'],
+                    'fees_time' => $params['fees_time'],
+                    'money' => $params['money'],
+                    'way' => $params['way'],
+                    'image' => $params['image'],
+                    'remark' => $params['remark'],
+                    'status' => 1,
+                ]);
+            }
+
 
             Db::commit();
             return true;

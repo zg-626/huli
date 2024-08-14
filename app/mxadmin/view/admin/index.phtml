@@ -58,7 +58,7 @@
                     <div class="layui-inline">
                         <label class="layui-form-label">角色</label>
                         <div class="layui-input-inline">
-                            <div id="userEditRoleSel" class="mx-xmselect-tree"></div>
+                            <div id="userParentRoleSel" class="mx-xmselect-tree"></div>
                         </div>
                     </div>
 
@@ -228,7 +228,7 @@
 
         // 渲染角色下拉树
         var roleParentSel = xmSelect.render({
-            el: '#userEditRoleSel',
+            el: '#userParentRoleSel',
             layVerType: 'tips',
             height: '400px',
             name: 'role_id',

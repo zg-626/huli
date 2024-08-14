@@ -113,7 +113,7 @@ class Dictionary extends AdminBase
             $result = DictData::create($data);
             if ($result == true) {
                 // 特定的字典项逻辑处理
-                if($data['dict_id'] == 11 || $data['dict_id'] == 12){
+                if($data['dict_id'] == 12){
                     $this->synchronous($data['dict_id'],$result->id,$data);
                 }
                 return $this->success('字典项添加成功');
@@ -144,9 +144,22 @@ class Dictionary extends AdminBase
                 break;
             case 12:
                 $this_year = date('Y');
-                if($data['name'] != $this_year){
-                    $this_year=$data['name'];
+                $category = DictData::where('id', 23)->find();
+                // 给所有人增加缴费记录
+                $users = UserModel::column('id');
+                foreach($users as $key => $value){
+                    Fees::create([
+                        'dict_id' => $dict_id,
+                        'dict_data_id' => $dict_data_id,
+                        'fees_type' => $category->name,
+                        'fees_year' => $data['name'],
+                        'user_id' => $value,
+                        'status' => 0
+                    ]);
                 }
+                /*if($data['name'] != $this_year){
+                    $this_year=$data['name'];
+                }*/
                 break;
         }
 

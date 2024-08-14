@@ -240,30 +240,4 @@ class Msg extends AdminBase
             }
         }
     }
-
-    /**
-     * 推送消息
-     * @param $id
-     */
-    public function che($id)
-    {
-        if (request()->isPost()) {
-            $data = input('param.');
-            $info=Db::name('cms_msg')->where('id',$id)->find();
-            
-            $mobPushConfig = new MobPushConfig();
-            $mobPushConfig::$appkey = '365c7964e62d6';
-            $mobPushConfig::$appSecret = '8da7442066435f68d236231c0eb9cdb0';
-
-            /* Registration ID推送 */
-            $push=json_decode((new PushV3Client())->recallPushTask($info['batchId']),true);
-            if($push['status']==200){
-                CmsMsg::where('id',$id)->update(['batchId'=>$push['res']['batchId'],'status'=>2]);
-                return $this->success('撤回成功');
-            }elseif($push['code']==400){
-                $message=json_decode($push['message'],true);
-                return $this->error($message['error']);
-            }
-        }
-    }
 }

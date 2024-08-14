@@ -36,6 +36,8 @@ class LoginAccountValidate extends BaseValidate
     protected $rule = [
         'scene' => 'require|in:' . LoginEnum::ACCOUNT_PASSWORD . ',' . LoginEnum::MOBILE_CAPTCHA . '|checkConfig',
         'phone' => 'require',
+        'code' => 'require',
+        'uniqid' => 'require',
     ];
 
 
@@ -46,6 +48,8 @@ class LoginAccountValidate extends BaseValidate
         'scene.in' => '场景值错误',
         'phone.require' => '请输入手机号',
         'password.require' => '请输入密码',
+        'code.require' => '请输入图形验证码',
+        'uniqid.require' => '请输入唯一标识',
     ];
 
 
@@ -92,10 +96,10 @@ class LoginAccountValidate extends BaseValidate
     public function checkPassword($password, $other, $data)
     {
         //手机号安全机制，连续输错后锁定，防止手机号密码暴力破解
-        $userAccountSafeCache = new UserAccountSafeCache();
+        /*$userAccountSafeCache = new UserAccountSafeCache();
         if (!$userAccountSafeCache->isSafe()) {
             return '密码连续' . $userAccountSafeCache->count . '次输入错误，请' . $userAccountSafeCache->minute . '分钟后重试';
-        }
+        }*/
 
         $where = [];
         if ($data['scene'] == LoginEnum::ACCOUNT_PASSWORD) {
@@ -108,25 +112,29 @@ class LoginAccountValidate extends BaseValidate
             ->findOrEmpty();
 
         if ($userInfo->isEmpty()) {
-            return '用户不存在';
+            return '用户不存在,请先注册';
         }
 
         if ($userInfo['status'] === YesNoEnum::NO) {
             return '用户已禁用';
         }
 
-        if (empty($userInfo['password'])) {
-            $userAccountSafeCache->record();
-            return '用户不存在';
+        if ($userInfo['status'] === 2) {
+            return '用户审核被驳回';
         }
 
-        //$passwordSalt = Config::get('project.unique_identification');
-        /*if ($userInfo['password'] !== md5($password)) {
-            $userAccountSafeCache->record();
-            return '密码错误';
-        }*/
+        if ($userInfo['status'] === null) {
+            return '审核中，请稍后再试';
+        }
 
-        $userAccountSafeCache->relieve();
+
+        //$passwordSalt = Config::get('project.unique_identification');
+        if ($userInfo['password'] !== md5($password)) {
+            //$userAccountSafeCache->record();
+            return '密码错误';
+        }
+
+        //$userAccountSafeCache->relieve();
 
         return true;
     }

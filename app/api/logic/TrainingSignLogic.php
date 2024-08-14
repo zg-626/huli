@@ -15,11 +15,13 @@
 namespace app\api\logic;
 
 
+use app\cms\model\Fees;
 use app\cms\model\Paper;
 use app\cms\model\Question;
 use app\cms\model\Training;
 use app\common\logic\BaseLogic;
 use app\cms\model\TrainingSign;
+use app\mxadmin\model\DictData;
 use app\common\service\FileService;
 use Exception;
 use think\facade\Db;
@@ -35,7 +37,7 @@ class TrainingSignLogic extends BaseLogic
 
 
     /**
-     * @notes 添加
+     * @notes 报名
      * @param array $params
      * @return bool
      * @author esc
@@ -45,10 +47,41 @@ class TrainingSignLogic extends BaseLogic
     {
         Db::startTrans();
         try {
+            // 查询学习班
+            $training = Training::where([
+                'id' => $params['training_id']
+            ])->find();
+
+            if ($training->isEmpty()) {
+                throw new \Exception('该学习班不存在');
+            }
+            // 判断是否可以报名
+            if (strtotime($training->study_time) > time()) {
+                throw new \Exception('该学习班未开始');
+            }
+            // 判断截至时间
+            if (strtotime($training->deadline_time) < time()) {
+                throw new \Exception('该学习班已结束');
+            }
             TrainingSign::create([
                 'user_id' => $params['user_id'],
                 'training_id' => $params['training_id']
             ]);
+            // 如果学习班收费，加入缴费记录
+            if ($training->is_toll === 1) {
+                // 获取年份
+                $year = date('Y');
+                // 获取缴费类型
+                $category = DictData::where('id', 31)->find();
+                Fees::create([
+                    'dict_id' => $category->dict_id,
+                    'dict_data_id' => $category->id,
+                    'user_id' => $params['user_id'], // 替换为你实际的用户ID
+                    'status' => 0,
+                    'fees_year' => $year,
+                    'fees_type' => $category->name,
+                ]);
+            }
 
             Db::commit();
             return true;

@@ -32,7 +32,10 @@
 
 <!-- 表格操作列 -->
 <script type="text/html" id="classifyTbBar">
+    {{# if (d.pid == 0) { }}
     <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="addson">添加子医院</a>
+    {{# } else { }}
+    {{# } }}
     <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-xs layui-btn-danger{{#if(d.children){}} layui-btn-disabled{{#}}}"{{#if(!d.children){}} lay-event="del"{{#}}}>删除</a>
 </script>
@@ -232,7 +235,7 @@
                         el: '#classifyParentSel',
                         tips: '顶级医院',
                         height: '400px',
-                        data: insTb.options.data,
+                        data: formatData(insTb.options.data),
                         initValue: btnType ? [mData.id] : mData ? [mData.pid] : [],
                         model: {label: {type: 'text'}},
                         prop: {
@@ -257,6 +260,20 @@
                         },
                         disabled: btnType ? true : false,
                     });
+
+                    // 格式化数据函数
+                    function formatData(data) {
+                        return data.map(item => {
+                            if (item.pid!==0) {
+                                // 禁用二级数据
+                                item.disabled = true;
+                            }
+                            if (item.children) {
+                                item.children = formatData(item.children);
+                            }
+                            return item;
+                        });
+                    }
 
                     // 表单提交事件
                     form.on('submit(classifySubmit)', function (data) {

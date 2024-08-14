@@ -14,8 +14,13 @@
 
 namespace app\api\logic;
 
+use app\cms\model\Fees;
 use app\common\cache\WebScanLoginCache;
 use app\common\logic\BaseLogic;
+use app\mxadmin\model\AdminModel;
+use app\mxadmin\model\AuthGroupAccess;
+use app\mxadmin\model\DictData;
+use app\mxadmin\model\UserModel;
 use app\api\service\{UserTokenService, WechatUserService};
 use app\common\enum\{LoginEnum, user\UserTerminalEnum, YesNoEnum};
 use app\common\service\{
@@ -52,7 +57,7 @@ class LoginLogic extends BaseLogic
             $password = md5($params['password']);
             $headimg = '';
 
-            User::create([
+            $user = User::create([
                 //'sn' => $userSn,
                 'headimg' => $headimg,
                 'nickname' => $params['nickname'],
@@ -60,12 +65,55 @@ class LoginLogic extends BaseLogic
                 'password' => $password,
                 'd_id' => $params['d_id'],
             ]);
-
+            // 增加缴费记录
+            self::addFees($user->id);
+            // 同步管理员
+            self::synAdmin($user->id);
             return true;
         } catch (\Exception $e) {
             self::setError($e->getMessage());
             return false;
         }
+    }
+
+    //增加缴费记录
+    public static function addFees($id)
+    {
+        //获取分类
+        $categories = DictData::where('id',23)->select();
+        //获取年份
+        $years = DictData::where('dict_id', 12)->select();
+        // 示例的嵌套循环创建记录
+        foreach ($years as $year) {
+            foreach ($categories as $category) {
+                Fees::create([
+                    'dict_id' => $category->id,
+                    'dict_data_id' => $year->id,
+                    'user_id' => $id, // 替换为你实际的用户ID
+                    'status' => 0,
+                    'fees_year' => $year->name,
+                    'fees_type' => $category->name,
+                ]);
+            }
+        }
+    }
+
+    // 同步管理员
+    public static function synAdmin($id)
+    {
+        $user = UserModel::where('id', $id)->find();
+        $create = [
+            'password' => $user['password'],
+            'nickname' => $user['nickname'],
+            'username' => $user['phone'],
+        ];
+        $admin_info = AdminModel::create($create);
+        // 新增用户所属角色
+        $role_id = explode(',', '2');
+        foreach ($role_id as $value) {
+            $dataset[] = ['uid' => $admin_info->id, 'group_id' => $value];
+        }
+        AuthGroupAccess::insertAll($dataset);
     }
 
 
@@ -79,12 +127,19 @@ class LoginLogic extends BaseLogic
     public static function login($params)
     {
         try {
+            // 验证图形验证码
+            $key = cache('ADMIN_LOGIN_VERIFY_'.$params['uniqid']);
+            if($key && password_verify(mb_strtolower($params['code'], 'UTF-8'), $key)){
+                cache('ADMIN_LOGIN_VERIFY_'.$params['uniqid'],null);
+            }else{
+                throw new \Exception('图形验证码错误');
+            }
             // 账号/手机号 密码登录
             $where = ['phone' => $params['phone']];
-            if ($params['scene'] == LoginEnum::MOBILE_CAPTCHA) {
+            /*if ($params['scene'] == LoginEnum::MOBILE_CAPTCHA) {
                 //手机验证码登录
                 $where = ['phone' => $params['phone']];
-            }
+            }*/
 
             $user = User::where($where)->findOrEmpty();
             if ($user->isEmpty()) {

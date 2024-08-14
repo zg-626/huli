@@ -152,7 +152,7 @@ class IndexLogic extends BaseLogic
 
         $article = CmsCategory::field($field)
             ->where(['pid' => $pid, 'status' => 1])
-            ->order(['weight' => 'desc'])
+            ->order(['weight' => 'asc'])
             ->select()->toArray();
 
         return $article;
@@ -277,7 +277,7 @@ class IndexLogic extends BaseLogic
 
     public static function getDictionary(mixed $dict_id)
     {
-        return DictData::where(['dict_id' => $dict_id, 'status' => 1])->select()->toArray();
+        return DictData::where(['dict_id' => $dict_id, 'status' => 1])->order(['weight' => 'asc'])->select()->toArray();
     }
 
 }

@@ -135,15 +135,22 @@ class UserLogic extends BaseLogic
     public static function resetPassword(array $params)
     {
         try {
+            // 验证图形验证码
+            $key = cache('ADMIN_LOGIN_VERIFY_'.$params['uniqid']);
+            if($key && password_verify(mb_strtolower($params['code'], 'UTF-8'), $key)){
+                cache('ADMIN_LOGIN_VERIFY_'.$params['uniqid'],null);
+            }else{
+                throw new \Exception('图形验证码错误');
+            }
             // 校验验证码
             $smsDriver = new SmsDriver();
-            if (!$smsDriver->verify($params['phone'], $params['code'], NoticeEnum::FIND_LOGIN_PASSWORD_CAPTCHA)) {
+            if (!$smsDriver->verify($params['phone'], $params['phone_code'], NoticeEnum::FIND_LOGIN_PASSWORD_CAPTCHA)) {
                 throw new \Exception('验证码错误');
             }
 
             // 重置密码
-            $passwordSalt = Config::get('project.unique_identification');
-            $password = create_password($params['password'], $passwordSalt);
+            //$passwordSalt = Config::get('project.unique_identification');
+            $password = md5($params['password']);
 
             // 更新
             User::where('phone', $params['phone'])->update([

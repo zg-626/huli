@@ -28,6 +28,8 @@ class PasswordValidate extends BaseValidate
         //'code' => 'require',
         'password' => 'require|length:8,20|alphaNum',
         'password_confirm' => 'require|confirm',
+        'code' => 'require',
+        'uniqid' => 'require',
     ];
 
 
@@ -40,7 +42,9 @@ class PasswordValidate extends BaseValidate
         'password.length' => '密码须在8-20位之间',
         'password.alphaNum' => '密码须为字母数字组合',
         'password_confirm.require' => '请确认密码',
-        'password_confirm.confirm' => '两次输入的密码不一致'
+        'password_confirm.confirm' => '两次输入的密码不一致',
+        'code.require' => '请输入图形验证码',
+        'uniqid.require' => '请输入唯一标识',
     ];
 
 

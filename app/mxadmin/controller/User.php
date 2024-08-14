@@ -257,24 +257,6 @@ class User extends AdminBase
             $result = UserModel::update($data, ['id' => $id]);
 
             if ($result == true) {
-                // 如果审核成功，同步管理员表
-                if ($data['status'] == 1) {
-                    $user = UserModel::where('id', $id)->find();
-                    $create = [
-                        'password' => $user['password'],
-                        'nickname' => $user['nickname'],
-                        'username' => $user['phone'],
-                    ];
-                    $admin_info = AdminModel::create($create);
-                    // 新增用户所属角色
-                    $role_id = explode(',', '2');
-                    foreach ($role_id as $value) {
-                        $dataset[] = ['uid' => $admin_info->id, 'group_id' => $value];
-                    }
-                    AuthGroupAccess::insertAll($dataset);
-                }
-                // 如果审核成功，增加缴费记录
-                self::addFees($id);
                 return $this->success('账号审核成功');
             } else {
                 return $this->error('账号审核失败');
@@ -286,7 +268,7 @@ class User extends AdminBase
     public static function addFees($id)
     {
         //获取分类
-        $categories = DictData::where('dict_id', 11)->select();
+        $categories = DictData::where('id', 23)->select();
         //获取年份
         $years = DictData::where('dict_id', 12)->select();
         // 示例的嵌套循环创建记录

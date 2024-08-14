@@ -80,7 +80,7 @@ class TrainingSignController extends BaseApiController
         $params = (new TrainingSignValidate())->post()->goCheck('add',['user_id' => $this->userId]);
         $result = TrainingSignLogic::add($params);
         if (true === $result) {
-            return $this->success('添加成功', [], 1, 1);
+            return $this->success('报名成功', [], 1, 1);
         }
         return $this->fail(TrainingSignLogic::getError());
     }

@@ -41,7 +41,7 @@ class RegisterValidate extends BaseValidate
     protected $message = [
         'phone.require' => '请输入手机号',
         'phone.length' => '手机号须为11位',
-        'phone.unique' => '手机号已存在，请联系管理员',
+        'phone.unique' => '手机号已存在或正在审核中，请勿重复注册',
         'd_id.require' => '请选择医院',
         'nickname.require' => '请输入姓名',
         'password.require' => '请输入密码',

@@ -17,6 +17,7 @@ namespace app\api\controller;
 
 use app\api\logic\IndexLogic;
 use app\Request;
+use think\captcha\facade\Captcha;
 use think\response\Json;
 
 
@@ -61,11 +62,15 @@ class IndexController extends BaseApiController
 
     public function captcha(Request $request)
     {
-        $id = mt_rand(100000, 999999);
-        $uniqid = uniqid("$id", true);
+        $uniqid = uniqid(rand(00000,99999), true);
+        $rs = Captcha::create();
+        $base64_image = "data:image/png;base64," . base64_encode($rs->getData());
+        $key = session('captcha.key');
+
+        cache('ADMIN_LOGIN_VERIFY_'.$uniqid,$key);
         //返回数据 验证码图片路径、验证码标识
         $data = [
-            'src' => $request->domain().captcha_src($uniqid),
+            'src' => $base64_image,
             'uniqid' => $uniqid
         ];
         return $this->data($data);
