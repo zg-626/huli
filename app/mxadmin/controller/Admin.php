@@ -103,19 +103,19 @@ class Admin extends AdminBase
             $professional_id = $data['professional_id'] ?? '';
             $educational_id = $data['educational_id'] ?? '';
             $where = [];
-            if ($data['status'] != '') {
-                $where['status'] = $data['status'];
+            if ($data['status'] !== '') {
+                $where['mx_admin.status'] = ['=', $data['status']];
             }
-            if ($data['phone'] != '') {
-                $where['username'] = $data['phone'];
+            if ($data['phone'] !== '') {
+                $where['mx_admin.username'] = ['=', $data['phone']];
             }
-            if(!$role_id){
+            if($role_id!==''){
                 // 查询当前组所有用户
                 $uids = AuthGroupAccess::whereIn('group_id', $role_id)->column('uid');
                 if($uids){
                     // 转换数组为逗号分隔的字符串
                     $uids_str = implode(',', $uids);
-                    $where['mx_admin.id'] = ['in', $uids_str];
+                    $where[] = ['mx_admin.id','in', $uids];
                 }
 
             }
