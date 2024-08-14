@@ -79,6 +79,12 @@ class UserLogic extends BaseLogic
         $user['has_password'] = !empty($user['password']);
         //$user['has_auth'] = self::hasWechatAuth($userId);
         $user['version'] = config('project.version');
+        if($user->first_graduate_time==='0000-00-00'){
+            $user['first_graduate_time'] = '';
+        }
+        if($user->highest_graduate_time==='0000-00-00'){
+            $user['highest_graduate_time'] = '';
+        }
         $user->hidden(['password']);
         return $user->toArray();
     }

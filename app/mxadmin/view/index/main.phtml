@@ -105,7 +105,7 @@
         // 自定义打印
         $('#printer').on('click', function (e) {
             printer.print({
-                hide: ['.layui-form toolbar', '#hidden'],  // 打印时隐藏的元素
+                hide: ['.layui-form toolbar', '#hidden', '#sj','sx'],  // 打印时隐藏的元素
                 html: $('#mxForm').html(),
                 horizontal: false,         // 是否横向打印
                 blank: false,              // 是否打开新页面打印
@@ -144,7 +144,7 @@
                 expandedKeys: true
             },
             data: formatData({:json_encode($category)}),
-        });
+    });
 
         // 格式化数据函数
         function formatData(data) {
@@ -225,13 +225,34 @@
                                 //数据视图工具
                                 dataView: {
                                     title: '数据展示',
-                                    readOnly: false,   //默认false 可修改
-                                    lang: ['数据展示', '关闭', '刷新'],    //数据视图上有三个话术
+                                    readOnly: true,   //默认false 可修改
+                                    lang: ['数据展示', '<button class="layui-btn icon-btn" id="sj">关闭</button>', '<button class="layui-btn icon-btn" id="sx">刷新</button>'],    //数据视图上有三个话术
+                                    optionToContent: function (opt) {
+                                        let series = opt.series; // 饼图数据
+                                        let tdHeads = '<td style="padding: 0 10px">序号</td><td style="padding: 0 10px">名称</td><td style="padding: 0 10px">数量</td>'; // 表头
+                                        let tdBodys = ''; // 数据
+                                        let totalValue = 0; // 总计变量
+
+                                        series.forEach(function (item) {
+                                            item.data.forEach(function (dataItem, index) {
+                                                // 计算总计
+                                                totalValue += dataItem.value;
+                                                // 组装表数据
+                                                tdBodys += `<tr><td style="padding: 0 10px">${index + 1}</td><td style="padding: 0 10px">${dataItem.name}</td><td>${dataItem.value}</td></tr>`;
+                                            });
+                                        });
+
+                                        // 添加总计行
+                                        let totalRow = `<tr><td colspan="2" style="padding: 0 10px;text-align:right;font-weight:bold">总计</td><td style="font-weight:bold">${totalValue}</td></tr>`;
+
+                                        let table = `<table border="1" style="margin-left:20px;border-collapse:collapse;font-size:14px;text-align:center"><tbody><tr>${tdHeads}</tr>${tdBodys}${totalRow}</tbody></table>`;
+                                        return table;
+                                    },
                                     //设置一些显示文本数据的样式
                                     backgroundColor: '#ffffff',
                                     textareaColor: '#fcfcfc',
                                     textColor: 'rgba(0,0,0,.8)',
-                                    buttonColor: 'rgb(10,10,10)',
+                                    buttonColor: 'rgb(243,242,242)',
                                 },
                                 //区域缩放
                                 /*dataZoom: {
@@ -309,13 +330,34 @@
                                 //数据视图工具
                                 dataView: {
                                     title: '数据展示',
-                                    readOnly: false,   //默认false 可修改
-                                    lang: ['数据展示', '关闭', '刷新'],    //数据视图上有三个话术
+                                    readOnly: true,   //默认false 可修改
+                                    lang: ['数据展示', '<button class="layui-btn icon-btn" id="sj">关闭</button>', '<button class="layui-btn icon-btn" id="sx">刷新</button>'],    //数据视图上有三个话术
+                                    optionToContent: function (opt) {
+                                        let series = opt.series; // 饼图数据
+                                        let tdHeads = '<td style="padding: 0 10px">序号</td><td style="padding: 0 10px">名称</td><td style="padding: 0 10px">数量</td>'; // 表头
+                                        let tdBodys = ''; // 数据
+                                        let totalValue = 0; // 总计变量
+
+                                        series.forEach(function (item) {
+                                            item.data.forEach(function (dataItem, index) {
+                                                // 计算总计
+                                                totalValue += dataItem.value;
+                                                // 组装表数据
+                                                tdBodys += `<tr><td style="padding: 0 10px">${index + 1}</td><td style="padding: 0 10px">${dataItem.name}</td><td>${dataItem.value}</td></tr>`;
+                                            });
+                                        });
+
+                                        // 添加总计行
+                                        let totalRow = `<tr><td colspan="2" style="padding: 0 10px;text-align:right;font-weight:bold">总计</td><td style="font-weight:bold">${totalValue}</td></tr>`;
+
+                                        let table = `<table border="1" style="margin-left:20px;border-collapse:collapse;font-size:14px;text-align:center"><tbody><tr>${tdHeads}</tr>${tdBodys}${totalRow}</tbody></table>`;
+                                        return table;
+                                    },
                                     //设置一些显示文本数据的样式
                                     backgroundColor: '#ffffff',
                                     textareaColor: '#fcfcfc',
                                     textColor: 'rgba(0,0,0,.8)',
-                                    buttonColor: 'rgb(10,10,10)',
+                                    buttonColor: 'rgb(243,242,242)',
                                 },
                                 //区域缩放
                                 /*dataZoom: {
@@ -393,13 +435,34 @@
                                 //数据视图工具
                                 dataView: {
                                     title: '数据展示',
-                                    readOnly: false,   //默认false 可修改
-                                    lang: ['数据展示', '关闭', '刷新'],    //数据视图上有三个话术
+                                    readOnly: true,   //默认false 可修改
+                                    lang: ['数据展示', '<button class="layui-btn icon-btn" id="sj">关闭</button>', '<button class="layui-btn icon-btn" id="sx">刷新</button>'],    //数据视图上有三个话术
+                                    optionToContent: function (opt) {
+                                        let series = opt.series; // 饼图数据
+                                        let tdHeads = '<td style="padding: 0 10px">序号</td><td style="padding: 0 10px">名称</td><td style="padding: 0 10px">数量</td>'; // 表头
+                                        let tdBodys = ''; // 数据
+                                        let totalValue = 0; // 总计变量
+
+                                        series.forEach(function (item) {
+                                            item.data.forEach(function (dataItem, index) {
+                                                // 计算总计
+                                                totalValue += dataItem.value;
+                                                // 组装表数据
+                                                tdBodys += `<tr><td style="padding: 0 10px">${index + 1}</td><td style="padding: 0 10px">${dataItem.name}</td><td>${dataItem.value}</td></tr>`;
+                                            });
+                                        });
+
+                                        // 添加总计行
+                                        let totalRow = `<tr><td colspan="2" style="padding: 0 10px;text-align:right;font-weight:bold">总计</td><td style="font-weight:bold">${totalValue}</td></tr>`;
+
+                                        let table = `<table border="1" style="margin-left:20px;border-collapse:collapse;font-size:14px;text-align:center"><tbody><tr>${tdHeads}</tr>${tdBodys}${totalRow}</tbody></table>`;
+                                        return table;
+                                    },
                                     //设置一些显示文本数据的样式
                                     backgroundColor: '#ffffff',
                                     textareaColor: '#fcfcfc',
                                     textColor: 'rgba(0,0,0,.8)',
-                                    buttonColor: 'rgb(10,10,10)',
+                                    buttonColor: 'rgb(243,242,242)',
                                 },
                                 //区域缩放
                                 /*dataZoom: {
@@ -475,13 +538,34 @@
                                 //数据视图工具
                                 dataView: {
                                     title: '数据展示',
-                                    readOnly: false,   //默认false 可修改
-                                    lang: ['数据展示', '关闭', '刷新'],    //数据视图上有三个话术
+                                    readOnly: true,   //默认false 可修改
+                                    lang: ['数据展示', '<button class="layui-btn icon-btn" id="sj">关闭</button>', '<button class="layui-btn icon-btn" id="sx">刷新</button>'],    //数据视图上有三个话术
+                                    optionToContent: function (opt) {
+                                        let series = opt.series; // 饼图数据
+                                        let tdHeads = '<td style="padding: 0 10px">序号</td><td style="padding: 0 10px">名称</td><td style="padding: 0 10px">数量</td>'; // 表头
+                                        let tdBodys = ''; // 数据
+                                        let totalValue = 0; // 总计变量
+
+                                        series.forEach(function (item) {
+                                            item.data.forEach(function (dataItem, index) {
+                                                // 计算总计
+                                                totalValue += dataItem.value;
+                                                // 组装表数据
+                                                tdBodys += `<tr><td style="padding: 0 10px">${index + 1}</td><td style="padding: 0 10px">${dataItem.name}</td><td>${dataItem.value}</td></tr>`;
+                                            });
+                                        });
+
+                                        // 添加总计行
+                                        let totalRow = `<tr><td colspan="2" style="padding: 0 10px;text-align:right;font-weight:bold">总计</td><td style="font-weight:bold">${totalValue}</td></tr>`;
+
+                                        let table = `<table border="1" style="margin-left:20px;border-collapse:collapse;font-size:14px;text-align:center"><tbody><tr>${tdHeads}</tr>${tdBodys}${totalRow}</tbody></table>`;
+                                        return table;
+                                    },
                                     //设置一些显示文本数据的样式
                                     backgroundColor: '#ffffff',
                                     textareaColor: '#fcfcfc',
                                     textColor: 'rgba(0,0,0,.8)',
-                                    buttonColor: 'rgb(10,10,10)',
+                                    buttonColor: 'rgb(243,242,242)',
                                 },
                                 //区域缩放
                                 /*dataZoom: {
