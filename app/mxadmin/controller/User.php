@@ -62,7 +62,7 @@ class User extends AdminBase
         // 职务变更记录
         $department = Department::with('position')->where('user_id', $id)->order('start_time desc')->select();
         // 缴费记录
-        $fees = Fees::with('user')->where('user_id', $id)->order('fees_year desc fees_time desc')->select();
+        $fees = Fees::with('user')->where('user_id', $id)->where('status', 2)->order('fees_year desc fees_time desc')->select();
         // 报名记录
         $trainingSign = TrainingSign::with(
             [
@@ -93,14 +93,16 @@ class User extends AdminBase
             [
                 'user',
                 'training' => function ($query) use ($id) {
-                    $query->with('class');
-                }])->where(['user_id' => $id])->where('total_score', '>', 0)->order('check_time desc')->order('study_time desc')->select();
+                    $query->with(['class','paper']);
+                }])->where(['user_id' => $id])->where('total_score', '>', 0)->order('study_time desc')->select();
         if(!$assessSign->isEmpty()){
             foreach ($assessSign as $key => $value) {
                 $value['check_time'] = date('Y-m-d H:i:s', $value['check_time']);
                 $value['study_time'] = date('Y-m-d H:i:s', $value['study_time']);
-                // 分数大于80的为合格
-                $value['outcome'] = $value['total_score'] > 80 ? '合格' : '不合格';
+                // 分数大于试卷达标分数的为合格
+                $score=$value['training']['paper']['score'];
+                $value['score'] = $score;
+                $value['outcome'] = $value['total_score'] > $score ? '合格' : '不合格';
             }
         }
         return view('', [

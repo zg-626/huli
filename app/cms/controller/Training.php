@@ -29,8 +29,20 @@ class Training extends AdminBase
      */
     public function form()
     {
+        // 查询试卷
+        $paperlist=\app\cms\model\Paper::where('status', 1)->field('id, title')->select();
+        // 查询已被绑定的试卷
+        $paperids = TrainingModel::where('is_exam', 1)->column('paper_id');
+        // 如果有选择的，则设置disabled属性
+        foreach ($paperlist as $key => $value) {
+            if (in_array($value['id'], $paperids)) {
+                $paperlist[$key]['disabled'] = 'true';
+            }
+            $paperlist[$key]['disabled'] = 'false';
+        }
         return view('',[
             'trainingtype' => getDictDataId(6),
+            'paperlist' => $paperlist,
         ]);
     }
 
@@ -354,8 +366,9 @@ class Training extends AdminBase
             ->join('training_sign ts', 'ts.user_id = u.id')
             ->join('training t', 't.id = ts.training_id')
             ->join('cms_category c', 'c.id = u.d_id')
+            ->join('paper p', 'p.id = t.paper_id')
             ->where('ts.training_id', $notificationId)
-            ->field('u.*,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,c.name as departmentname')
+            ->field('u.*,p.score,ts.total_score,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,t.paper_id,t.is_exam,c.name as departmentname')
             ->paginate($limit);
         if(!$users->isEmpty()){
             foreach ($users as $user){
@@ -363,6 +376,14 @@ class Training extends AdminBase
                 $user->sign_time=date('Y-m-d h:m',$user->sign_time);
                 $user->study_time=date('Y-m-d h:m',$user->study_time);
                 $user->check_time=date('Y-m-d h:m',$user->check_time);
+                // 如果需要考试且已经考试
+                if($user->is_exam==1 && $user->is_study==1){
+                    // 分数大于试卷达标分数的为合格
+                    $score=$user->score;
+                    $user->outcome = $user->total_score > $score ? '合格' : '不合格';
+                }else{
+                    $user->outcome = '未考试';
+                }
 
             }
         }

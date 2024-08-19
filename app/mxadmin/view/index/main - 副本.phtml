@@ -1,0 +1,641 @@
+{extend name="base" /}
+
+{block name="title"}系统首页{/block}
+{block name="body"}
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <!-- 表格工具栏 -->
+            <form class="layui-form toolbar" id="hidden">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">年份</label>
+                        <div class="layui-input-inline">
+                            <select name="year">
+                                <option value="">--- 全部 ---</option>
+                                {volist name="yeartype" id="vo"}
+                                <option value="{$vo.name}">{$vo.name}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">医院名称</label>
+                        <div class="layui-input-inline">
+                            <div id="classifyParentSels" class="mx-xmselect-tree"></div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">&emsp;
+                        <button class="layui-btn icon-btn" lay-filter="userTbSearch" lay-submit>
+                            <i class="layui-icon">&#xe615;</i>统计
+                        </button>
+                        <button class="layui-btn layui-btn-primary" type="button" id="printer">打印</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="layui-fluid mx-console-wrapper">
+
+    <div class="layui-row layui-col-space15" id="mxForm">
+        <!-- 统计图表 -->
+        <div class="layui-col-md6 layui-col-sm6" id="professionalOpen">
+            <div class="layui-card" style="overflow: hidden;">
+                <div class="layui-card-header">按职称统计</div>
+                <div class="layui-card-body">
+                    <div id="consoleChartsWeek" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md6 layui-col-sm6" id="qualificationsOpen">
+            <div class="layui-card" style="overflow: hidden;">
+                <div class="layui-card-header">按学历统计</div>
+                <div class="layui-card-body">
+                    <div id="consoleChartsQualifications" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md6 layui-col-sm6" id="ageOpen">
+            <div class="layui-card" style="overflow: hidden;">
+                <div class="layui-card-header">按年龄统计</div>
+                <div class="layui-card-body">
+                    <div id="consoleChartsAge" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md6 layui-col-sm6">
+            <div class="layui-card" style="overflow: hidden;">
+                <div class="layui-card-header">按性别统计</div>
+                <div class="layui-card-body">
+                    <div id="consoleChartsSex" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['layer', 'form', 'xmSelect','printer'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var xmSelect = layui.xmSelect;
+        var form = layui.form;
+        var printer = layui.printer;
+
+        var qualificationsOpen = {$qualificationsOpen};
+        //console.log(qualificationsOpen);
+        if(qualificationsOpen===0){
+            $('#qualificationsOpen').hide();
+        }
+
+        var professionalOpen = {$professionalOpen};
+        //console.log(qualificationsOpen);
+        if(professionalOpen===0){
+            $('#professionalOpen').hide();
+        }
+
+        var ageOpen = {$ageOpen};
+        //console.log(qualificationsOpen);
+        if(ageOpen===0){
+            $('#ageOpen').hide();
+        }
+
+        // 自定义打印
+        $('#printer').on('click', function (e) {
+            printer.print({
+                hide: ['.layui-form toolbar', '#hidden', '#sj','sx'],  // 打印时隐藏的元素
+                html: $('#mxForm').html(),
+                horizontal: false,         // 是否横向打印
+                blank: false,              // 是否打开新页面打印
+                close: true,              // 如果是打开新页面，打印完是否关闭
+                iePreview: false          // 是否兼容ie打印预览
+            });
+        })
+
+        // 渲染下拉树
+        var insXmSels = xmSelect.render({
+            el: '#classifyParentSels',
+            layVerType: 'tips',
+            height: '400px',
+            name: 'd_id',
+            model: { label: { type: 'text' } },
+            prop: {
+                name: 'name',
+                value: 'id'
+            },
+            clickClose: false,
+            filterable: true,
+            filterMethod: function(val, item, index, prop) {
+                if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                    // 仅允许选择子集数据
+                    if (item.parent_id) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            searchTips: '请输入关键词进行搜索',
+            tree: {
+                show: true,
+                indent: 15,
+                strict: false,
+                expandedKeys: true
+            },
+            data: formatData({:json_encode($category)}),
+        });
+
+        // 格式化数据函数
+        function formatData(data) {
+            return data.map(item => {
+                if (!item.pid) {
+                    // 禁用一级数据
+                    item.disabled = true;
+                }
+                if (item.children) {
+                    item.children = formatData(item.children);
+                }
+                return item;
+            });
+        }
+        var ageNmae={:json_encode($age)};
+        var qualificationsNmae={:json_encode($qualifications)};
+        var dataNmae={:json_encode($professional)};
+
+        // 通用 AJAX 请求函数
+        function makeAjaxRequest(url, data, successCallback) {
+            $.ajax({
+                url: '{:url("mxadmin/user/chart")}',
+                method: 'POST',            // 或者 'GET'，视接口而定
+                data: data,          // 提交的表单数据
+                success: function (response) {
+                    if (response.code !== 0) {
+                        layer.msg(response.msg, {icon: 5, anim: 6});
+                    }
+
+                    // 处理职称数据
+                    var professionalData = Object.keys(response.data.professional).map(function(key) {
+                        return {
+                            value: response.data.professional[key],
+                            name: key
+                        };
+                    });
+
+                    // 绘制职称图表
+                    var options1 = {
+                        tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
+                        color: ['#10B4E8', '#a9cc4e', '#e73939', '#8337d3', '#0000FF', '#FF00FF', '#00FFFF'],
+                        legend: {
+                            orient: 'vertical', right: '0px', top: '0px',
+                            data: dataNmae, textStyle: {color: '#595959'}
+                        },
+                        series: [
+                            {
+                                name: '职称统计',
+                                type: 'pie',
+                                radius: '50%',
+                                data: professionalData,
+                                label: {
+                                    normal: {
+                                        show: true,
+                                        formatter: '{b}: {c} ({d}%)'
+                                    }
+                                }
+                            }
+                        ],
+                        //工具栏组件
+                        toolbox: {
+                            show: true,          //显示工具栏 默认true
+                            orient: 'vertical',  //垂直排列
+                            left: '0%',          //设置位置
+                            top: '0%',           //设置位置
+                            //工具栏对象
+                            feature: {
+                                //保存图片工具
+                                /*saveAsImage: {
+                                    type: 'jpg',     //生成的图片格式
+                                    name: 'dataImg', //图片名称
+                                    title: '保存图片' //此工具被聚焦时显示的标题
+                                },*/
+                                //配置项还原工具
+                                restore: {
+                                    title: '重置',
+                                },
+                                //数据视图工具
+                                dataView: {
+                                    title: '数据展示',
+                                    readOnly: true,   //默认false 可修改
+                                    lang: ['数据展示', '<button class="layui-btn icon-btn" id="sj">关闭</button>', '<button class="layui-btn icon-btn" id="sx">刷新</button>'],    //数据视图上有三个话术
+                                    optionToContent: function (opt) {
+                                        let series = opt.series; // 饼图数据
+                                        let tdHeads = '<td style="padding: 0 10px">序号</td><td style="padding: 0 10px">名称</td><td style="padding: 0 10px">数量</td>'; // 表头
+                                        let tdBodys = ''; // 数据
+                                        let totalValue = 0; // 总计变量
+
+                                        series.forEach(function (item) {
+                                            item.data.forEach(function (dataItem, index) {
+                                                // 计算总计
+                                                totalValue += dataItem.value;
+                                                // 组装表数据
+                                                tdBodys += `<tr><td style="padding: 0 10px">${index + 1}</td><td style="padding: 0 10px">${dataItem.name}</td><td>${dataItem.value}</td></tr>`;
+                                            });
+                                        });
+
+                                        // 添加总计行
+                                        let totalRow = `<tr><td colspan="2" style="padding: 0 10px;text-align:right;font-weight:bold">总计</td><td style="font-weight:bold">${totalValue}</td></tr>`;
+
+                                        let table = `<table border="1" style="margin-left:20px;border-collapse:collapse;font-size:14px;text-align:center"><tbody><tr>${tdHeads}</tr>${tdBodys}${totalRow}</tbody></table>`;
+                                        return table;
+                                    },
+                                    //设置一些显示文本数据的样式
+                                    backgroundColor: '#ffffff',
+                                    textareaColor: '#fcfcfc',
+                                    textColor: 'rgba(0,0,0,.8)',
+                                    buttonColor: 'rgb(243,242,242)',
+                                },
+                                //区域缩放
+                                /*dataZoom: {
+                                    title: {zoom: '缩放', back: '还原'},
+                                    //刷选框样式
+                                    brushStyle: {
+                                        color: 'rgba(255,40,80,.2)',
+                                        borderColor: '#f00',
+                                        borderWidth: 2,
+                                        borderType: 'dashed',
+                                        opacity: .5,
+                                    }
+                                },*/
+                                //动态类型切换图表
+                                /*magicType: {
+                                    type: ['line', 'bar', 'stack'],
+                                    title: {
+                                        line: '折线图',
+                                        bar: '柱状图',
+                                        stack: '堆叠图'
+                                    }
+                                }*/
+                            }
+                        },
+                    };
+
+                    // 处理学历数据
+                    var qualificationsData = Object.keys(response.data.qualifications).map(function(key) {
+                        return {
+                            value: response.data.qualifications[key],
+                            name: key
+                        };
+                    });
+
+                    // 绘制学历图表
+                    var options2 = {
+                        tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
+                        color: ['#5a7881', '#bc9bda', '#de5da6'],
+                        legend: {
+                            orient: 'vertical', right: '0px', top: '0px',
+                            data: qualificationsNmae, textStyle: {color: '#595959'}
+                        },
+                        series: [
+                            {
+                                name: '学历统计',
+                                type: 'pie',
+                                radius: '50%',
+                                data: qualificationsData,
+                                label: {
+                                    normal: {
+                                        show: true,
+                                        formatter: '{b}: {c} ({d}%)'
+                                    }
+                                }
+                            }
+                        ],
+                        //工具栏组件
+                        toolbox: {
+                            show: true,          //显示工具栏 默认true
+                            orient: 'vertical',  //垂直排列
+                            left: '0%',          //设置位置
+                            top: '0%',           //设置位置
+                            //工具栏对象
+                            feature: {
+                                //保存图片工具
+                                /*saveAsImage: {
+                                    type: 'jpg',     //生成的图片格式
+                                    name: 'dataImg', //图片名称
+                                    title: '保存图片' //此工具被聚焦时显示的标题
+                                },*/
+                                //配置项还原工具
+                                restore: {
+                                    title: '重置',
+                                },
+                                //数据视图工具
+                                dataView: {
+                                    title: '数据展示',
+                                    readOnly: true,   //默认false 可修改
+                                    lang: ['数据展示', '<button class="layui-btn icon-btn" id="sj">关闭</button>', '<button class="layui-btn icon-btn" id="sx">刷新</button>'],    //数据视图上有三个话术
+                                    optionToContent: function (opt) {
+                                        let series = opt.series; // 饼图数据
+                                        let tdHeads = '<td style="padding: 0 10px">序号</td><td style="padding: 0 10px">名称</td><td style="padding: 0 10px">数量</td>'; // 表头
+                                        let tdBodys = ''; // 数据
+                                        let totalValue = 0; // 总计变量
+
+                                        series.forEach(function (item) {
+                                            item.data.forEach(function (dataItem, index) {
+                                                // 计算总计
+                                                totalValue += dataItem.value;
+                                                // 组装表数据
+                                                tdBodys += `<tr><td style="padding: 0 10px">${index + 1}</td><td style="padding: 0 10px">${dataItem.name}</td><td>${dataItem.value}</td></tr>`;
+                                            });
+                                        });
+
+                                        // 添加总计行
+                                        let totalRow = `<tr><td colspan="2" style="padding: 0 10px;text-align:right;font-weight:bold">总计</td><td style="font-weight:bold">${totalValue}</td></tr>`;
+
+                                        let table = `<table border="1" style="margin-left:20px;border-collapse:collapse;font-size:14px;text-align:center"><tbody><tr>${tdHeads}</tr>${tdBodys}${totalRow}</tbody></table>`;
+                                        return table;
+                                    },
+                                    //设置一些显示文本数据的样式
+                                    backgroundColor: '#ffffff',
+                                    textareaColor: '#fcfcfc',
+                                    textColor: 'rgba(0,0,0,.8)',
+                                    buttonColor: 'rgb(10,10,10)',
+                                },
+                                //区域缩放
+                                /*dataZoom: {
+                                    title: {zoom: '缩放', back: '还原'},
+                                    //刷选框样式
+                                    brushStyle: {
+                                        color: 'rgba(255,40,80,.2)',
+                                        borderColor: '#f00',
+                                        borderWidth: 2,
+                                        borderType: 'dashed',
+                                        opacity: .5,
+                                    }
+                                },*/
+                                //动态类型切换图表
+                                /*magicType: {
+                                    type: ['line', 'bar', 'stack'],
+                                    title: {
+                                        line: '折线图',
+                                        bar: '柱状图',
+                                        stack: '堆叠图'
+                                    }
+                                }*/
+                            }
+                        },
+                    };
+
+                    // 处理年龄数据
+                    var ageData = Object.keys(response.data.age).map(function(key) {
+                        return {
+                            value: response.data.age[key],
+                            name: key
+                        };
+                    });
+
+                    // 绘制年龄图表
+                    var options3 = {
+                        tooltip: {trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)'},
+                        color: ['#90da6a', '#FFA800', '#c79b9b', '#d2bd69', '#0000FF', '#FF00FF', '#00FFFF'],
+                        legend: {
+                            orient: 'vertical', right: '0px', top: '0px',
+                            data: ageNmae, textStyle: {color: '#595959'}
+                        },
+                        series: [
+                            {
+                                name: '年龄统计',
+                                type: 'pie',
+                                radius: '50%',
+                                data: ageData,
+                                label: {
+                                    normal: {
+                                        show: true,
+                                        formatter: '{b}: {c} ({d}%)'
+                                    }
+                                }
+                            }
+                        ],
+                        //工具栏组件
+                        toolbox: {
+                            show: true,          //显示工具栏 默认true
+                            orient: 'vertical',  //垂直排列
+                            left: '0%',          //设置位置
+                            top: '0%',           //设置位置
+                            //工具栏对象
+                            feature: {
+                                //保存图片工具
+                                /*saveAsImage: {
+                                    type: 'jpg',     //生成的图片格式
+                                    name: 'dataImg', //图片名称
+                                    title: '保存图片' //此工具被聚焦时显示的标题
+                                },*/
+                                //配置项还原工具
+                                restore: {
+                                    title: '重置',
+                                },
+                                //数据视图工具
+                                dataView: {
+                                    title: '数据展示',
+                                    readOnly: true,   //默认false 可修改
+                                    lang: ['数据展示', '<button class="layui-btn icon-btn" id="sj">关闭</button>', '<button class="layui-btn icon-btn" id="sx">刷新</button>'],    //数据视图上有三个话术
+                                    optionToContent: function (opt) {
+                                        let series = opt.series; // 饼图数据
+                                        let tdHeads = '<td style="padding: 0 10px">序号</td><td style="padding: 0 10px">名称</td><td style="padding: 0 10px">数量</td>'; // 表头
+                                        let tdBodys = ''; // 数据
+                                        let totalValue = 0; // 总计变量
+
+                                        series.forEach(function (item) {
+                                            item.data.forEach(function (dataItem, index) {
+                                                // 计算总计
+                                                totalValue += dataItem.value;
+                                                // 组装表数据
+                                                tdBodys += `<tr><td style="padding: 0 10px">${index + 1}</td><td style="padding: 0 10px">${dataItem.name}</td><td>${dataItem.value}</td></tr>`;
+                                            });
+                                        });
+
+                                        // 添加总计行
+                                        let totalRow = `<tr><td colspan="2" style="padding: 0 10px;text-align:right;font-weight:bold">总计</td><td style="font-weight:bold">${totalValue}</td></tr>`;
+
+                                        let table = `<table border="1" style="margin-left:20px;border-collapse:collapse;font-size:14px;text-align:center"><tbody><tr>${tdHeads}</tr>${tdBodys}${totalRow}</tbody></table>`;
+                                        return table;
+                                    },
+                                    //设置一些显示文本数据的样式
+                                    backgroundColor: '#ffffff',
+                                    textareaColor: '#fcfcfc',
+                                    textColor: 'rgba(0,0,0,.8)',
+                                    buttonColor: 'rgb(10,10,10)',
+                                },
+                                //区域缩放
+                                /*dataZoom: {
+                                    title: {zoom: '缩放', back: '还原'},
+                                    //刷选框样式
+                                    brushStyle: {
+                                        color: 'rgba(255,40,80,.2)',
+                                        borderColor: '#f00',
+                                        borderWidth: 2,
+                                        borderType: 'dashed',
+                                        opacity: .5,
+                                    }
+                                },*/
+                                //动态类型切换图表
+                                /*magicType: {
+                                    type: ['line', 'bar', 'stack'],
+                                    title: {
+                                        line: '折线图',
+                                        bar: '柱状图',
+                                        stack: '堆叠图'
+                                    }
+                                }*/
+                            }
+                        },
+                    };
+
+                    // 处理性别数据
+                    var chartData = [
+                        { value: response.data.gender.male, name: '男' },
+                        { value: response.data.gender.female, name: '女' }
+                    ];
+
+                    // 更新性别图表配置
+                    var options4 = {
+                        tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
+                        color: ['#246ec4', '#dbbeea'],
+                        legend: {
+                            orient: 'vertical', right: '0px', top: '0px',
+                            data: ['男', '女'], textStyle: { color: '#595959' }
+                        },
+                        series: [
+                            {
+                                name: '性别占比',
+                                type: 'pie',
+                                radius: '50%',
+                                data: chartData,
+                                label: {
+                                    normal: {
+                                        show: true,
+                                        formatter: '{b}: {c} ({d}%)'
+                                    }
+                                }
+                            }
+                        ],
+                        //工具栏组件
+                        toolbox: {
+                            show: true,          //显示工具栏 默认true
+                            orient: 'vertical',  //垂直排列
+                            left: '0%',          //设置位置
+                            top: '0%',           //设置位置
+                            //工具栏对象
+                            feature: {
+                                //保存图片工具
+                                /*saveAsImage: {
+                                    type: 'jpg',     //生成的图片格式
+                                    name: 'dataImg', //图片名称
+                                    title: '保存图片' //此工具被聚焦时显示的标题
+                                },*/
+                                //配置项还原工具
+                                restore: {
+                                    title: '重置',
+                                },
+                                //数据视图工具
+                                dataView: {
+                                    title: '数据展示',
+                                    readOnly: true,   //默认false 可修改
+                                    lang: ['数据展示', '<button class="layui-btn icon-btn" id="sj">关闭</button>', '<button class="layui-btn icon-btn" id="sx">刷新</button>'],    //数据视图上有三个话术
+                                    optionToContent: function (opt) {
+                                        let series = opt.series; // 饼图数据
+                                        let tdHeads = '<td style="padding: 0 10px">序号</td><td style="padding: 0 10px">名称</td><td style="padding: 0 10px">数量</td>'; // 表头
+                                        let tdBodys = ''; // 数据
+                                        let totalValue = 0; // 总计变量
+
+                                        series.forEach(function (item) {
+                                            item.data.forEach(function (dataItem, index) {
+                                                // 计算总计
+                                                totalValue += dataItem.value;
+                                                // 组装表数据
+                                                tdBodys += `<tr><td style="padding: 0 10px">${index + 1}</td><td style="padding: 0 10px">${dataItem.name}</td><td>${dataItem.value}</td></tr>`;
+                                            });
+                                        });
+
+                                        // 添加总计行
+                                        let totalRow = `<tr><td colspan="2" style="padding: 0 10px;text-align:right;font-weight:bold">总计</td><td style="font-weight:bold">${totalValue}</td></tr>`;
+
+                                        let table = `<table border="1" style="margin-left:20px;border-collapse:collapse;font-size:14px;text-align:center"><tbody><tr>${tdHeads}</tr>${tdBodys}${totalRow}</tbody></table>`;
+                                        return table;
+                                    },
+                                    //设置一些显示文本数据的样式
+                                    backgroundColor: '#ffffff',
+                                    textareaColor: '#fcfcfc',
+                                    textColor: 'rgba(0,0,0,.8)',
+                                    buttonColor: 'rgb(10,10,10)',
+                                },
+                                //区域缩放
+                                /*dataZoom: {
+                                    title: {zoom: '缩放', back: '还原'},
+                                    //刷选框样式
+                                    brushStyle: {
+                                        color: 'rgba(255,40,80,.2)',
+                                        borderColor: '#f00',
+                                        borderWidth: 2,
+                                        borderType: 'dashed',
+                                        opacity: .5,
+                                    }
+                                },*/
+                                //动态类型切换图表
+                                /*magicType: {
+                                    type: ['line', 'bar', 'stack'],
+                                    title: {
+                                        line: '折线图',
+                                        bar: '柱状图',
+                                        stack: '堆叠图'
+                                    }
+                                }*/
+                            }
+                        },
+                    };
+
+                    // 渲染图表
+                    myCharts1.setOption(options1);
+                    myCharts2.setOption(options2);
+                    myCharts3.setOption(options3);
+                    myCharts4.setOption(options4);
+                },
+                error: function (xhr, status, error) {
+                    console.error('请求失败：', error);
+                }
+            });
+        }
+
+        // 页面加载时默认请求
+        $(document).ready(function() {
+            makeAjaxRequest('/submit-data', {}, function(response) {
+                // 处理页面加载时的响应
+                console.log("页面加载响应:", response);
+            });
+        });
+
+        // 表单提交事件
+        form.on('submit(userTbSearch)', function (data) {
+            console.log('搜索条件：', data.field);
+            var postData = data.field;
+            makeAjaxRequest('/submit-data', postData, function(response) {
+                // 处理点击事件后的响应
+                console.log("点击提交响应:", response);
+            });
+
+            return false; // 阻止表单默认提交
+        });
+
+        /** 渲染职称统计图表 */
+        var myCharts1 = echarts.init(document.getElementById('consoleChartsWeek'));
+
+        /** 渲染学历统计图表 */
+        var myCharts2 = echarts.init(document.getElementById('consoleChartsQualifications'));
+
+        /** 渲染年龄统计图表 */
+        var myCharts3 = echarts.init(document.getElementById('consoleChartsAge'));
+
+        /** 渲染性别统计图表 */
+        var myCharts4 = echarts.init(document.getElementById('consoleChartsSex'));
+
+    });
+</script>
+{/block}

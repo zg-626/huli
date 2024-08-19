@@ -249,7 +249,6 @@ class TrainingSignLogic extends BaseLogic
                         $totalScore += $question['score'];
                     }
                 } elseif ($question['type'] == 2) { // 多选题
-                    //print_r($question);exit;
                     $question['select'] = explode(',', $question['select']);
                     sort($answer['user_answer']); // 排序用户答案，方便比较
                     sort($question['select']); // 排序正确答案，方便比较
@@ -264,7 +263,7 @@ class TrainingSignLogic extends BaseLogic
                 $answerRecords[] = $record;
             }
 
-            // 保存答题记录到数据
+            // 保存答题分数到数据
             TrainingSign::where([
                 'user_id' => $params['user_id'],
                 'training_id' => $params['training_id'],
