@@ -8,6 +8,8 @@ use app\cms\model\CmsCategory;
 use app\mxadmin\AdminBase;
 use app\cms\model\Fees as FeesModel;
 use app\mxadmin\model\UserModel;
+use think\facade\Db;
+use think\Request;
 
 class Fees extends AdminBase
 {
@@ -219,5 +221,83 @@ class Fees extends AdminBase
                 return $this->error('审核失败');
             }
         }
+    }
+
+    /** @DESC [导入缴费] */
+    public function daoru(Request $request)
+    {
+        // 接收文件上传信息
+        $file = $request->file("file");
+        // 调用类库，读取excel中的内容
+        $training = new Training($this->app);
+        $excel_array = $training->importExcel($file);
+
+        $data = [];
+        foreach ($excel_array as $key => $value) {
+            $number = $key + 2;
+            // 正则去除多余空白字符
+            $phone = preg_replace('/\s+/', '', $value['1']);
+            $value2 = preg_replace('/\s+/', '', $value['2']);
+            $value3 = preg_replace('/\s+/', '', $value['3']);
+            $value4 = preg_replace('/\s+/', '', $value['4']);
+            $value5 = preg_replace('/\s+/', '', $value['5']);
+            $value6 = preg_replace('/\s+/', '', $value['6']);
+            $value7 = preg_replace('/\s+/', '', $value['7']);
+
+            if ($value3 !== '缴费') {
+                return $this->error('缴费状态有误，请检查导入类型');
+            }
+
+            // 查询用户是否存在
+            $userinfo = Db::name('user')->where('phone', $phone)->find();
+            if (!$userinfo) {
+                return $this->error('用户手机号不存在，请检查，在第' . $number . '行');
+            }
+
+            // 查询学习班详情
+            /*$info = \app\cms\model\Training::where('id', $value4)->find();
+            if (!$info) {
+                return $this->error('学习班不存在，请检查');
+            }*/
+
+            $updateData = [
+                'status' => 1,
+                'fees_time' => $value2,
+                'fees_type' => $value4,
+                'fees_year' => $value5,
+                'money' => $value6,
+                'way' => $value7,
+                'image' => '/storage/images/EaJJbAZUrb.png'
+            ];
+
+            $data[] = $updateData;
+        }
+        $status = false;  //定义状态
+        // 启动事务
+        Db::startTrans();
+        try {
+            // 批量更新
+            foreach ($data as $item) {
+                Db::name('fees')->where([
+                    'user_id' => $userinfo['id'], // 假设 user_id 是关联字段
+                    'fees_type' => $item['fees_type'],
+                    'fees_year' => $item['fees_year'],
+                ])->update($item);
+            }
+
+            // 提交事务
+            Db::commit();
+            $status = true;
+        } catch (Throwable $t) {
+            // 回滚事务
+            Db::rollback();
+            return $this->error('导入数据失败: ' . $t->getLine());
+        }
+
+        if($status){
+            return $this->success('文件上传成功，已经导入' . count($data) . '条数据');
+        }
+
+        return false;
     }
 }

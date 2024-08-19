@@ -21,9 +21,9 @@ use app\common\{enum\notice\NoticeEnum,
     logic\BaseLogic,
     model\user\User,
     model\user\UserAuth,
+    service\FileService,
     service\sms\SmsDriver,
-    service\wechat\WeChatMnpService
-};
+    service\wechat\WeChatMnpService};
 use app\mxadmin\model\UserModel;
 use think\facade\Config;
 
@@ -79,6 +79,7 @@ class UserLogic extends BaseLogic
         $user['has_password'] = !empty($user['password']);
         //$user['has_auth'] = self::hasWechatAuth($userId);
         $user['version'] = config('project.version');
+        $user['headimg'] = FileService::getFileUrl($user['headimg']);
         if($user->first_graduate_time==='0000-00-00'){
             $user['first_graduate_time'] = '';
         }
@@ -308,7 +309,7 @@ class UserLogic extends BaseLogic
                 'd_id' => $params['d_id'],
                 'position_id' => $params['position_id'],
                 'professional_id' => $params['professional_id'],
-                'headimg' => $params['headimg'],
+                'headimg' => FileService::setFileUrl($params['headimg']),
                 'department' => $params['department'],
                 'first_education' => $params['first_education'],
                 'first_graduate_school' => $params['first_graduate_school'],

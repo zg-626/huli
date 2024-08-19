@@ -60,7 +60,7 @@ class FeesLogic extends BaseLogic
                         'fees_time' => $params['fees_time'],
                         'money' => $params['money'],
                         'way' => $params['way'],
-                        'image' => $params['image'],
+                        'image' => FileService::setFileUrl($params['image']),
                         'remark' => $params['remark'],
                         'status' => 1,
                     ]);
@@ -86,7 +86,7 @@ class FeesLogic extends BaseLogic
                         'fees_time' => $params['fees_time'],
                         'money' => $params['money'],
                         'way' => $params['way'],
-                        'image' => $params['image'],
+                        'image' => FileService::setFileUrl($params['image']),
                         'remark' => $params['remark'],
                         'status' => 1,
                     ]);
@@ -102,7 +102,7 @@ class FeesLogic extends BaseLogic
                     'fees_time' => $params['fees_time'],
                     'money' => $params['money'],
                     'way' => $params['way'],
-                    'image' => $params['image'],
+                    'image' => FileService::setFileUrl($params['image']),
                     'remark' => $params['remark'],
                     'status' => 1,
                 ]);
@@ -136,7 +136,7 @@ class FeesLogic extends BaseLogic
                 'fees_time' => $params['fees_time'],
                 'money' => $params['money'],
                 'way' => $params['way'],
-                'image' => $params['image'],
+                'image' => FileService::setFileUrl($params['image']),
             ]);
 
             Db::commit();

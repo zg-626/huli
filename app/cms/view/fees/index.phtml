@@ -70,6 +70,7 @@
         </div>
     </div>
 </div>
+<button style="display: none;" type="button" id="daoru"></button>
 <!--图片模板-->
 <script type="text/html" id="imgTpl">
     <ul class="layui-cricle">
@@ -386,6 +387,8 @@
             limits: [15, 30, 45, 60, 75, 90, 100, 200, 500],
             toolbar: ['<p>',
                 '<button lay-event="open" class="layui-btn layui-btn-sm layui-btn-green icon-btn">批量审核</button>',
+                '<button lay-event="Padd" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>导入缴费</button>&nbsp;',
+                '<a href="/storage/template/缴费导入模板.xlsx" class="layui-btn layui-btn-sm layui-btn-radius layui-btn-primary"><i class="layui-icon">&#xe601;</i>缴费模板</a>',
                 //'<button lay-event="signinfo"  class="layui-btn layui-btn-sm layui-btn-danger icon-btn" id="no" style="display: none"><i class="layui-icon">&#xe655;</i>部分打印</button>',
                 '</p>'].join(''),
                 //defaultToolbar: ['filter'],
@@ -534,8 +537,28 @@
                     return d.id;
                 });
                 showShenheModel({ids: ids});
+            }else if (obj.event === 'Padd'){
+                $("#daoru").click();
             }else{
                 showSignModel(obj);
+            }
+        });
+
+        //缴费导入
+        upload.render({
+            elem: '#daoru',
+            url: "{:url('cms/fees/daoru')}", //改成您自己的上传接口
+            accept: 'file', //文件
+            acceptMime: 'application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            exts: 'xlsx|xls', //只允许上传excel文件
+            size: 8048, //限制文件大小，单位 KB
+            done: function(res){
+                if (res.code === 1) {
+                    layer.msg(res.msg, {icon: 1});
+                    insTb.reload();  // 成功刷新表格
+                } else {
+                    layer.msg(res.msg, {icon: 5, anim: 10});
+                }
             }
         });
 
