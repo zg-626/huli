@@ -19,12 +19,14 @@
                             </select>
                         </div>
                     </div>
+                    {if $is_admin == 1}
                     <div class="layui-inline">
                         <label class="layui-form-label">医院名称</label>
                         <div class="layui-input-inline">
                             <div id="classifyParentSels" class="mx-xmselect-tree"></div>
                         </div>
                     </div>
+                    {/if}
                     <div class="layui-inline">&emsp;
                         <button class="layui-btn icon-btn" lay-filter="userTbSearch" lay-submit>
                             <i class="layui-icon">&#xe615;</i>统计
@@ -113,52 +115,55 @@
                 iePreview: false          // 是否兼容ie打印预览
             });
         })
-
-        // 渲染下拉树
-        var insXmSels = xmSelect.render({
-            el: '#classifyParentSels',
-            layVerType: 'tips',
-            height: '400px',
-            name: 'd_id',
-            model: { label: { type: 'text' } },
-            prop: {
-                name: 'name',
-                value: 'id'
-            },
-            clickClose: false,
-            filterable: true,
-            filterMethod: function(val, item, index, prop) {
-                if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
-                    // 仅允许选择子集数据
-                    if (item.parent_id) {
-                        return true;
+        var is_admin="{$is_admin}";
+        if (is_admin == 1) {
+            // 渲染下拉树
+            var insXmSels = xmSelect.render({
+                el: '#classifyParentSels',
+                layVerType: 'tips',
+                height: '400px',
+                name: 'd_id',
+                model: { label: { type: 'text' } },
+                prop: {
+                    name: 'name',
+                    value: 'id'
+                },
+                clickClose: false,
+                filterable: true,
+                filterMethod: function(val, item, index, prop) {
+                    if (item.name.toLowerCase().indexOf(val.toLowerCase()) != -1) {
+                        // 仅允许选择子集数据
+                        if (item.parent_id) {
+                            return true;
+                        }
                     }
-                }
-                return false;
-            },
-            searchTips: '请输入关键词进行搜索',
-            tree: {
-                show: true,
-                indent: 15,
-                strict: false,
-                expandedKeys: true
-            },
-            data: formatData({:json_encode($category)}),
-    });
-
-        // 格式化数据函数
-        function formatData(data) {
-            return data.map(item => {
-                if (!item.pid) {
-                    // 禁用一级数据
-                    item.disabled = true;
-                }
-                if (item.children) {
-                    item.children = formatData(item.children);
-                }
-                return item;
+                    return false;
+                },
+                searchTips: '请输入关键词进行搜索',
+                tree: {
+                    show: true,
+                    indent: 15,
+                    strict: false,
+                    expandedKeys: true
+                },
+                data: formatData({:json_encode($category)}),
             });
+
+            // 格式化数据函数
+            function formatData(data) {
+                return data.map(item => {
+                    if (!item.pid) {
+                        // 禁用一级数据
+                        item.disabled = true;
+                    }
+                    if (item.children) {
+                        item.children = formatData(item.children);
+                    }
+                    return item;
+                });
+            }
         }
+
         var ageNmae={:json_encode($age)};
         var qualificationsNmae={:json_encode($qualifications)};
         var dataNmae={:json_encode($professional)};

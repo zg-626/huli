@@ -34,9 +34,27 @@ class Fees extends AdminBase
      */
     public function datalist($limit=15)
     {
-        $list = FeesModel::with(['user'=> function ($query) {
-            $query->with(['hospital','educationalType','positionType','professionalType']);
-        }])->order('id desc')->paginate($limit);
+        // 判断是否普通管理员
+        $group_id = getRuleId();
+        // 超级管理员
+        if (session('admin_info.is_admin') == 1) {
+            $list = FeesModel::with(['user'=> function ($query) {
+                $query->with(['hospital','educationalType','positionType','professionalType']);
+            }])->order('id desc')->paginate($limit);
+        }elseif ($group_id === 3 || $group_id === 2) {
+            $d_id = session('admin_info.d_id');
+            //当前医院下的医院
+            $d_ids=get_all_child_cate($d_id);
+            if(!empty($d_ids)){
+                $d_id=$d_ids.','.$d_id;
+            }
+            // 先查询所有本医院的用户
+            $uids = UserModel::where('d_id', 'in', $d_id)->column('id');
+            $list = FeesModel::with(['user'=> function ($query) {
+                $query->with(['hospital','educationalType','positionType','professionalType']);
+            }])->whereIn('user_id', $uids)->order('id desc')->paginate($limit);
+        }
+
         if(!$list->isEmpty()){
             $user=[];
             foreach ($list as $k => $v) {
@@ -82,19 +100,45 @@ class Fees extends AdminBase
                 $where[] = ['Fees.fees_year', 'in', $fees_year];
             }
 
-            $list = FeesModel::hasWhere('user' , function ($query) use ($nickname,$d_id) {
-                $query->field('id,nickname');
-                if (!empty($nickname)) {
-                    $query->where('nickname', 'like', '%' . $nickname . '%');
+            // 判断是否普通管理员
+            $group_id = getRuleId();
+            // 超级管理员
+            if (session('admin_info.is_admin') == 1) {
+                $list = FeesModel::hasWhere('user' , function ($query) use ($nickname,$d_id) {
+                    $query->field('id,nickname');
+                    if (!empty($nickname)) {
+                        $query->where('nickname', 'like', '%' . $nickname . '%');
+                    }
+                    if (!empty($d_id)) {
+                        $query->whereIn('d_id',$d_id);
+                    }
+                })->with(['user'=> function ($query) {
+                    $query->with(['hospital','educationalType','positionType','professionalType']);
+                }])->where($where)
+                    ->order('id desc')
+                    ->paginate($limit);
+            }elseif ($group_id === 3 || $group_id === 2) {
+                $d_id = session('admin_info.d_id');
+                //当前医院下的医院
+                $d_ids=get_all_child_cate($d_id);
+                if(!empty($d_ids)){
+                    $d_id=$d_ids.','.$d_id;
                 }
-                if (!empty($d_id)) {
-                    $query->whereIn('d_id',$d_id);
-                }
-            })->with(['user'=> function ($query) {
-                $query->with(['hospital','educationalType','positionType','professionalType']);
-            }])->where($where)
-                ->order('id desc')
-                ->paginate($limit);
+                $list = FeesModel::hasWhere('user' , function ($query) use ($nickname,$d_id) {
+                    $query->field('id,nickname');
+                    if (!empty($nickname)) {
+                        $query->where('nickname', 'like', '%' . $nickname . '%');
+                    }
+                    if (!empty($d_id)) {
+                        $query->whereIn('d_id',$d_id);
+                    }
+                })->with(['user'=> function ($query) {
+                    $query->with(['hospital','educationalType','positionType','professionalType']);
+                }])->where($where)
+                    ->order('id desc')
+                    ->paginate($limit);
+            }
+
             if(!$list->isEmpty()){
                 $user=[];
                 foreach ($list as $k => $v) {

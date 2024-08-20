@@ -2,6 +2,7 @@
 
 
 // 应用公共文件
+use app\cms\model\CmsCategory;
 use app\common\service\FileService;
 
 if (!function_exists('list_to_tree')) {
@@ -75,6 +76,19 @@ if (!function_exists('getAdminId')) {
     }
 }
 
+if (!function_exists('getRuleId')) {
+    /**
+     * 获取用户ID
+     * @return mixed
+     */
+    function getRuleId()
+    {
+        $admin_id = session('admin_info.admin_id');
+        $data = \app\mxadmin\model\AuthGroupAccess::where(['uid' => $admin_id])->value('group_id');
+        return $data;
+    }
+}
+
 if (!function_exists('getDictDataId')) {
     /**
      * 获取字典数据
@@ -105,6 +119,30 @@ if (!function_exists('sysoplog')) {
             ]);
         }
     }
+}
+
+/**
+ * @copyright 获取子类id
+ * @license   [license]
+ * @version   [version]
+ * @DateTime  2022-05-20
+ * @Author    覔
+ * @param     [typ  e]      $cid [description]
+ * @param     string      $str [description]
+ * @return    [type]           [description]
+ */
+function get_all_child_cate($cid,$str=''){
+
+    $child= CmsCategory::where('pid','=',$cid)->column('id');
+
+    if($child){
+        $str.=','.implode(',',$child);
+        foreach($child as $key=>$val){
+            $str=get_all_child_cate($val,$str);
+        }
+    }
+    $str.=','.$cid;
+    return trim($str,',');
 }
 
 //部分分类

@@ -105,6 +105,7 @@ class LoginLogic extends BaseLogic
         $create = [
             'password' => $user['password'],
             'nickname' => $user['nickname'],
+            'd_id' => $user['d_id'],
             'username' => $user['phone'],
         ];
         $admin_info = AdminModel::create($create);

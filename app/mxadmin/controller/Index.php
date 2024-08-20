@@ -65,6 +65,7 @@ class Index extends AdminBase
         return view('', [
             'version' => App::version(),
             'category' => $department,
+            'is_admin' => session('admin_info.is_admin'),
             'yeartype' => getDictDataId(12),
             'professional' => $professional,//职称
             'qualifications' => $qualifications,//学历

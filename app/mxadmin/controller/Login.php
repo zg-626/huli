@@ -49,6 +49,7 @@ class Login extends AdminBase
                     'username' => $user['username'],
                     'nickname' => $user['nickname'],
                     'is_admin' => $user['is_admin'],
+                    'd_id' => $user['d_id'],
                 ];
                 session('admin_info', $user_array);
                 session('admin_sign', data_sign($user_array));

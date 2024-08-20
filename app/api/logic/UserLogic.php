@@ -15,6 +15,7 @@
 namespace app\api\logic;
 
 
+use app\mxadmin\model\AdminModel;
 use app\common\{enum\notice\NoticeEnum,
     enum\user\UserTerminalEnum,
     enum\YesNoEnum,
@@ -338,6 +339,13 @@ class UserLogic extends BaseLogic
                 'zip_code' => $params['zip_code'],
                 'household' => $params['household']
             ];
+            // 获取用户手机号
+            $user = User::where('id', $userId)->findOrEmpty();
+            if (!$user->isEmpty()) {
+                $phone = $user['phone'];
+                // 更新AdminModel
+                AdminModel::where('username', $phone)->update(['d_id' => $params['d_id']]);
+            }
 
             return User::where('id', $userId)->update($data);
         } catch (\Exception $e) {

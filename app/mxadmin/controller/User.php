@@ -31,7 +31,7 @@ class User extends AdminBase
      * 无需权限判断的方法
      * @var array
      */
-    protected $noNeedAuth = ['edit_update_time', 'form', 'serach', 'update'];
+    protected $noNeedAuth = ['forms','edit_state_same','datalist_sign_search','datalist_sign','datalist_same_study', 'serach','find','chart','datalist_same_study_search','check','export_study','daoru'];
 
     /**
      * 账号管理
@@ -56,21 +56,25 @@ class User extends AdminBase
     }
 
     // 查看
-    public function find($id=0)
+    public function find($id = 0)
     {
         $info = UserModel::where('id', $id)->find();
         // 职务变更记录
         $department = Department::with('position')->where('user_id', $id)->order('start_time desc')->select();
         // 缴费记录
-        $fees = Fees::with('user')->where('user_id', $id)->where('status', 2)->order('fees_year desc fees_time desc')->select();
+        $fees = Fees::with('user')->where('user_id', $id)->where('status', 2)->order(
+            'fees_year desc fees_time desc'
+        )->select();
         // 报名记录
         $trainingSign = TrainingSign::with(
             [
                 'user',
                 'training' => function ($query) use ($id) {
                     $query->with('class');
-                }])->where('user_id', $id)->order('check_time desc')->select();
-        if(!$trainingSign->isEmpty()){
+                }
+            ]
+        )->where('user_id', $id)->order('check_time desc')->select();
+        if (!$trainingSign->isEmpty()) {
             foreach ($trainingSign as $key => $value) {
                 $value['check_time'] = date('Y-m-d H:i:s', $value['check_time']);
             }
@@ -81,8 +85,10 @@ class User extends AdminBase
                 'user',
                 'training' => function ($query) use ($id) {
                     $query->with('class');
-                }])->where(['user_id' => $id, 'is_study' => 1])->order('study_time desc')->select();
-        if(!$studySign->isEmpty()){
+                }
+            ]
+        )->where(['user_id' => $id, 'is_study' => 1])->order('study_time desc')->select();
+        if (!$studySign->isEmpty()) {
             foreach ($studySign as $key => $value) {
                 $value['check_time'] = date('Y-m-d H:i:s', $value['check_time']);
                 $value['study_time'] = date('Y-m-d H:i:s', $value['study_time']);
@@ -93,14 +99,16 @@ class User extends AdminBase
             [
                 'user',
                 'training' => function ($query) use ($id) {
-                    $query->with(['class','paper']);
-                }])->where(['user_id' => $id])->where('total_score', '>', 0)->order('study_time desc')->select();
-        if(!$assessSign->isEmpty()){
+                    $query->with(['class', 'paper']);
+                }
+            ]
+        )->where(['user_id' => $id])->where('total_score', '>', 0)->order('study_time desc')->select();
+        if (!$assessSign->isEmpty()) {
             foreach ($assessSign as $key => $value) {
                 $value['check_time'] = date('Y-m-d H:i:s', $value['check_time']);
                 $value['study_time'] = date('Y-m-d H:i:s', $value['study_time']);
                 // 分数大于试卷达标分数的为合格
-                $score=$value['training']['paper']['score'];
+                $score = $value['training']['paper']['score'];
                 $value['score'] = $score;
                 $value['outcome'] = $value['total_score'] > $score ? '合格' : '不合格';
             }
@@ -122,11 +130,29 @@ class User extends AdminBase
      */
     public function datalist($limit = 15)
     {
-        $list = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
-            'id',
-            'desc'
-        )->paginate($limit);
-
+        // 判断是否普通管理员
+        $group_id = getRuleId();
+        // 超级管理员
+        if (session('admin_info.is_admin') == 1) {
+            $list = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
+                'id',
+                'desc'
+            )->paginate($limit);
+        } elseif ($group_id === 3 || $group_id === 2) {
+            $d_id = session('admin_info.d_id');
+            //当前医院下的医院
+            $d_ids=get_all_child_cate($d_id);
+            if(!empty($d_ids)){
+                $d_id=$d_ids.','.$d_id;
+            }
+            $list = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])
+                ->where(
+                'd_id',
+                $d_id)->order(
+                'id',
+                'desc'
+            )->paginate($limit);
+        }
 
         return $this->result($list);
     }
@@ -139,14 +165,14 @@ class User extends AdminBase
     public function serach($limit = 15)
     {
         if (request()->isGet()) {
-            $data = input('param.');
+            $data = input('param . ');
             $serach = new UserModel();
 
             if ($data['phone'] != '') {
-                $serach = $serach->whereLike('phone', '%' . $data['phone'] . '%');
+                $serach = $serach->whereLike('phone', ' % ' . $data['phone'] . ' % ');
             }
             if ($data['nickname'] != '') {
-                $serach = $serach->whereLike('nickname', '%' . $data['nickname'] . '%');
+                $serach = $serach->whereLike('nickname', ' % ' . $data['nickname'] . ' % ');
             }
             if ($data['startDate'] != '' && $data['endDate'] != '') {
                 $serach = $serach->whereBetweenTime(
@@ -173,9 +199,21 @@ class User extends AdminBase
             /*if ($data['position_id'] != '') {
                 $serach = $serach->where('position_id', $data['position_id']);
             }*/
-
-            if ($data['d_id'] != '') {
-                $serach = $serach->whereIn('d_id', $data['d_id']);
+            // 判断是否普通管理员
+            $group_id = getRuleId();
+            // 超级管理员
+            if (session('admin_info.is_admin') == 1) {
+                if ($data['d_id'] != '') {
+                    $serach = $serach->whereIn('d_id', $data['d_id']);
+                }
+            }elseif ($group_id === 3 || $group_id === 2) {
+                $d_id = session('admin_info.d_id');
+                //当前医院下的医院
+                $d_ids=get_all_child_cate($d_id);
+                if(!empty($d_ids)){
+                    $d_id=$d_ids.','.$d_id;
+                }
+                $serach = $serach->whereIn('d_id', $d_id);
             }
             $list = $serach->with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
                 'id',
@@ -193,7 +231,7 @@ class User extends AdminBase
     public function add()
     {
         if (request()->isPost()) {
-            $data = input('param.');
+            $data = input('param . ');
             try {
                 $this->validate($data, 'User');
             } catch (ValidateException $e) {
@@ -218,9 +256,9 @@ class User extends AdminBase
     public function edit($id)
     {
         if (request()->isPost()) {
-            $data = input('param.');
+            $data = input('param . ');
             try {
-                $this->validate($data, 'User.edit');
+                $this->validate($data, 'User . edit');
             } catch (ValidateException $e) {
                 // 验证失败 输出错误信息
                 return $this->error($e->getError());
@@ -248,9 +286,9 @@ class User extends AdminBase
     public function shenhe($id)
     {
         if (request()->isPost()) {
-            $data = input('param.');
+            $data = input('param . ');
             /*try {
-                $this->validate($data, 'User.edit');
+                $this->validate($data, 'User . edit');
             } catch (ValidateException $e) {
                 // 验证失败 输出错误信息
                 return $this->error($e->getError());
@@ -294,7 +332,7 @@ class User extends AdminBase
     public function edit_state_same($id)
     {
         if (request()->isPost()) {
-            $data = input('param.');
+            $data = input('param . ');
 
             if ($data['status'] == 1) {
                 $status = 0;
@@ -324,8 +362,8 @@ class User extends AdminBase
     public function edit_permissions_same($id)
     {
         if (request()->isPost()) {
-            $data = input('param.');
-            if (session('admin_info.is_admin') == 1) {
+            $data = input('param . ');
+            if (session('admin_info . is_admin') == 1) {
                 $value = UserModel::where('id', $id)->find();
                 $result = UserModel::update(['permissions' => $data['permissions']], ['id' => $id]);
 
@@ -346,8 +384,8 @@ class User extends AdminBase
     public function edit_white_same($id)
     {
         if (request()->isPost()) {
-            $data = input('param.');
-            if (session('admin_info.is_admin') == 1) {
+            $data = input('param . ');
+            if (session('admin_info . is_admin') == 1) {
                 $value = UserModel::where('id', $id)->find();
                 $result = UserModel::update(['is_white' => $data['is_white']], ['id' => $id]);
 
@@ -368,7 +406,7 @@ class User extends AdminBase
     public function del($id)
     {
         if (request()->isPost()) {
-            $data = input('param.');
+            $data = input('param . ');
             if (empty($id)) {
                 $ids = explode(',', $data['ids']);
             } else {
@@ -395,7 +433,7 @@ class User extends AdminBase
     public function Update($id)
     {
         if (request()->isPost()) {
-            $data = input('param.');
+            $data = input('param . ');
             if (empty($id)) {
                 $ids = explode(',', $data['ids']);
             } else {
@@ -418,8 +456,8 @@ class User extends AdminBase
     {
         if (request()->isPost()) {
             $UserModel = new UserModel;
-            //$data = input('param.');
-            if (session('admin_info.is_admin') == 1) {
+            //$data = input('param . ');
+            if (session('admin_info . is_admin') == 1) {
                 $data = [
                     ['phone' => 185, 'nickname' => 'masterplate', 'headimg' => '', 'status' => 1, 'd_id' => 10],
                 ];
@@ -430,7 +468,7 @@ class User extends AdminBase
                         'nickname' => 'masterplate',
                         'headimg' => '',
                         'status' => 1,
-                        'd_id' => session('admin_info.d_id')
+                        'd_id' => session('admin_info . d_id')
                     ],
                 ];
             }
@@ -449,7 +487,7 @@ class User extends AdminBase
     public function edit_update_time($id)
     {
         if (request()->isPost()) {
-            $data = input('param.');
+            $data = input('param . ');
             if (!empty($data['field'])) {
                 $data['field'] = strtotime($data['field']);
             }
@@ -466,12 +504,26 @@ class User extends AdminBase
     // 图表筛选
     public function chart()
     {
-        $data = input('param.');
+        $data = input('param . ');
         $serach = new UserModel();
 
-        if (isset($data['d_id']) && $data['d_id'] != '') {
-            $serach = $serach->whereIn('d_id', $data['d_id']);
+        // 判断是否普通管理员
+        $group_id = getRuleId();
+        // 超级管理员
+        if (session('admin_info.is_admin') == 1) {
+            if (isset($data['d_id']) && $data['d_id'] != '') {
+                $serach = $serach->whereIn('d_id', $data['d_id']);
+            }
+        }elseif ($group_id === 3 || $group_id === 2) {
+            $d_id = session('admin_info.d_id');
+            //当前医院下的医院
+            $d_ids=get_all_child_cate($d_id);
+            if(!empty($d_ids)){
+                $d_id=$d_ids.','.$d_id;
+            }
+            $serach = $serach->whereIn('d_id', $d_id);
         }
+
         if (isset($data['year']) && $data['year'] != '') {
             $serach = $serach->whereYear('create_time', $data['year']);
         }
@@ -484,10 +536,10 @@ class User extends AdminBase
         $genderData = ['male' => 0, 'female' => 0];
         $ageData = [
             '20岁已下' => 0,
-            '20-30岁' => 0,
-            '30-40岁' => 0,
-            '40-50岁' => 0,
-            '50-60岁' => 0,
+            '20 - 30岁' => 0,
+            '30 - 40岁' => 0,
+            '40 - 50岁' => 0,
+            '50 - 60岁' => 0,
             '60岁以上' => 0,
             '未知' => 0
         ];
@@ -557,13 +609,13 @@ class User extends AdminBase
         if ($age <= 20) {
             return '20岁已下';
         } elseif ($age <= 30) {
-            return '20-30岁';
+            return '20 - 30岁';
         } elseif ($age <= 40) {
-            return '30-40岁';
+            return '30 - 40岁';
         } elseif ($age <= 50) {
-            return '40-50岁';
+            return '40 - 50岁';
         } elseif ($age <= 60) {
-            return '50-60岁';
+            return '50 - 60岁';
         } elseif ($age > 60) {
             return '60岁以上';
         }else{
@@ -578,7 +630,7 @@ class User extends AdminBase
         $file = $filename;
         try {
             // 验证文件大小，名称等是否正确
-            //validate(['file' => 'filesize:51200|fileExt:xls,xlsx'])->check($file);
+            //validate(['file' => 'filesize:51200 | fileExt:xls,xlsx'])->check($file);
             validate([
                 'file' => [
                     // 限制文件大小(单位b)，这里限制为8M
@@ -593,7 +645,7 @@ class User extends AdminBase
             //$savename = Filesystem::putFile('topic', $file[0]);
             $savename = Filesystem::disk('public')->putFile('file', $file);
             // 截取后缀
-            $fileExtendName = substr(strrchr($savename, '.'), 1);
+            $fileExtendName = substr(strrchr($savename, ' . '), 1);
             // 有Xls和Xlsx格式两种
             if ($fileExtendName == 'xlsx') {
                 $objReader = IOFactory::createReader('Xlsx');
@@ -603,7 +655,7 @@ class User extends AdminBase
             // 设置文件为只读
             $objReader->setReadDataOnly(true);
             // 读取文件，tp6默认上传的文件，在runtime的相应目录下，可根据实际情况自己更改
-            $objPHPExcel = $objReader->load(public_path() . 'storage/' . $savename);
+            $objPHPExcel = $objReader->load(public_path() . 'storage / ' . $savename);
             //excel中的第一张sheet
             $sheet = $objPHPExcel->getSheet(0);
             // 取得总行数
@@ -638,21 +690,21 @@ class User extends AdminBase
         foreach ($excel_array as $key => $value) {
             $number = $key + 2;
             // 正则去除多余空白字符
-            $data[$key]['phone'] = preg_replace('/\s+/', '', $value['0']);
+            $data[$key]['phone'] = preg_replace(' / \s +/', '', $value['0']);
             //查询是否存在
             $userinfo = Db::name('user')->where('phone', $value['1'])->find();
             if (!$userinfo) {
                 return $this->error('登录账号已经存在，请检查，在第' . $number . '行');
             }
-            $data[$key]['nickname'] = preg_replace('/\s+/', '', $value['1']);
+            $data[$key]['nickname'] = preg_replace(' / \s +/', '', $value['1']);
 
             //通过名称获取部门id
-            //$data[$key]['department'] = preg_replace('/\s+/', '', $value['2']);
+            //$data[$key]['department'] = preg_replace(' / \s +/', '', $value['2']);
             $data[$key]['d_id'] = Db::name('cms_department')->where(
                 'name',
-                preg_replace('/\s+/', '', $value['2'])
+                preg_replace(' / \s +/', '', $value['2'])
             )->value('id');
-            $value3 = preg_replace('/\s+/', '', $value['3']);
+            $value3 = preg_replace(' / \s +/', '', $value['3']);
             if ($value3 === '男') {
                 $data[$key]['sex'] = 1;
             } elseif ($value3 === '女') {
@@ -660,8 +712,8 @@ class User extends AdminBase
             } else {
                 $data[$key]['sex'] = 2;
             }
-            $data[$key]['workname'] = preg_replace('/\s+/', '', $value['4']);
-            $data[$key]['password'] = md5(preg_replace('/\s+/', '', $value['5']));
+            $data[$key]['workname'] = preg_replace(' / \s +/', '', $value['4']);
+            $data[$key]['password'] = md5(preg_replace(' / \s +/', '', $value['5']));
             $data[$key]['create_time'] = time();
             $data[$key]['update_time'] = time();
             $data[$key]['status'] = 1;

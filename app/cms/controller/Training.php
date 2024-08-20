@@ -21,6 +21,12 @@ use Throwable;
 class Training extends AdminBase
 {
     /**
+     * 无需权限判断的方法
+     * @var array
+     */
+    protected $noNeedAuth = ['form','study','sign','datalist_sign_search','datalist_sign','datalist_same_study', 'serach','find','chart','datalist_same_study_search','check','export_study'];
+
+    /**
      * 表单弹窗页面
      * @return \think\response\View
      * @throws \think\db\exception\DataNotFoundException
@@ -232,36 +238,37 @@ class Training extends AdminBase
      */
     public function datalist_sign($id, int $limit=15)
     {
-        /*$list = MsgReadModel::with('user')->where('m_id',cache('m_id'))->order('id desc')->paginate($limit);
-        return $this->result($list);*/
         $notificationId = $id;
-        // 查询所有用户及其阅读情况
-        /*$users = UserModel::with(['trainingSigns' => function ($query) use ($notificationId) {
-            $query->where('training_id', $notificationId)->with('training');
-        },'hospital'])
-            ->paginate($limit);
-        // 遍历用户及其报名情况
-        foreach ($users as $user) {
-            $user->sign_status = 0;
-            $user->sign_time = '';
-            $user->training_title = '';
-            $user->study_time = '';
-            foreach ($user->trainingSigns as $trainingSign) {
-                $user->sign_status = 1;
-                $user->training_title = $trainingSign->training->title;
-                $user->study_time = $trainingSign->training->study_time;
-                if ($trainingSign->create_time) {
-                    $user->sign_time=$trainingSign->create_time;
-                }
+
+        // 判断是否普通管理员
+        $group_id = getRuleId();
+        // 超级管理员
+        if (session('admin_info.is_admin') == 1) {
+            $users = UserModel::alias('u')
+                ->join('training_sign ts', 'ts.user_id = u.id')
+                ->join('training t', 't.id = ts.training_id')
+                ->join('cms_category c', 'c.id = u.d_id')
+                ->where('ts.training_id', $notificationId)
+                ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
+                ->paginate($limit);
+        }elseif ($group_id === 3 || $group_id === 2) {
+            $d_id = session('admin_info.d_id');
+            //当前医院下的医院
+            $d_ids=get_all_child_cate($d_id);
+            if(!empty($d_ids)){
+                $d_id=$d_ids.','.$d_id;
             }
-        }*/
-        $users = UserModel::alias('u')
-            ->join('training_sign ts', 'ts.user_id = u.id')
-            ->join('training t', 't.id = ts.training_id')
-            ->join('cms_category c', 'c.id = u.d_id')
-            ->where('ts.training_id', $notificationId)
-            ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
-            ->paginate($limit);
+            $users = UserModel::alias('u')
+                ->join('training_sign ts', 'ts.user_id = u.id')
+                ->join('training t', 't.id = ts.training_id')
+                ->join('cms_category c', 'c.id = u.d_id')
+                ->where('ts.training_id', $notificationId)
+                ->whereIn('u.d_id', $d_id)
+                ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
+                ->paginate($limit);
+        }
+
+
         if(!$users->isEmpty()){
             foreach ($users as $user){
                 $user->sign_status = 1;
@@ -305,13 +312,28 @@ class Training extends AdminBase
         }*/
         $data = input('param.');
         $nickname = $data['nickname'] ?? '';
-        $d_id = $data['d_id'] ?? '';
         $where = [];
         if (!empty($nickname)) {
             $where[] = ['u.nickname', 'like', '%' . $nickname . '%'];
         }
-        if (!empty($d_id)) {
-            $where[] = ['u.d_id', 'in', $d_id];
+        // 判断是否普通管理员
+        $group_id = getRuleId();
+        // 超级管理员
+        if (session('admin_info.is_admin') == 1) {
+            $d_id = $data['d_id'] ?? '';
+            if (!empty($d_id)) {
+                $where[] = ['u.d_id', 'in', $d_id];
+            }
+        }elseif ($group_id === 3 || $group_id === 2) {
+            $d_id = session('admin_info.d_id');
+            //当前医院下的医院
+            $d_ids=get_all_child_cate($d_id);
+            if(!empty($d_ids)){
+                $d_id=$d_ids.','.$d_id;
+            }
+            if (!empty($d_id)) {
+                $where[] = ['u.d_id', 'in', $d_id];
+            }
         }
         $users = UserModel::alias('u')
             ->join('training_sign ts', 'ts.user_id = u.id')
@@ -362,14 +384,36 @@ class Training extends AdminBase
                 }
             }
         }*/
-        $users = UserModel::alias('u')
-            ->join('training_sign ts', 'ts.user_id = u.id')
-            ->join('training t', 't.id = ts.training_id')
-            ->join('cms_category c', 'c.id = u.d_id')
-            ->join('paper p', 'p.id = t.paper_id')
-            ->where('ts.training_id', $notificationId)
-            ->field('u.*,p.score,ts.total_score,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,t.paper_id,t.is_exam,c.name as departmentname')
-            ->paginate($limit);
+        // 判断是否普通管理员
+        $group_id = getRuleId();
+        // 超级管理员
+        if (session('admin_info.is_admin') == 1) {
+            $users = UserModel::alias('u')
+                ->join('training_sign ts', 'ts.user_id = u.id')
+                ->join('training t', 't.id = ts.training_id')
+                ->join('cms_category c', 'c.id = u.d_id')
+                ->join('paper p', 'p.id = t.paper_id')
+                ->where('ts.training_id', $notificationId)
+                ->field('u.*,p.score,ts.total_score,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,t.paper_id,t.is_exam,c.name as departmentname')
+                ->paginate($limit);
+        }elseif ($group_id === 3 || $group_id === 2) {
+            $d_id = session('admin_info.d_id');
+            //当前医院下的医院
+            $d_ids=get_all_child_cate($d_id);
+            if(!empty($d_ids)){
+                $d_id=$d_ids.','.$d_id;
+            }
+            $users = UserModel::alias('u')
+                ->join('training_sign ts', 'ts.user_id = u.id')
+                ->join('training t', 't.id = ts.training_id')
+                ->join('cms_category c', 'c.id = u.d_id')
+                ->join('paper p', 'p.id = t.paper_id')
+                ->where('ts.training_id', $notificationId)
+                ->whereIn('u.d_id', $d_id)
+                ->field('u.*,p.score,ts.total_score,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,t.paper_id,t.is_exam,c.name as departmentname')
+                ->paginate($limit);
+        }
+
         if(!$users->isEmpty()){
             foreach ($users as $user){
                 $user->study_status = 0;
@@ -422,14 +466,30 @@ class Training extends AdminBase
         }*/
         $data = input('param.');
         $nickname = $data['nickname'] ?? '';
-        $d_id = $data['d_id'] ?? '';
         $where = [];
         if (!empty($nickname)) {
             $where[] = ['u.nickname', 'like', '%' . $nickname . '%'];
         }
-        if (!empty($d_id)) {
-            $where[] = ['u.d_id', 'in', $d_id];
+        // 判断是否普通管理员
+        $group_id = getRuleId();
+        // 超级管理员
+        if (session('admin_info.is_admin') == 1) {
+            $d_id = $data['d_id'] ?? '';
+            if (!empty($d_id)) {
+                $where[] = ['u.d_id', 'in', $d_id];
+            }
+        }elseif ($group_id === 3 || $group_id === 2) {
+            $d_id = session('admin_info.d_id');
+            //当前医院下的医院
+            $d_ids=get_all_child_cate($d_id);
+            if(!empty($d_ids)){
+                $d_id=$d_ids.','.$d_id;
+            }
+            if (!empty($d_id)) {
+                $where[] = ['u.d_id', 'in', $d_id];
+            }
         }
+
         $users = UserModel::alias('u')
             ->join('training_sign ts', 'ts.user_id = u.id')
             ->join('training t', 't.id = ts.training_id')
