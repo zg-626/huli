@@ -502,17 +502,17 @@ class User extends AdminBase
     }
 
     // 图表筛选
-    public function chart()
+    public function chart($year = 0, $d_id = 0)
     {
-        $data = input('param . ');
+        //$data = input('param . ');
         $serach = new UserModel();
 
         // 判断是否普通管理员
         $group_id = getRuleId();
         // 超级管理员
         if (session('admin_info.is_admin') == 1) {
-            if (isset($data['d_id']) && $data['d_id'] != '') {
-                $serach = $serach->whereIn('d_id', $data['d_id']);
+            if ($d_id != '' && $d_id != 0) {
+                $serach = $serach->whereIn('d_id', $d_id);
             }
         }elseif ($group_id === 3 || $group_id === 2) {
             $d_id = session('admin_info.d_id');
@@ -524,8 +524,10 @@ class User extends AdminBase
             $serach = $serach->whereIn('d_id', $d_id);
         }
 
-        if (isset($data['year']) && $data['year'] != '') {
-            $serach = $serach->whereYear('create_time', $data['year']);
+        if ($year != 0 && $year != '') {
+
+            $serach = $serach->whereRaw("FIND_IN_SET(?, vip_year)", [$year]);
+            //$serach = $serach->whereYear('create_time', $data['year']);
         }
         $list = $serach->with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
             'id',

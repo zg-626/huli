@@ -172,7 +172,7 @@
         function makeAjaxRequest(url, data, successCallback) {
             $.ajax({
                 url: '{:url("mxadmin/user/chart")}',
-                method: 'POST',            // 或者 'GET'，视接口而定
+                method: 'get',            // 或者 'GET'，视接口而定
                 data: data,          // 提交的表单数据
                 success: function (response) {
                     if (response.code !== 0) {

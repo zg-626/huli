@@ -18,6 +18,7 @@ namespace app\api\logic;
 use app\cms\model\Invoices;
 use app\common\logic\BaseLogic;
 use app\cms\model\Fees;
+use app\common\model\user\User;
 use app\common\service\FileService;
 use think\facade\Db;
 

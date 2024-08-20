@@ -5,6 +5,7 @@ declare (strict_types = 1);
 namespace app\cms\controller;
 
 use app\cms\model\CmsCategory;
+use app\common\model\user\User;
 use app\mxadmin\AdminBase;
 use app\cms\model\Fees as FeesModel;
 use app\mxadmin\model\UserModel;
@@ -260,6 +261,26 @@ class Fees extends AdminBase
 
             $result = FeesModel::whereIn('id', $ids)->update(['status' => $data['status']]);
             if ($result == true) {
+                // 更新记录
+                // 1. 查询数据库获取用户和费用数据
+                $fees = FeesModel::whereIn('id', $ids)->select()->toArray();
+                $users = User::whereIn('id', $ids)->select();
+
+                // 2. 处理费用数据
+                $feesMap = [];
+                foreach ($fees as $fee) {
+                    $feesMap[$fee['user_id']][] = $fee['fees_year'];
+                }
+
+                // 3. 遍历用户数据并更新每个用户的 vip_year
+                foreach ($users as $user) {
+                    if (isset($feesMap[$user->id])) {
+                        $newVipYear = $user->vip_year ? $user->vip_year . ',' . implode(',', $feesMap[$user->id]) : implode(',', $feesMap[$user->id]);
+                        User::where('id', $user->id)->update(['vip_year' => $newVipYear]);
+                    }
+                }
+
+
                 return $this->success('审核成功');
             } else {
                 return $this->error('审核失败');

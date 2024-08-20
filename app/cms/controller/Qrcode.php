@@ -41,15 +41,11 @@ class Qrcode extends AdminBase
         if (request()->isGet()) {
             $data = input('param.');
             $serach = new CmsQrcode();
-            if ($data['type'] != '') {
-                $serach = $serach->where('type', $data['type']);
-            }
+
             if ($data['title'] != '') {
                 $serach = $serach->whereLike('title', '%' . $data['title'] . '%');
             }
-            if ($data['status'] != '') {
-                $serach = $serach->where('status', $data['status']);
-            }
+
             $list = $serach->order('id desc')->paginate($limit);
             return $this->result($list);
         }

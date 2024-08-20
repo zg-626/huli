@@ -346,6 +346,10 @@ class UserLogic extends BaseLogic
                 // 更新AdminModel
                 AdminModel::where('username', $phone)->update(['d_id' => $params['d_id']]);
             }
+            // 计算年龄
+            if (!empty($data['birthday'])) {
+                $data['age'] = calculateAge($data['birthday']);
+            }
 
             return User::where('id', $userId)->update($data);
         } catch (\Exception $e) {

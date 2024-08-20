@@ -492,4 +492,10 @@ if (!function_exists('list_to_trees')) {
         }
         return $float;
     }
+
+    function calculateAge($birthdate) {
+        $birthDate = new DateTime($birthdate);
+        $currentDate = new DateTime();
+        return $currentDate->diff($birthDate)->y;
+    }
 }
