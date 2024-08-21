@@ -100,13 +100,11 @@
 <script type="text/html" id="userTbBar">
     <!--<a class="layui-btn layui-btn-xs" lay-event="edit">查看</a>-->
     <a class="layui-btn layui-btn-xs" lay-event="find">查看</a>
-    <a  class="layui-btn layui-btn-xs {{(d.status == 1)?'layui-btn-disabled':''}}" {{(d.status == 1)?'':'lay-event="shenhe"'}}>
+    <a  class="layui-btn layui-btn-xs {{(d.status == 1 || d.status == 0)?'layui-btn-disabled':''}}" {{(d.status == 1 || d.status == 0)?'':'lay-event="shenhe"'}}>
     {{(d.status == 1)?'审核
     </span>':'审核
     '}}
     </a>
-<!--    <a class="layui-btn layui-btn-xs " lay-event="shenhe">审核</a>-->
-<!--    <a class="layui-btn layui-btn-xs " lay-event="edits">编辑</a>-->
     {{# if (d.status == 1) { }}
     <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="editStatus">禁用</a>
     {{# } else if (d.status == 0) { }}
@@ -208,7 +206,7 @@
             <div class="layui-input-block">
                 <input type="text" name="vip_time" class="layui-input" id="test1" placeholder="yyyy-MM-dd">
             </div>
-        </div>           
+        </div>
         <div class="layui-form-item text-right">
             <button class="layui-btn" lay-filter="userUpdateSubmit" lay-submit>保存</button>
             <button class="layui-btn layui-btn-primary" type="button" mx-event="closeDialog">取消</button>
@@ -574,7 +572,7 @@
         });
         /* 复制用户 */
         function dydh() {
-            console.log(); 
+            console.log();
             layer.confirm('确定要复制用户吗？', {
                 title: '复制用户',
                 skin: 'layui-layer-admin',
@@ -727,7 +725,7 @@
                         }, 'json');
                         return false;
                     });
-                    
+
                     // 禁止弹窗出现滚动条
                     $(layero).children('.layui-layer-content').css('overflow', 'visible');
                 }
@@ -749,7 +747,6 @@
                     form.val('userShenheForm', mData);
                     // 表单提交事件
                     form.on('submit(userShenheSubmit)', function (data) {
-                        //data.field.d_id = insXmSel.getValue('valueStr');
                         var loadIndex = layer.load(2);
                         $.post(mData ? "{:url('mxadmin/user/shenhe')}" : "{:url('mxadmin/user/add')}", data.field, function (res) {
                             layer.close(loadIndex);
@@ -763,56 +760,7 @@
                         }, 'json');
                         return false;
                     });
-                    // 渲染下拉树
-                    /*var insXmSel = xmSelect.render({
-                        el: '#classifyParentSel',
-                        layVerify: 'required',
-                        layVerType: 'tips',
-                        height: '400px',
-                        initValue: mData ? [mData.d_id] : [],
-                        model: {label: {type: 'text'}},
-                        prop: {
-                            name: 'name',
-                            value: 'id'
-                        },
-                        radio: true,
-                        clickClose: true,
-                        filterable: true,
-                        filterMethod: function(val, item, index, prop){
-                            if(item.name.toLowerCase().indexOf(val.toLowerCase()) != -1){ //名称中包含的大小写都搜索出来
-                                return true;
-                            }
-                            return false; //其他的就不要了
-                        },
-                        searchTips: '请输入关键词进行搜索',
-                        tree: {
-                            show: true,
-                            indent: 15,
-                            strict: false,
-                            expandedKeys: true
-                        },
-                        data: {:json_encode($category)},
-                    });*/
-                    if (mData) {
-                        // 上传图片小图显示
-                        var imageValue = $('#imageMore').prev('input').val();
-                        if (imageValue) {
-                            $('#imageMore').after(' <a href="'+imageValue+'" target="_blank"><img src="'+imageValue+'" height="38"></a>');
-                        }
-                        var imageValues = $('#imageMores').prev('input').val();
-                        if (imageValues) {
-                            $('#imageMores').after(' <a href="'+imageValues+'" target="_blank"><img src="'+imageValues+'" height="38"></a>');
-                        }
-                    }
-                    // 编辑文本框状态
-                    if (mData) {
-                        $(layero).find('[name="phone"]').attr('disabled','disabled').addClass("layui-bg-gray");
-                        $(layero).find('[name="new    "]').removeAttr('lay-verType lay-verify required');
-                        $(layero).find('[name="newpassword"]').attr('placeholder','若不编辑密码，请留空');
-                        $(layero).find('[name="repassword"]').attr('lay-verify','equalTo');
-                        $(layero).find('[name="repassword"]').removeAttr('required');
-                        if (mData.is_admin === 1) {$(layero).find('#roleName').remove();}
-                    }
+
                     // 禁止弹窗出现滚动条
                     $(layero).children('.layui-layer-content').css('overflow', 'visible');
                 }

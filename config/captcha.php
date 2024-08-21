@@ -7,7 +7,7 @@
 
 return [
     //验证码位数
-    'length'   => 5,
+    'length'   => 4,
     // 验证码字符集合
     'codeSet'  => '23456789ABCDEFGHJKLMNPQRSTUVWXYZ',
     // 验证码过期时间

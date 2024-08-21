@@ -286,7 +286,7 @@ class User extends AdminBase
     public function shenhe($id)
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->post();
             /*try {
                 $this->validate($data, 'User . edit');
             } catch (ValidateException $e) {
@@ -332,7 +332,7 @@ class User extends AdminBase
     public function edit_state_same($id)
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->post();
 
             if ($data['status'] == 1) {
                 $status = 0;
