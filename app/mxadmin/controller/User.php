@@ -165,34 +165,35 @@ class User extends AdminBase
     public function serach($limit = 15)
     {
         if (request()->isGet()) {
-            $data = input('param . ');
+            $data = $this->request->param();
+
             $serach = new UserModel();
 
-            if ($data['phone'] != '') {
+            if (isset($data['phone']) && $data['phone'] != '') {
                 $serach = $serach->whereLike('phone', ' % ' . $data['phone'] . ' % ');
             }
-            if ($data['nickname'] != '') {
+            if (isset($data['nickname']) && $data['nickname'] != '') {
                 $serach = $serach->whereLike('nickname', ' % ' . $data['nickname'] . ' % ');
             }
-            if ($data['startDate'] != '' && $data['endDate'] != '') {
+            /*if ($data['startDate'] != '' && $data['endDate'] != '') {
                 $serach = $serach->whereBetweenTime(
                     'create_time',
                     strtotime($data['startDate']),
                     strtotime($data['endDate']) + 86399
                 );
-            }
-            if ($data['status'] != '') {
+            }*/
+            if (isset($data['status']) && $data['status'] != '') {
                 $serach = $serach->where('status', $data['status']);
             }
-            if ($data['sex'] != '') {
+            if (isset($data['sex']) && $data['sex'] != '') {
                 $serach = $serach->where('sex', $data['sex']);
             }
 
-            if ($data['educational_id'] != '') {
+            if (isset($data['educational_id']) && $data['educational_id'] != '') {
                 $serach = $serach->whereIn('educational_id', $data['educational_id']);
             }
 
-            if ($data['professional_id'] != '') {
+            if (isset($data['professional_id']) && $data['professional_id'] != '') {
                 $serach = $serach->whereIn('professional_id', $data['professional_id']);
             }
 
@@ -203,7 +204,7 @@ class User extends AdminBase
             $group_id = getRuleId();
             // 超级管理员
             if (session('admin_info.is_admin') == 1) {
-                if ($data['d_id'] != '') {
+                if (isset($data['d_id']) && $data['d_id'] != '') {
                     $serach = $serach->whereIn('d_id', $data['d_id']);
                 }
             }elseif ($group_id === 3 || $group_id === 2) {
@@ -231,7 +232,7 @@ class User extends AdminBase
     public function add()
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->param();
             try {
                 $this->validate($data, 'User');
             } catch (ValidateException $e) {
@@ -256,7 +257,7 @@ class User extends AdminBase
     public function edit($id)
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->param();
             try {
                 $this->validate($data, 'User . edit');
             } catch (ValidateException $e) {
@@ -362,7 +363,7 @@ class User extends AdminBase
     public function edit_permissions_same($id)
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->param();
             if (session('admin_info . is_admin') == 1) {
                 $value = UserModel::where('id', $id)->find();
                 $result = UserModel::update(['permissions' => $data['permissions']], ['id' => $id]);
@@ -384,7 +385,7 @@ class User extends AdminBase
     public function edit_white_same($id)
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->param();
             if (session('admin_info . is_admin') == 1) {
                 $value = UserModel::where('id', $id)->find();
                 $result = UserModel::update(['is_white' => $data['is_white']], ['id' => $id]);
@@ -406,7 +407,7 @@ class User extends AdminBase
     public function del($id)
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->param();
             if (empty($id)) {
                 $ids = explode(',', $data['ids']);
             } else {
@@ -433,7 +434,7 @@ class User extends AdminBase
     public function Update($id)
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->param();
             if (empty($id)) {
                 $ids = explode(',', $data['ids']);
             } else {
@@ -456,7 +457,7 @@ class User extends AdminBase
     {
         if (request()->isPost()) {
             $UserModel = new UserModel;
-            //$data = input('param . ');
+            //$data = $this->request->param();
             if (session('admin_info . is_admin') == 1) {
                 $data = [
                     ['phone' => 185, 'nickname' => 'masterplate', 'headimg' => '', 'status' => 1, 'd_id' => 10],
@@ -487,7 +488,7 @@ class User extends AdminBase
     public function edit_update_time($id)
     {
         if (request()->isPost()) {
-            $data = input('param . ');
+            $data = $this->request->param();
             if (!empty($data['field'])) {
                 $data['field'] = strtotime($data['field']);
             }
@@ -504,7 +505,7 @@ class User extends AdminBase
     // 图表筛选
     public function chart($year = 0, $d_id = 0)
     {
-        //$data = input('param . ');
+        //$data = $this->request->param();
         $serach = new UserModel();
 
         // 判断是否普通管理员

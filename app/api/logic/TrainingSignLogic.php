@@ -15,6 +15,7 @@
 namespace app\api\logic;
 
 
+use app\cms\model\AnswerLog;
 use app\cms\model\Fees;
 use app\cms\model\Paper;
 use app\cms\model\Question;
@@ -261,6 +262,21 @@ class TrainingSignLogic extends BaseLogic
                 }
                 // 将答题记录添加到记录数组中
                 $answerRecords[] = $record;
+            }
+
+            // 将答题记录添加数据库
+            foreach ($answerRecords as $value) {
+                $record = [
+                    'user_id' => $params['user_id'],
+                    'training_id' => $params['training_id'],
+                    'paper_id' => $params['paper_id'],
+                    'question_id' => $value['question_id'],
+                    'user_answer' => $value['user_answer'],
+                    'is_correct' => $value['is_correct'],
+                    'score_obtained' => $value['score_obtained'],
+                    'correct_answer' => $value['correct_answer'],
+                ];
+                AnswerLog::create($record);
             }
 
             // 保存答题分数到数据

@@ -6,6 +6,7 @@ namespace app\mxadmin\model;
 
 use app\cms\model\MsgRead;
 use app\cms\model\TrainingSign;
+use app\common\service\FileService;
 use think\Model;
 use app\cms\model\CmsCategory;
 
@@ -119,6 +120,12 @@ class UserModel extends Model
     public function trainingSigns()
     {
         return $this->hasMany(TrainingSign::class, 'user_id', 'id');
+    }
+
+    // 处理图片
+    public function getHeadimgAttr($value)
+    {
+        return FileService::getFileUrl($value);
     }
 
 
