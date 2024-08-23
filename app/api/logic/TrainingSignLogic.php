@@ -236,7 +236,7 @@ class TrainingSignLogic extends BaseLogic
                 $record = [
                     'question_id' => $answer['question_id'],
                     'user_answer' => $answer['user_answer'],
-                    'is_correct' => false,
+                    'is_correct' => 0,
                     'score_obtained' => 0,
                     'correct_answer' => $question,
                     'question_score' => $question['score'],
@@ -274,7 +274,7 @@ class TrainingSignLogic extends BaseLogic
                     'user_answer' => $value['user_answer'],
                     'is_correct' => $value['is_correct'],
                     'score_obtained' => $value['score_obtained'],
-                    'correct_answer' => $value['correct_answer'],
+                    'correct_answer' => $value['correct_answer']['content'],
                 ];
                 AnswerLog::create($record);
             }
