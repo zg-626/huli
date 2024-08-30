@@ -170,7 +170,7 @@ class User extends AdminBase
             $serach = new UserModel();
 
             if (isset($data['phone']) && $data['phone'] != '') {
-                $serach = $serach->whereLike('phone', ' % ' . $data['phone'] . ' % ');
+                $serach = $serach->where('phone', $data['phone']);
             }
             if (isset($data['nickname']) && $data['nickname'] != '') {
                 $serach = $serach->whereLike('nickname', ' % ' . $data['nickname'] . ' % ');

@@ -378,7 +378,7 @@
 
         // 表单提交事件
         form.on('submit(mxSubmit)', function (data) {
-            //data.field.category_id = insXmSel.getValue('valueStr');
+            data.field.paper_id = insRoleZhubo.getValue('valueStr');
             layer.load(2);
             var url = mData ? "{:url('cms/training/edit')}" : "{:url('cms/training/add')}";
             $.post(url, data.field, function (res) {

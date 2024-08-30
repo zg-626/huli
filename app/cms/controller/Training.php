@@ -142,12 +142,12 @@ class Training extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            try {
+            /*try {
                 $this->validate($data, 'Article');
             } catch (ValidateException $e) {
                 // 验证失败 输出错误信息
                 return $this->error($e->getError());
-            }
+            }*/
             $data['admin_id'] = getAdminId();
 
             $result = TrainingModel::create($data);
@@ -166,12 +166,12 @@ class Training extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            try {
+            /*try {
                 $this->validate($data, 'Article');
             } catch (ValidateException $e) {
                 // 验证失败 输出错误信息
                 return $this->error($e->getError());
-            }
+            }*/
 
             $result = TrainingModel::update($data, ['id' => $id]);
             if ($result == true) {
