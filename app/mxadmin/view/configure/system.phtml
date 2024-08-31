@@ -11,6 +11,14 @@
             </div>
         </div>
         <div class="layui-form-item">
+            <label class="layui-form-label">后台登录背景</label>
+            <div class="layui-input-block">
+                <input name="background" value="{$sysconf.background|default=''}" class="layui-input" autocomplete="off" placeholder="请选择图片"/>
+                <button type="button" class="layui-btn layui-btn-normal imageMore"><i class="layui-icon">&#xe681;</i>上传图片</button>
+                {notempty name="sysconf.background"}<a href="{$sysconf.background}" target="_blank"><img src="{$sysconf.background}" height="38"></a>{/notempty}
+            </div>
+        </div>
+        <div class="layui-form-item">
             <label class="layui-form-label">网站名称</label>
             <div class="layui-input-block">
                 <input name="webname" placeholder="请输入网站名称" value="{$sysconf.webname|default=''}" class="layui-input" autocomplete="off"/>

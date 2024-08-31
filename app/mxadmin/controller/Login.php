@@ -72,9 +72,10 @@ class Login extends AdminBase
             }
         } else {
             $this->isLogin() && $this->redirect(url('@mxadmin'));
+            $sysconf = Config::getConfigData('system');
             return view('', [
-                'sysconf' => Config::getConfigData('system'),
-                'background' => 'https://open.saintic.com/api/bingPic/?picSize=2'
+                'sysconf' => $sysconf,
+                'background' => $sysconf['background'],
             ]);
         }
     }

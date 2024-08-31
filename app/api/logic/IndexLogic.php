@@ -230,6 +230,8 @@ class IndexLogic extends BaseLogic
         if($sysconf && $sysconf['logo'] !== ''){
             $sysconf['logo']=FileService::getFileUrl($sysconf['logo']);
         }
+        unset($sysconf['background']);
+        unset($sysconf['webname']);
         return $sysconf;
     }
 
