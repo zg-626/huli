@@ -35,7 +35,8 @@
         "topthink/think-filesystem": "^2.0",
       "ext-ctype": "*",
       "ext-json": "*",
-        "phpoffice/phpspreadsheet": "^2.1"
+        "phpoffice/phpspreadsheet": "^2.1",
+        "tencentcloud/tencentcloud-sdk-php": "^3.0"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",
