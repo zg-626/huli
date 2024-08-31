@@ -40,7 +40,7 @@ class Admin extends AdminBase
     public function datalist($limit=15)
     {
         $list = AdminModel::with(['roles','user'=> function ($query) {
-            $query->with(['hospital','educationalType','positionType','professionalType']);
+            $query->with(['educationalType','positionType','professionalType']);
         }])->order('id', 'desc')->paginate($limit);
         if(!$list->isEmpty()){
             $user=[];
@@ -48,7 +48,8 @@ class Admin extends AdminBase
                 if (empty($v->user)) {
                     $v->user = $user;
                 }
-                $v->departmentname= $v->user->departmentname ?? '';
+                $v->d_id= $v->user->d_id ?? 0;
+                $v->departmentname= getDidName($v->d_id) ?? '';
                 $v->educational_name= $v->user->educational_name ?? '';
                 $v->position_name= $v->user->position_name ?? '';
                 $v->professional_name= $v->user->professional_name ?? '';
@@ -69,7 +70,7 @@ class Admin extends AdminBase
         $uids = AuthGroupAccess::where('group_id', $id)->column('uid');
 
         $list = AdminModel::with(['roles','user'=> function ($query) {
-            $query->with(['hospital','educationalType','positionType','professionalType']);
+            $query->with(['educationalType','positionType','professionalType']);
         }])->whereIn('id', $uids)->order('id', 'desc')->paginate($limit);
         if(!$list->isEmpty()){
             $user=[];
@@ -77,7 +78,8 @@ class Admin extends AdminBase
                 if (empty($v->user)) {
                     $v->user = $user;
                 }
-                $v->departmentname= $v->user->departmentname ?? '';
+                $v->d_id= $v->user->d_id ?? 0;
+                $v->departmentname= getDidName($v->d_id) ?? '';
                 $v->educational_name= $v->user->educational_name ?? '';
                 $v->position_name= $v->user->position_name ?? '';
                 $v->professional_name= $v->user->professional_name ?? '';
@@ -137,7 +139,7 @@ class Admin extends AdminBase
                     $query->whereIn('professional_id',$professional_id);
                 }
             })->with(['roles','user'=> function ($query) {
-                $query->with(['hospital','educationalType','positionType','professionalType']);
+                $query->with(['educationalType','positionType','professionalType']);
             }])->where($where)->order('id', 'desc')->paginate($limit);
             if(!$list->isEmpty()){
                 $user=[];
@@ -145,7 +147,8 @@ class Admin extends AdminBase
                     if (empty($v->user)) {
                         $v->user = $user;
                     }
-                    $v->departmentname= $v->user->departmentname ?? '';
+                    $v->d_id= $v->user->d_id ?? 0;
+                    $v->departmentname= getDidName($v->d_id) ?? '';
                     $v->educational_name= $v->user->educational_name ?? '';
                     $v->position_name= $v->user->position_name ?? '';
                     $v->professional_name= $v->user->professional_name ?? '';
@@ -181,7 +184,7 @@ class Admin extends AdminBase
                     $query->where('nickname', 'like', '%' . $nickname . '%');
                 }
             })->with(['roles','user'=> function ($query) {
-                $query->with(['hospital','educationalType','positionType','professionalType']);
+                $query->with(['educationalType','positionType','professionalType']);
             }])->whereIn('id', $uids)->where($where)->order('id', 'desc')->paginate($limit);
             if(!$list->isEmpty()){
                 $user=[];
@@ -189,7 +192,8 @@ class Admin extends AdminBase
                     if (empty($v->user)) {
                         $v->user = $user;
                     }
-                    $v->departmentname= $v->user->departmentname ?? '';
+                    $v->d_id= $v->user->d_id ?? 0;
+                    $v->departmentname= getDidName($v->d_id) ?? '';
                     $v->educational_name= $v->user->educational_name ?? '';
                     $v->position_name= $v->user->position_name ?? '';
                     $v->professional_name= $v->user->professional_name ?? '';

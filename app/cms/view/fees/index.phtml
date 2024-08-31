@@ -254,7 +254,7 @@
         // 格式化数据函数
         function formatData(data) {
             return data.map(item => {
-                if (!item.pid) {
+                if (!item.pid && item.children) {
                     // 禁用一级数据
                     item.disabled = true;
                 }

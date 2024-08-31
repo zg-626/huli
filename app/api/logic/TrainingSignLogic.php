@@ -51,14 +51,18 @@ class TrainingSignLogic extends BaseLogic
             // 查询学习班
             $training = Training::where([
                 'id' => $params['training_id']
-            ])->find();
+            ])->withCount(['signups'])->find();
 
             if ($training->isEmpty()) {
                 throw new \Exception('该学习班不存在');
             }
-            // 判断是否可以报名
-            if (strtotime($training->study_time) > time()) {
+            // 判断时间是否可以报名
+            /*if (strtotime($training->study_time) > time()) {
                 throw new \Exception('该学习班未开始');
+            }*/
+            // 判断报名人数是否已满
+            if ($training->signups_count >= $training->number) {
+                throw new \Exception('该学习班人数已满');
             }
             // 判断截至时间
             if (strtotime($training->deadline_time) < time()) {
@@ -83,6 +87,9 @@ class TrainingSignLogic extends BaseLogic
                     'fees_type' => $category->name,
                 ]);
             }
+            // 报名人数+1
+            //$training->enroll_count += 1;
+            //$training->save();
 
             Db::commit();
             return true;
@@ -112,6 +119,16 @@ class TrainingSignLogic extends BaseLogic
 
             if ($training->isEmpty()) {
                 throw new \Exception('该学习班不存在');
+            }
+
+            // 判断时间是否可以签到
+            if (strtotime($training->study_time) > time()) {
+                throw new \Exception('该学习班签到未开始');
+            }
+
+            // 判断截至时间
+            if (strtotime($training->study_time) < time()) {
+                throw new \Exception('该学习班签到已结束');
             }
 
             if ($training->is_exam === 0) {

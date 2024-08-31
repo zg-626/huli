@@ -134,7 +134,7 @@ class User extends AdminBase
         $group_id = getRuleId();
         // 超级管理员
         if (session('admin_info.is_admin') == 1) {
-            $list = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
+            $list = UserModel::with(['educationalType', 'positionType', 'professionalType'])->order(
                 'id',
                 'desc'
             )->paginate($limit);
@@ -145,13 +145,19 @@ class User extends AdminBase
             if(!empty($d_ids)){
                 $d_id=$d_ids.','.$d_id;
             }
-            $list = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])
+            $list = UserModel::with(['educationalType', 'positionType', 'professionalType'])
                 ->where(
                 'd_id',
                 $d_id)->order(
                 'id',
                 'desc'
             )->paginate($limit);
+        }
+        if(!$list->isEmpty()){
+            foreach ($list as $key => $value) {
+                $value['departmentname'] = getDidName($value['d_id']);
+            }
+
         }
 
         return $this->result($list);
@@ -216,11 +222,16 @@ class User extends AdminBase
                 }
                 $serach = $serach->whereIn('d_id', $d_id);
             }
-            $list = $serach->with(['hospital', 'educationalType', 'positionType', 'professionalType'])->order(
+            $list = $serach->with(['educationalType', 'positionType', 'professionalType'])->order(
                 'id',
                 'desc'
             )->paginate($limit);
+            if(!$list->isEmpty()){
+                foreach ($list as $key => $value) {
+                    $value['departmentname'] = getDidName($value['d_id']);
+                }
 
+            }
 
             return $this->result($list);
         }

@@ -498,4 +498,31 @@ if (!function_exists('list_to_trees')) {
         $currentDate = new DateTime();
         return $currentDate->diff($birthDate)->y;
     }
+
+    function getDidName($value)
+    {
+        // 默认返回值
+        $arr = '';
+
+        // 尝试获取子分类信息
+        $info = CmsCategory::find($value);
+        if (!$info) {
+            // 分类信息不存在，直接返回默认值
+            return $arr;
+        }
+
+        // 生成分类名称
+        if ($info->pid == 0) {
+            $arr = $info->name;
+            return $arr;
+        }
+
+        // 尝试获取父分类信息
+        $father_info = CmsCategory::find($info->pid);
+        if ($father_info) {
+            $arr = $father_info['name'] . ' - ' . $info['name'];
+        }
+
+        return $arr;
+    }
 }

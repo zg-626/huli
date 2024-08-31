@@ -40,7 +40,7 @@ class Fees extends AdminBase
         // 超级管理员
         if (session('admin_info.is_admin') == 1) {
             $list = FeesModel::with(['user'=> function ($query) {
-                $query->with(['hospital','educationalType','positionType','professionalType']);
+                $query->with(['educationalType','positionType','professionalType']);
             }])->order('id desc')->paginate($limit);
         }elseif ($group_id === 3 || $group_id === 2) {
             $d_id = session('admin_info.d_id');
@@ -52,7 +52,7 @@ class Fees extends AdminBase
             // 先查询所有本医院的用户
             $uids = UserModel::where('d_id', 'in', $d_id)->column('id');
             $list = FeesModel::with(['user'=> function ($query) {
-                $query->with(['hospital','educationalType','positionType','professionalType']);
+                $query->with(['educationalType','positionType','professionalType']);
             }])->whereIn('user_id', $uids)->order('id desc')->paginate($limit);
         }
 
@@ -62,7 +62,8 @@ class Fees extends AdminBase
                 if (empty($v->user)) {
                     $v->user = $user;
                 }
-                $v->departmentname= $v->user->departmentname ?? '';
+                $v->d_id= $v->user->d_id ?? 0;
+                $v->departmentname= getDidName($v->d_id) ?? '';
                 $v->phone= $v->user->phone ?? '';
                 $v->educational_name= $v->user->educational_name ?? '';
                 $v->position_name= $v->user->position_name ?? '';
@@ -114,7 +115,7 @@ class Fees extends AdminBase
                         $query->whereIn('d_id',$d_id);
                     }
                 })->with(['user'=> function ($query) {
-                    $query->with(['hospital','educationalType','positionType','professionalType']);
+                    $query->with(['educationalType','positionType','professionalType']);
                 }])->where($where)
                     ->order('id desc')
                     ->paginate($limit);
@@ -134,7 +135,7 @@ class Fees extends AdminBase
                         $query->whereIn('d_id',$d_id);
                     }
                 })->with(['user'=> function ($query) {
-                    $query->with(['hospital','educationalType','positionType','professionalType']);
+                    $query->with(['educationalType','positionType','professionalType']);
                 }])->where($where)
                     ->order('id desc')
                     ->paginate($limit);
@@ -146,7 +147,8 @@ class Fees extends AdminBase
                     if (empty($v->user)) {
                         $v->user = $user;
                     }
-                    $v->departmentname= $v->user->departmentname ?? '';
+                    $v->d_id= $v->user->d_id ?? 0;
+                    $v->departmentname= getDidName($v->d_id) ?? '';
                     $v->phone= $v->user->phone ?? '';
                     $v->educational_name= $v->user->educational_name ?? '';
                     $v->position_name= $v->user->position_name ?? '';

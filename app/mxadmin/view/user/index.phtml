@@ -290,7 +290,7 @@
             cols: [[
                 //{type: 'checkbox'},
                 {field: 'id', title: '序号', align: 'center', sort: true, width: 90},
-                {field: 'departmentname', title: '医院名称', align: 'center'},
+                {field: 'departmentname', title: '医院名称', align: 'center', width: 200},
                 {field: 'nickname', title: '姓名', align: 'center'},
                 {field: 'sex', title: '性别', align: 'center', templet: function(d){
                         return d.sex === 0 ? '女' : '男';}
@@ -423,7 +423,7 @@
             // 格式化数据函数
             function formatData(data) {
                 return data.map(item => {
-                    if (!item.pid) {
+                    if (!item.pid && item.children) {
                         // 禁用一级数据
                         item.disabled = true;
                     }

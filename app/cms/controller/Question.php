@@ -68,16 +68,32 @@ class Question extends AdminBase
         if (request()->isGet()) {
             $data = input('param.');
             $serach = new \app\cms\model\Question();
-            if ($data['cid'] != '') {
+            /*if ($data['cid'] != '') {
                 $serach = $serach->where('category_id', $data['cid']);
+            }*/
+            if ($data['content'] != '') {
+                $serach = $serach->whereLike('content', '%' . $data['content'] . '%');
             }
-            if ($data['title'] != '') {
-                $serach = $serach->whereLike('title', '%' . $data['title'] . '%');
-            }
-            if ($data['status'] != '') {
+            /*if ($data['status'] != '') {
                 $serach = $serach->where('status', $data['status']);
-            }
+            }*/
             $list = $serach->where('paper_id', $id)->order('weight asc,id desc')->append(['typeName'])->paginate($limit);
+            if (!$list->isEmpty()) {
+                foreach ($list as $key => $value) {
+                    // 解码 options 字段为关联数组
+                    $options = json_decode($value['options'], true);
+
+                    // 将 options 中的每个选项作为新字段保存
+                    foreach ($options as $optionKey => $optionValue) {
+                        $list[$key][$optionKey] = $optionValue;
+                    }
+                    $list[$key]['options'] = $options;
+                    // 如果 type 等于 2，处理 select 字段（假设 select 是以逗号分隔的字符串）
+                    if ($value['type'] == 2) {
+                        $list[$key]['select'] = explode(',', $value['select']);
+                    }
+                }
+            }
             return $this->result($list);
         }
     }

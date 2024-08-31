@@ -6,6 +6,7 @@ namespace app\mxadmin\controller;
 
 use app\cms\model\CmsCategory;
 use app\mxadmin\AdminBase;
+use app\mxadmin\model\Config;
 use app\mxadmin\model\Dict;
 use app\mxadmin\model\DictData;
 use think\facade\App;
@@ -36,6 +37,7 @@ class Index extends AdminBase
             return view('index', [
                 'sidenav'   =>  list_to_tree(getMenuData()),
                 'admininfo'  =>  session('admin_info'),
+                'sysconf' => Config::getConfigData('system'),
             ]);
         }
     }
@@ -61,7 +63,7 @@ class Index extends AdminBase
         $qualificationsOpen = Dict::where('id', 2)->value('stats');
         $ageOpen = Dict::where('id', 13)->value('stats');
         $department = list_to_trees(CmsCategory::getCategoryData(), true);
-        //print_r($professional);exit();
+
         return view('', [
             'version' => App::version(),
             'category' => $department,

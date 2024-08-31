@@ -6,6 +6,7 @@ namespace app\mxadmin\controller;
 
 use app\mxadmin\AdminBase;
 use app\mxadmin\model\AdminModel;
+use app\mxadmin\model\Config;
 use think\exception\ValidateException;
 use think\captcha\facade\Captcha;
 
@@ -72,6 +73,7 @@ class Login extends AdminBase
         } else {
             $this->isLogin() && $this->redirect(url('@mxadmin'));
             return view('', [
+                'sysconf' => Config::getConfigData('system'),
                 'background' => 'https://open.saintic.com/api/bingPic/?picSize=2'
             ]);
         }

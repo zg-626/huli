@@ -35,10 +35,11 @@ class MsgRead extends AdminBase
         // 查询所有用户及其阅读情况
         $users = UserModel::with(['msgReads' => function ($query) use ($notificationId) {
             $query->where('m_id', $notificationId);
-        },'hospital'])
+        }])
             ->paginate($limit);
         // 遍历用户及其阅读情况
         foreach ($users as $user) {
+            $user->departmentname= getDidName($user->d_id) ?? '';
             $user->read_status = 0;
             $user->read_time = null;
             foreach ($user->msgReads as $msgRead) {
@@ -84,10 +85,11 @@ class MsgRead extends AdminBase
             // 查询所有用户及其阅读情况
             $users = UserModel::with(['msgReads' => function ($query) use ($notificationId) {
                 $query->where('m_id', $notificationId);
-            },'hospital'])->where($where)
+            }])->where($where)
                 ->paginate($limit);
             // 遍历用户及其阅读情况
             foreach ($users as $user) {
+                $user->departmentname= getDidName($user->d_id) ?? '';
                 $user->read_status = 0;
                 $user->read_time = null;
                 foreach ($user->msgReads as $msgRead) {

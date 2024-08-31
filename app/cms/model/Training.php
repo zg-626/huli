@@ -100,7 +100,7 @@ class Training extends Model
 
     public function getdeadlineTimeAttr($value)
     {
-        return date('Y-m-d', $value);
+        return date('Y-m-d H:i:s', $value);
     }
 
     public function setdeadlineTimeAttr($value)

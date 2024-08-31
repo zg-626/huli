@@ -10,9 +10,9 @@
             <form class="layui-form toolbar">
                 <div class="layui-form-item">
                     <div class="layui-inline">
-                        <label class="layui-form-label">姓名</label>
+                        <label class="layui-form-label">试题内容</label>
                         <div class="layui-input-inline">
-                            <input name="nickname" class="layui-input" autocomplete="off" placeholder="输入标题关键词"/>
+                            <input name="content" class="layui-input" autocomplete="off" placeholder="输入试题内容关键词"/>
                         </div>
                     </div>
                     <!--<div class="layui-inline">
@@ -198,7 +198,7 @@
             cols: [[
                 //{type: 'checkbox'},
                 {field: 'id', title: '序号', align: 'center'},
-                //{field: 'title', title: '试题标题', align: 'center'},
+                {field: 'content', title: '试题标题', align: 'center'},
                 {field: 'typeName', title: '试题类型', align: 'center'},
                 {field: 'score', title: '分值', align: 'center', sort: true},
                 {field: 'create_time', title: '创建时间', align: 'center', sort: true},
@@ -267,8 +267,8 @@
                 data.field.endDate = null;
             }
             data.field.createDateSel = undefined;
-            data.field.question_id = question_id;
-            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/training/datalist_same_study_search')}?id="+question_id});
+            data.field.paper_id = paper_id;
+            insTb.reload({where: data.field, page: {curr: 1}, url:"{:url('cms/question/serach')}?id="+paper_id});
 
             // 显示按钮
             var button = document.getElementById('no');

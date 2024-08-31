@@ -252,9 +252,9 @@ class Training extends AdminBase
             $users = UserModel::alias('u')
                 ->join('training_sign ts', 'ts.user_id = u.id')
                 ->join('training t', 't.id = ts.training_id')
-                ->join('cms_category c', 'c.id = u.d_id')
+                //->join('cms_category c', 'c.id = u.d_id')
                 ->where('ts.training_id', $notificationId)
-                ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
+                ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time')
                 ->paginate($limit);
         }elseif ($group_id === 3 || $group_id === 2) {
             $d_id = session('admin_info.d_id');
@@ -266,16 +266,17 @@ class Training extends AdminBase
             $users = UserModel::alias('u')
                 ->join('training_sign ts', 'ts.user_id = u.id')
                 ->join('training t', 't.id = ts.training_id')
-                ->join('cms_category c', 'c.id = u.d_id')
+                //->join('cms_category c', 'c.id = u.d_id')
                 ->where('ts.training_id', $notificationId)
                 ->whereIn('u.d_id', $d_id)
-                ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
+                ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time')
                 ->paginate($limit);
         }
 
 
         if(!$users->isEmpty()){
             foreach ($users as $user){
+                $user->departmentname= getDidName($user->d_id) ?? '';
                 $user->sign_status = 1;
                 $user->sign_time=date('Y-m-d',$user->sign_time);
                 $user->study_time=date('Y-m-d',$user->study_time);
@@ -343,13 +344,14 @@ class Training extends AdminBase
         $users = UserModel::alias('u')
             ->join('training_sign ts', 'ts.user_id = u.id')
             ->join('training t', 't.id = ts.training_id')
-            ->join('cms_category c', 'c.id = u.d_id')
+            //->join('cms_category c', 'c.id = u.d_id')
             ->where('ts.training_id', $notificationId)
             ->where($where)
-            ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
+            ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time')
             ->paginate($limit);
         if(!$users->isEmpty()){
             foreach ($users as $user){
+                $user->departmentname= getDidName($user->d_id) ?? '';
                 $user->sign_status = 1;
                 $user->sign_time=date('Y-m-d',$user->sign_time);
                 $user->study_time=date('Y-m-d',$user->study_time);
@@ -396,10 +398,10 @@ class Training extends AdminBase
             $users = UserModel::alias('u')
                 ->join('training_sign ts', 'ts.user_id = u.id')
                 ->join('training t', 't.id = ts.training_id')
-                ->join('cms_category c', 'c.id = u.d_id')
+                //->join('cms_category c', 'c.id = u.d_id')
                 ->leftjoin('paper p', 'p.id = t.paper_id')
                 ->where('ts.training_id', $notificationId)
-                ->field('u.*,p.score,ts.total_score,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,t.paper_id,t.is_exam,c.name as departmentname')
+                ->field('u.*,p.score,ts.total_score,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,t.paper_id,t.is_exam')
                 ->paginate($limit);
         }elseif ($group_id === 3 || $group_id === 2) {
             $d_id = session('admin_info.d_id');
@@ -411,16 +413,17 @@ class Training extends AdminBase
             $users = UserModel::alias('u')
                 ->join('training_sign ts', 'ts.user_id = u.id')
                 ->join('training t', 't.id = ts.training_id')
-                ->join('cms_category c', 'c.id = u.d_id')
+                //->join('cms_category c', 'c.id = u.d_id')
                 ->join('paper p', 'p.id = t.paper_id')
                 ->where('ts.training_id', $notificationId)
                 ->whereIn('u.d_id', $d_id)
-                ->field('u.*,p.score,ts.total_score,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,t.paper_id,t.is_exam,c.name as departmentname')
+                ->field('u.*,p.score,ts.total_score,ts.create_time as sign_time,ts.check_time,ts.study_time,ts.is_study,ts.is_check,t.title as training_title,t.study_time,t.paper_id,t.is_exam')
                 ->paginate($limit);
         }
 
         if(!$users->isEmpty()){
             foreach ($users as $user){
+                $user->departmentname= getDidName($user->d_id) ?? '';
                 $user->study_status = 0;
                 $user->sign_time=date('Y-m-d h:m',$user->sign_time);
                 $user->study_time=date('Y-m-d h:m',$user->study_time);
@@ -499,13 +502,14 @@ class Training extends AdminBase
         $users = UserModel::alias('u')
             ->join('training_sign ts', 'ts.user_id = u.id')
             ->join('training t', 't.id = ts.training_id')
-            ->join('cms_category c', 'c.id = u.d_id')
+            //->join('cms_category c', 'c.id = u.d_id')
             ->where('ts.training_id', $notificationId)
             ->where($where)
-            ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time,c.name as departmentname')
+            ->field('u.*,ts.create_time as sign_time,t.title as training_title,t.study_time')
             ->paginate($limit);
         if(!$users->isEmpty()){
             foreach ($users as $user){
+                $user->departmentname= getDidName($user->d_id) ?? '';
                 $user->study_status = 1;
                 $user->sign_time=date('Y-m-d',$user->sign_time);
                 $user->study_time=date('Y-m-d',$user->study_time);

@@ -27,6 +27,7 @@ use app\common\model\Speak;
 use app\common\model\Step;
 use app\common\service\ConfigService;
 use app\common\service\FileService;
+use app\mxadmin\model\Config;
 use app\mxadmin\model\DictData;
 
 
@@ -225,54 +226,11 @@ class IndexLogic extends BaseLogic
      */
     public static function getConfigData()
     {
-        // 底部导航
-        $tabbar = DecorateTabbar::getTabbarLists();
-        // 导航颜色
-        $style = ConfigService::get('tabbar', 'style', config('project.decorate.tabbar_style'));
-        // 登录配置
-        $loginConfig = [
-            // 登录方式
-            'login_way' => ConfigService::get('login', 'login_way', config('project.login.login_way')),
-            // 注册强制绑定手机
-            'coerce_mobile' => ConfigService::get('login', 'coerce_mobile', config('project.login.coerce_mobile')),
-            // 政策协议
-            'login_agreement' => ConfigService::get(
-                'login',
-                'login_agreement',
-                config('project.login.login_agreement')
-            ),
-            // 第三方登录 开关
-            'third_auth' => ConfigService::get('login', 'third_auth', config('project.login.third_auth')),
-            // 微信授权登录
-            'wechat_auth' => ConfigService::get('login', 'wechat_auth', config('project.login.wechat_auth')),
-            // qq授权登录
-            'qq_auth' => ConfigService::get('login', 'qq_auth', config('project.login.qq_auth')),
-        ];
-        // 网址信息
-        $website = [
-            'shop_name' => ConfigService::get('website', 'shop_name'),
-            'shop_logo' => FileService::getFileUrl(ConfigService::get('website', 'shop_logo')),
-        ];
-        // H5配置
-        $webPage = [
-            // 渠道状态 0-关闭 1-开启
-            'status' => ConfigService::get('web_page', 'status', 1),
-            // 关闭后渠道后访问页面 0-空页面 1-自定义链接
-            'page_status' => ConfigService::get('web_page', 'page_status', 0),
-            // 自定义链接
-            'page_url' => ConfigService::get('web_page', 'page_url', ''),
-            'url' => request()->domain() . '/mobile'
-        ];
-
-        return [
-            'domain' => FileService::getFileUrl(),
-            'style' => $style,
-            'tabbar' => $tabbar,
-            'login' => $loginConfig,
-            'website' => $website,
-            'webPage' => $webPage,
-            'version' => config('project.version')
-        ];
+        $sysconf=Config::getConfigData('system');
+        if($sysconf && $sysconf['logo'] !== ''){
+            $sysconf['logo']=FileService::getFileUrl($sysconf['logo']);
+        }
+        return $sysconf;
     }
 
     public static function getDictionary(mixed $dict_id)
