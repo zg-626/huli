@@ -565,7 +565,7 @@ class User extends AdminBase
         // 初始化职位数据统计
         $professionalData = array_fill_keys($professionals, 0);
 
-        // 初始化职位数据统计
+        // 初始化学历数据统计
         $qualificationsData = array_fill_keys($qualifications, 0);
 
         //$qualificationsData = [];
@@ -632,9 +632,23 @@ class User extends AdminBase
             return '50 - 60岁';
         } elseif ($age > 60) {
             return '60岁以上';
-        }else{
-            return '未知';
         }
+    }
+
+    // 获取年龄组
+    public static function getAgeGroupList(): array
+    {
+        /*return [
+            '20岁已下',
+            '20-30岁',
+            '30-40岁',
+            '40-50岁',
+            '50-60岁',
+            '60岁以上',
+            '未知'
+        ];*/
+
+        return self::getDictdata(13);
     }
 
 

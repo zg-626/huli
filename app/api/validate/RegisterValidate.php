@@ -32,7 +32,7 @@ class RegisterValidate extends BaseValidate
 
     protected $rule = [
         'phone' => 'require|length:11|unique:' . User::class,
-        'd_id' => 'require|number',
+        'd_id' => 'require|number|gt:0',// 不等于0
         'nickname' => 'require',
         'password' => 'require|length:8,20|regex:password',
         'password_confirm' => 'require|confirm'
@@ -43,6 +43,7 @@ class RegisterValidate extends BaseValidate
         'phone.length' => '手机号须为11位',
         'phone.unique' => '手机号已存在或正在审核中，请勿重复注册',
         'd_id.require' => '请选择医院',
+        'd_id.gt' => '请选择医院',
         'nickname.require' => '请输入姓名',
         'password.require' => '请输入密码',
         'password.length' => '密码须在8-20位之间',

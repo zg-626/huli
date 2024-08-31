@@ -15,7 +15,7 @@ class DictData extends Validate
      * @var array
      */	
 	protected $rule = [
-        'name' => 'require|chsAlphaNum',
+        'name' => 'require',
         //'name' => 'require|chsAlphaNum|unique:dict_data',
         'weight' => 'number',
     ];

@@ -48,15 +48,8 @@ class Index extends AdminBase
      */
     public function main()
     {
-        $ageData = [
-            '20岁已下',
-            '20-30岁',
-            '30-40岁',
-            '40-50岁',
-            '50-60岁',
-            '60岁以上',
-            '未知'
-        ];
+        $user=new User($this->app);
+        $ageData=$user::getAgeGroupList();
         $professional= DictData::where(['dict_id' => 4, 'status' => 1])->order('weight,id')->column('name');
         $qualifications= DictData::where(['dict_id' => 2, 'status' => 1])->order('weight,id')->column('name');
         $professionalOpen = Dict::where('id', 4)->value('stats');
