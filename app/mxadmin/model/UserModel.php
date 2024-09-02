@@ -72,7 +72,9 @@ class UserModel extends Model
     // 处理图片
     public function getHeadimgAttr($value)
     {
-        return FileService::getFileUrl($value);
+        if($value){
+            return FileService::setFileUrl($value);
+        }
     }
 
 

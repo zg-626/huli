@@ -72,7 +72,7 @@ class UserLogic extends BaseLogic
      */
     public static function info(int $userId)
     {
-        $user = UserModel::with(['hospital', 'educationalType', 'positionType', 'professionalType'])->where(['id' => $userId])
+        $user = UserModel::with(['educationalType', 'positionType', 'professionalType'])->where(['id' => $userId])
             ->withoutField(
                 'password,login_ip,login_time,create_time,update_time,last_login_ip,last_login_time,login_num,user_agent'
             )
@@ -80,13 +80,13 @@ class UserLogic extends BaseLogic
         $user['has_password'] = !empty($user['password']);
         //$user['has_auth'] = self::hasWechatAuth($userId);
         $user['version'] = config('project.version');
-        $user['headimg'] = FileService::getFileUrl($user['headimg']);
         if($user->first_graduate_time==='0000-00-00'){
             $user['first_graduate_time'] = '';
         }
         if($user->highest_graduate_time==='0000-00-00'){
             $user['highest_graduate_time'] = '';
         }
+        $user['departmentname'] = getDidName($user['d_id']);
         $user->hidden(['password']);
         return $user->toArray();
     }
