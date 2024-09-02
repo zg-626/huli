@@ -79,6 +79,9 @@ class UserLogic extends BaseLogic
             ->findOrEmpty();
         $user['has_password'] = !empty($user['password']);
         //$user['has_auth'] = self::hasWechatAuth($userId);
+        /*if($user['headimg'] !== ''){
+            $user['headimg'] = FileService::getFileUrl('/'.$user['headimg']);
+        }*/
         $user['version'] = config('project.version');
         if($user->first_graduate_time==='0000-00-00'){
             $user['first_graduate_time'] = '';
