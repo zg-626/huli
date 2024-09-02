@@ -144,19 +144,20 @@ class IndexLogic extends BaseLogic
      * @author 段誉
      * @date 2022/9/21 19:15
      */
-    public static function getCategory($pid = 0)
+    public static function getCategory()
     {
         $field = [
             'id',
+            'pid',
             'name'
         ];
 
         $article = CmsCategory::field($field)
-            ->where(['pid' => $pid, 'status' => 1])
+            ->where(['status' => 1])
             ->order(['weight' => 'asc'])
             ->select()->toArray();
 
-        return $article;
+        return list_to_tree($article);
     }
 
 

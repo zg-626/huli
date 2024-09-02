@@ -7,6 +7,7 @@ namespace app\mxadmin\controller;
 use app\mxadmin\AdminBase;
 use app\mxadmin\model\Config;
 use think\exception\ValidateException;
+use think\facade\Db;
 
 class Configure extends AdminBase
 {
@@ -16,6 +17,9 @@ class Configure extends AdminBase
      */
     public function index()
     {
+        $smstype = Db::name('config')->where('type', 'sms')->where('id', 8)->find();
+        //print_r($smstype);exit;
+        //print_r(Db::name('config')->where('type', 'sms')->where('id', 8)->find());exit;
         return view('', [
             'sysconf' => Config::getConfigData('system'),
             'storage' => Config::getConfigData('storage'),
@@ -23,6 +27,8 @@ class Configure extends AdminBase
             'weixin' => Config::getConfigData('weixin'),
             'wxapp' => Config::getConfigData('wxapp'),
             'wxpay' => Config::getConfigData('wxpay'),
+            'sms' => Config::getConfigData('sms'),
+            'smstype' => $smstype,
         ]);
     }
 

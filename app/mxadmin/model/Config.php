@@ -48,4 +48,22 @@ class Config extends Model
             self::create(['type' => $type]);
         }
     }
+
+    /**
+     * 获取配置数据
+     * @param $type
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public static function getConfigDatas($type) {
+        $result = self::where('type', $type)->where('id', 8)->find();
+        if ($result == true) {
+            $data = self::where('type', $type)->where('id', 8)->find()['value'];
+            return $data;
+        } else {
+            self::create(['type' => $type]);
+        }
+    }
 }

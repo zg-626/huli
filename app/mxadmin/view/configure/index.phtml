@@ -18,7 +18,8 @@
             <div class="layui-tab layui-tab-brief" lay-filter="configInfoTab">
                 <ul class="layui-tab-title">
                     <li class="layui-this" lay-id="system">网站配置</li>
-                    <!--<li lay-id="storage">文件存储</li>-->
+                    <li lay-id="storage" style="display: none">文件存储</li>
+                    <li lay-id="sms" style="display: none">短信配置</li>
                     <!--<li lay-id="email">邮箱配置</li>
                     <li lay-id="weixin">微信公众号</li>
                     <li lay-id="wxapp">微信小程序</li>
@@ -29,14 +30,8 @@
                     {include file="configure/system" /}
                     <!-- tab2 -->
                     {include file="configure/storage" /}
-                    <!-- tab3 -->
-                    {include file="configure/email" /}
-                    <!-- tab4 -->
-                    {include file="configure/weixin" /}
-                    <!-- tab5 -->
-                    {include file="configure/wxapp" /}
-                    <!-- tab6 -->
-                    {include file="configure/wxpay" /}
+
+                    {include file="configure/sms" /}
                 </div>
             </div>
             <!-- //选项卡结束 -->
@@ -75,6 +70,10 @@
         form.on('radio(raEngine)', function (data) {
             changeType(data.value);
         });
+        // 短信配置类型切换事件
+        form.on('radio(raSms)', function (data) {
+            changeSms(data.value);
+        });
         function changeType(value) {
             if (value == 1) {
                 $('#QiniuTpl').hide();
@@ -82,8 +81,22 @@
                 $('#QiniuTpl').show();
             }
         }
+        function changeSms(value) {
+            if (value == 'Ali') {
+                $('#TencentTpl').hide();
+                $('#AliTpl').show();
+            } else if (value == 'Tencent') {
+                $('#AliTpl').hide();
+                $('#TencentTpl').show();
+            }else{
+                $('#TencentTpl').hide();
+                $('#AliTpl').hide();
+            }
+        }
+
         // 初始化加载
         changeType({$storage.engine});
+        changeSms('{$smstype.value}');
 
         // 监听tab切换 操作：文档 - 内置模块 - 常用元素操作 element - 监听tab切换
         element.on('tab(configInfoTab)', function() {

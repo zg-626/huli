@@ -94,9 +94,9 @@ class IndexController extends BaseApiController
      * @author esc
      * @date 2023/09/28 09:31
      */
-    public function getCategory($pid=0)
+    public function getCategory()
     {
-        $result = IndexLogic::getCategory($pid);
+        $result = IndexLogic::getCategory();
         return $this->data($result);
     }
 
