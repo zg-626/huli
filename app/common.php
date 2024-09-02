@@ -4,6 +4,7 @@
 // 应用公共文件
 use app\cms\model\CmsCategory;
 use app\common\service\FileService;
+use think\facade\Request;
 
 if (!function_exists('list_to_tree')) {
     /**
@@ -390,8 +391,10 @@ if (!function_exists('list_to_trees')) {
      */
     function clear_file_domain($content)
     {
-        $fileUrl = FileService::getFileUrl();
-        return str_replace($fileUrl, '/', $content);
+        //获取当前域名
+        $request = Request::instance();
+        $domain=$request->domain();
+        return str_replace($domain, '/', $content);
     }
 
 
@@ -405,8 +408,11 @@ if (!function_exists('list_to_trees')) {
     function get_file_domain($content): array|string|null
     {
         $preg = '/(<img .*?src=")[^https|^http](.*?)(".*?>)/is';
-        $fileUrl = FileService::getFileUrl();
-        return preg_replace($preg, "\${1}$fileUrl\${2}\${3}", $content);
+        //获取当前域名
+        $request = Request::instance();
+        $domain=$request->domain().'/';
+        //$fileUrl = FileService::getFileUrl();
+        return preg_replace($preg, "\${1}$domain\${2}\${3}", $content);
     }
 
 

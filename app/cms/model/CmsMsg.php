@@ -4,6 +4,7 @@ declare (strict_types = 1);
 
 namespace app\cms\model;
 
+use app\common\service\FileService;
 use app\mxadmin\model\AdminModel;
 use app\mxadmin\model\DictData;
 use think\Model;
@@ -54,5 +55,13 @@ class CmsMsg extends Model
     public function read()
     {
         return $this->hasMany(MsgRead::class, 'm_id', 'id');
+    }
+
+    // 处理图片
+    public function getContentAttr($value)
+    {
+        if($value){
+            return get_file_domain($value);
+        }
     }
 }
