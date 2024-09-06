@@ -110,10 +110,11 @@ class Question extends AdminBase
 
             foreach ($data as $key => $value) {
                 // 检查$key是否为单个字母（即长度为1的字母），并且$value不为空
-                if (strlen($key) == 1 && $this->isSingleLetter($key) && !empty($value)) {
+                if (strlen($key) == 1 && $this->isSingleLetter($key) && isset($value)) {
                     $lettersArray[$key] = $value; // 将符合条件的单个字母和对应的值存入新数组
                 }
             }
+
 
             // 现在 $lettersArray 中包含了所有输入字段中的单个字母及其大写形式
             $options=$lettersArray;
@@ -146,15 +147,16 @@ class Question extends AdminBase
     {
         if (request()->isPost()) {
             $data = input('param.');
-            //print_r($data);exit();
+
             $lettersArray = []; // 初始化一个空数组，用来存储单个字母
 
             foreach ($data as $key => $value) {
                 // 检查$key是否为单个字母（即长度为1的字母），并且$value不为空
-                if (strlen($key) == 1 && $this->isSingleLetter($key) && !empty($value)) {
+                if (strlen($key) == 1 && $this->isSingleLetter($key) && isset($value)) {
                     $lettersArray[$key] = $value; // 将符合条件的单个字母和对应的值存入新数组
                 }
             }
+
 
             // 现在 $lettersArray 中包含了所有输入字段中的单个字母及其大写形式
             $options=$lettersArray;
