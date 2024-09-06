@@ -58,7 +58,7 @@ class User extends AdminBase
     // 查看
     public function find($id = 0)
     {
-        $info = UserModel::where('id', $id)->find();
+        //$info = UserModel::where('id', $id)->find();
         // 职务变更记录
         $department = Department::with('position')->where('user_id', $id)->order('start_time desc')->select();
         // 缴费记录
@@ -114,7 +114,7 @@ class User extends AdminBase
             }
         }
         return view('', [
-            'info' => $info,
+            //'info' => $info,
             'department' => $department,
             'fees' => $fees,
             'trainingSign' => $trainingSign,
@@ -156,6 +156,15 @@ class User extends AdminBase
         if(!$list->isEmpty()){
             foreach ($list as $key => $value) {
                 $value['departmentname'] = getDidName($value['d_id']);
+                if($value['first_graduate_time']==='0000-00-00'){
+                    $value['first_graduate_time'] = '';
+                }
+                if($value['highest_graduate_time']==='0000-00-00'){
+                    $value['highest_graduate_time'] = '';
+                }
+                if($value['position_name']===null){
+                    $value['position_name'] = '未填写';
+                }
             }
 
         }
@@ -229,6 +238,15 @@ class User extends AdminBase
             if(!$list->isEmpty()){
                 foreach ($list as $key => $value) {
                     $value['departmentname'] = getDidName($value['d_id']);
+                    if($value['first_graduate_time']==='0000-00-00'){
+                        $value['first_graduate_time'] = '';
+                    }
+                    if($value['highest_graduate_time']==='0000-00-00'){
+                        $value['highest_graduate_time'] = '';
+                    }
+                    if($value['position_name']===null){
+                        $value['position_name'] = '未填写';
+                    }
                 }
 
             }
