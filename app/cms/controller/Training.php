@@ -430,10 +430,14 @@ class Training extends AdminBase
                 $user->check_time=date('Y-m-d h:m',$user->check_time);
                 // 如果需要考试且已经考试
                 if($user->paper_id !==0){
-                    //$user->is_exam==1 && $user->is_study==1 &&
-                    // 分数大于试卷达标分数的为合格
-                    $score=$user->score;
-                    $user->outcome = $user->total_score > $score ? '合格' : '不合格';
+                    if($user->is_exam==1 && $user->is_study==1){
+                        // 分数大于试卷达标分数的为合格
+                        $score=$user->score;
+                        $user->outcome = $user->total_score > $score ? '合格' : '不合格';
+                    }else{
+                        $user->outcome = '未考试';
+                    }
+
                 }else{
                     $user->outcome = '无需考试';
                 }
